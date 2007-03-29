@@ -1,0 +1,952 @@
+06-14-2006_01-12-35NoteLab.jar
+---------------------------------
+This is the first usable version of NoteLab.
+
+06-14-2006_05-22-38NoteLab.jar
+---------------------------------
+With this version, the user can select different pen colors and types and pen strokes stay within the current page.
+
+06-14-2006_08-30-34NoteLab.jar
+---------------------------------
+This build uses listeners to update the writing Pen when it is modified.
+
+06-15-2006_01-36-35NoteLab.jar
+---------------------------------
+This release includes support for zooming.  However, a transformation is given to an Graphics2D to make the zoom.
+
+06-15-2006_02-29-20NoteLab.jar
+---------------------------------
+With this build an AffineTransform was given to the renderInto() method of the Renderable interface.  This allowed zooming to work very well.  However, it is necessary for Page and Binder objects to know about the transformation so that they can adjust their length and width.
+
+06-15-2006_04-07-29NoteLab.jar
+---------------------------------
+In this build the MAffineTransform, MTransformable, and MTransformHolder class, interface, and class have been defined.  Also, now each material Pen, Stroke, Page, Paper, Binder, and BinderCanvas accept an MAffineTransform in their constructor.  This is used to get zoomito work more efficiently.  However, it doesn't quite work and I realized that the transform only needs to be passed through the renderINto() method (as I originally thought).  The only class that needs to modify coordinates is the BinderCanvas class.  The other classes are in virtual MValue coordinates.
+
+06-15-2006_10-23-21NoteLab.jar
+---------------------------------
+This build has a successful implementation of zooming.  It is working as it should.
+
+06-18-2006_01-13-57NoteLab.jar
+---------------------------------
+With this build I totally changed the architecture.  Now a Stroke has a Path object which encapsulates a collection of MLines.  This Path object will later be used when defining selections.  Also, instead of using the class BinderCanvas there is currently the class CompositeCanvas and PrintCanvas.  PrintCanvas handles printing the binder.  CompositeCanvas implements MouseListener and MouseMotionListener and calls the pathSelected() and pointSelected() methods of PrintCanvas when a point or Path is selected.  Later there will be a Selection and Deletion canvas to handle selections and deleting strokes.  Currently, this version works just like the old version.  That is when strokes are drawn they are clipped to the current page and strokes are added as they should be.
+
+06-18-2006_03-15-29NoteLab.jar
+---------------------------------
+This version has deleting working pretty much as it should.  Currently a stroke is deleted only if the cursor is near the first point of the stroke.  This should be fixed.  However, for now the deleting does work.
+
+06-18-2006_11-14-14NoteLab.jar
+---------------------------------
+With this build the packages noteLab.model.geom and noteLab.model.geom.util have been fully javadoced.
+
+06-19-2006_03-38-39NoteLab.jar
+---------------------------------
+With this build, Page, Binder, Stroke, and Path have been modified such that points are referred to in MValue space from the same origin.  That is, strokes in a page don't have their locations relative to the top left corner of the page.  Instead, their location is an absolute location.
+
+06-21-2006_01-42-11NoteLab.jar
+---------------------------------
+This is an implementation of the new layout of the M* classes (MValue, MContainer, MPoint, MLine, ....).  It works fairly well.  That is painting strokes works.  However, deleting has been disabled as well as changing the page layout of a binder.  I made this build because I changed the MValue methods add(), subtract(), .... to be non-static.  However, Iam going to change them back to being static because its safer.  Otherwise, instance  data can very easily be modified by accident.
+
+06-21-2006_03-09-22NoteLab.jar
+---------------------------------
+I made this build because the program seems to be working fine with the new architecture for the MPoint, MLine, .... classes that allow them to be MTransformable.  Problems occured when I made the transform() methods in MAffineTransform and the arithmetic methods in MPoint and MValue (i.e. sum(), difference(), ....) non-static (i.e. instance methods).  In this case it is REALLY EASY to accidentally invoke a method on an object when doing a calculation and change the object's value accidentally.  This leads to problems where the picture seems to change for no reason.  This means, keep the methods mentioned static.
+
+06-21-2006_04-31-21NoteLab.jar
+---------------------------------
+This build works just as the program did before I changed the MPoint, MLine, .... , M* classes.  The only thing that doesn't work is the arrangemeht of pages by the Binder class.  It doesn't work and for now its disabled.
+
+06-21-2006_07-26-10NoteLab.jar
+---------------------------------
+This build is a fully functional version of the program just as it was before I modified the architecture.  The only bug that I know of existing is one in which Strokes (or Paths) are not moved correctly when the arrangement of pages on a Binder is changed.  In some seemingly rare cases the Path's first and last points are in the correct locations.  However, the other points are shifted down and to the left by one page height and width respectively.  This build would constitute a milestone.
+
+06-22-2006_12-42-23NoteLab.jar
+---------------------------------
+With this build, selection has been implemented.  Also, the bug that occured when Paths were moved (described in the previous log entry) has been fixed.
+
+06-23-2006_05-39-57NoteLab.jar
+---------------------------------
+This build was created because I'm not sure if there is new code since the last build.
+
+06-25-2006_10-09-11NoteLab.jar
+---------------------------------
+With this build, saving and restoring a session (as a .ntlb file which is just an *.svg file) has been implemented.  Also, the loading of these files works as well as exporting a session to an image (png, jpeg, ....).
+
+06-25-2006_10-46-34NoteLab.jar
+---------------------------------
+This build adds support for saving files as SVG files.  Also, as new windows are opened, the program will only exit (when the close button is pressed) only if its the last window opened.
+
+06-26-2006_02-05-10NoteLab.jar
+---------------------------------
+With this build, lines are rendered individually as they are added to the newest stroke (in PrintCanvas) that will be added to a Page.  I fix the method doRepaintBounded() in RepaintBroadcaster.  It did not calculate the bounding box that needed repainting as it should have.  Also, I added the class DebugConstants that holds constants that modify which debugging information is displayed.
+
+06-27-2006_03-20-17NoteLab.jar
+---------------------------------
+This is a build that I made because I'm going to try to optimize the code for rendering strokes as they are drawn on the screen.
+
+06-27-2006_03-54-50NoteLab.jar
+---------------------------------
+This build is broken in a way.  That is, it has a lot of added code that is just being used to see what works to make the system moficient.  It turns out that makeing the PrintCanvas print the path and not the stroke is MUCH more efficient that before.
+
+06-27-2006_04-24-29NoteLab.jar
+---------------------------------
+This is another build that is very broken because I was commenting and umcommenting code to determine how to make drawing of strokes more responsive.  I think the BIG REASON is antialiasing.  If the screen is being rendered with antialiasing on, the drawing of strokes becomes very unresponsive.  Thus, I suggest turning off antialising while the user is drawing a new stroke.  And then turn it back on when the stroke is done.  Then the image looks good most of the time and the app is still responsive when strokes are being drawn.  Also, in this build I added a method 'drawPath()' to MGraphics2D that uses the method 'drawPolyLine()' from the Graphics class.  This also may have vaused more efficient drawing of strokes.
+
+06-28-2006_04-08-06NoteLab.jar
+---------------------------------
+This backup holds some new gui components that I have made.  One is a button that drops down a JPanel which is attached to the button.  I made this backup because I'm looking into optimizing the rendering of binder.
+
+06-29-2006_08-01-03NoteLab.jar
+---------------------------------
+This build has optimized drawing.  The drawing is fairly fast and is antialiased.  Also, controls for the various tools have been made.  After this build, the tools will be changed to use these controls.
+
+06-30-2006_11-06-19NoteLab.jar
+---------------------------------
+This backup includes the gui controls fully operational.
+
+07-03-2006_03-37-27NoteLab.jar
+---------------------------------
+This build was made because a build hasn't been made in a while.  In this build, the new GUI elements have been implemented successfully.  The app works almost as it should.  The menus and preferences need to be implemented yet and there is a small bug with the class MValueControl where you can go to the previous value but not the next.
+
+07-06-2006_09-45-09NoteLab.jar
+---------------------------------
+I'm making this backup because I changed the Binder class to have the concept of a selected page.  Before I change the other classes to use this, I wanted to make a backup of the current configuration.
+
+07-07-2006_01-40-26NoteLab.jar
+---------------------------------
+Now when the user writes on the current page, it is selected and painted correctly.  Also, now the next and previous buttons work on the binder toolbar.  However, making the scrollbar scroll to a specific point does not work yet.  For the next build, I want to try to optimize the rendering code some more.  I was thinking about using as drawPolyLine to draw a stroke instead of drawing several lines.
+
+07-07-2006_10-11-20NoteLab.jar
+---------------------------------
+With this build Points (instead of MPoints) are given to SubCanvases and are used to render a path as it is being drawn.  The pixel points for the path are contained within a PixelPath object.  Then, when the path is completed, it is converted to an Path to make a Stroke.  This stroke is then added to the binder.
+
+07-08-2006_01-19-37NoteLab.jar
+---------------------------------
+With this build the app is much more responsive than in previous builds.  However, paths are not drawn correctly when the page is zoomed.
+
+07-10-2006_08-04-12NoteLab.jar
+---------------------------------
+There was a bug in which a path would be drawn under the cursor even if the SelectionCanvas had focus.  This has been fixed.  Also, now lines have the ability to be selected and look as they did before.
+
+07-12-2006_11-16-53NoteLab.jar
+---------------------------------
+With this build scrolling has been fixed such that when the user clicks the next and previous buttons in the BinderToolBar, the scrollbar scrolls to the top of the corresponding page.  Also, if the user was writing on a page different from the first, the writing wouldn't show up until a repaint() was done.  This is also fixed.  The problem was the repaint(long tm, int x, int y, int width, int height) method needed to be invoked on 'mainPanel' in the class MainPanel instead of calling it on the enclosing class (MainPanel).
+
+07-14-2006_04-43-07NoteLab.jar
+---------------------------------
+I started working on the undo and redo functionality.  However, I was going to try some things to see if they would make the application more responsive.  Thus, before I made these changes, I wanted to make a backup of the code thus far.
+
+07-15-2006_03-03-24NoteLab.jar
+---------------------------------
+I'm thinking about getting rid of the MValue, MPoint, .... classes in favor of just Point2D.Float because the translation to different units isn't used very much anyway.  Instead of having the pages and strokes etc in terms of MValue coordinates they can be in terms of Point2D.Float which is just Java swing coordinates.  Then when getting or setting values they must be translated to these coordinates.  This shouldn't be a problem and should improve memory and CPU efficiency.  Also, I've determined how to implement OpenGL using JOGL and I'm going to use it because its much more effecient.
+
+07-16-2006_06-48-23NoteLab.jar
+---------------------------------
+I've changed the code such that Paths, MTransformable, MBounded, etc. all do not use MValues anymore.  Instead, they use Point2D.Float.  This is because using MValue, MPoints, and MLines etc. weren't really needed.  The code works as it did before.  However, drawing when the screen is zoomed doesn't work exactly right yet.  Also, I've started to change the Paper and Page classes so that they are not in absolute space.  That is a page isn't at point (x,y) with paths with locations greater than (x,y).  Instead, I'm going to change the classes so that they are a point (0,0) and the paths are relative to this point.  Before making these changes, I wanted to make a build of the current code.
+
+07-22-2006_05-38-58NoteLab.jar
+---------------------------------
+Now the application works as it did when it used MValues, MPoints, MLines, etc.  The only thing that doesn't currently work is zooming of selected strokes.  Now that the application is back to a functional state, I will start implementing the use of OpenGL through the use of JOGL.
+
+07-22-2006_10-10-22NoteLab.jar
+---------------------------------
+This build has a small segment of Jogl code that actually works right.  Its in the GLDrawingBoard class in the display() method.  Before, implementing the concept for the entire program, I wanted to back up the code.
+
+07-23-2006_04-03-15NoteLab.jar
+---------------------------------
+OpenGL has been implemented and works fairly well.  Now fine tuning needs to be done.  In particular, render lists should be used when possible.  After making this build, I am going to optimize some of the calculations.  Then, I will start to optimize the OpenGL code.
+
+07-23-2006_06-05-08NoteLab.jar
+---------------------------------
+Several optimizations have been made to the calculations when rendering the scene specifically calculating the size of a FlowBinder and a CompositeCanvas.  Now OpenGL rendering will be optimized.
+
+07-25-2006_07-34-50NoteLab.jar
+---------------------------------
+I am going to try to change the data structures used to store strokes on a page and lines in a path.  I've already started to do so.  However, before changing more than I have to, I wanted to make a build.
+
+07-26-2006_07-14-29NoteLab.jar
+---------------------------------
+I have concluded that it may not be necessary to have a FloatLine2D objects.  Instead of having a Path consist of FloatLine2D objects, it can be constructed from a list FloatPoint2D (a new Point that implements Transformable).  If there are n points in a path each made up of 'b1' blocks of data and if each FloatLine2D takes 'b2' blocks of data then it would take n*b1+(n-1)*b2 blocks of data.  If only points were stored in a path instead of having the path store lines which store two points, only n*b1 blocks of data would be used to store the path.  Suppose b1=b2=1 block.  Then, the storing lines would use 2n-1 blocks compared to n blocks to store the path.  I think this would really help memory management.  However, before implementing this change I wanted to make a build.
+
+07-26-2006_10-27-39NoteLab.jar
+---------------------------------
+I've modified the program so that a Path consists of a collection of points rather than lines.  Also, every nth point is added to the path instead of every point.  That way, the system is more responsive.  Also, if large strokes aren't drawn, the user wouldn't notice the missing points anyway.  Also, the app was running really slow.  I looked and it turned out that somehow Eclipse's configuration was changed so that the default heap size was used.  I added the -Xmx1280M to tell the VM to use 1.25 Gigs of RAM.  After making this build, I am going to change CompositeCanvas so that only points that are a distance of 'd' pixels from the last point in a path drawn are added to the point.  That way, for paths that have points very close together, not as many points, and hence not as much memory, and not as much rendering time will be needed to render the path.
+
+07-26-2006_11-08-18NoteLab.jar
+---------------------------------
+This build has the CompositeCanvas implemented such that points are added to a path only when they are a specified distance from the previous point in the path. The previous implementation (see the previous log entry) seems to work better.
+
+07-27-2006_12-14-06NoteLab.jar
+---------------------------------
+Now the SwingRenderer2D implements "render lists" by rendering having the screen rendered into a buffered image.  Then when the list is called, the image is rendered.  This seems to improve the performance of the application.
+
+07-27-2006_01-15-32NoteLab.jar
+---------------------------------
+I made a backup because because I was trying to make the Page render n strokes and then save the page to a image.  When the page is to be rendered again, lets say if there are n+k strokes on the page where 0<k<n, the image is rendered and then the extra k strokes are rendered.  This would make rendering faster.  However, it doesn't work yet.
+
+07-27-2006_06-16-35NoteLab.jar
+---------------------------------
+With this build Pages use "quick rendering" to render the page.  That is after 'n' strokes are drawn on the page, the paper with the n strokes are saved to an image.  When the page is rendered, the image is rendered and then the extra strokes are rendered.  This didn't seem to speed up the rendering process very much though.  I have decided that I need to make a separate thread that queues up mouse events instead of using the AWT event dispatching queue.  Otherwise, the event dispatching queue becomes "hogged" by mouse events.  As a result, calls to repainting aren't done as fast because they have to wait for mouse events to be processed.
+
+07-27-2006_07-00-04NoteLab.jar
+---------------------------------
+This build implements the thread described in the previous log entry.  It doesn't seem to work as well as I thought.  Now I am going to change the implementation so that every 'nth' point that is added to a path tells the system to repaint the screen.
+
+07-29-2006_01-42-01NoteLab.jar
+---------------------------------
+I found the reason why the app slows down after writing a lot of strokes on the page.  The reason is that when the mouse clicks the MainPanel, the JPanel class must issue a repaint() which repaints the entire panel.  Thus, after each stroke is drawn the whole panel is repainted.  This is unnecessary and causes a slowdown in the queue of paint requests.
+
+07-30-2006_12-51-44NoteLab.jar
+---------------------------------
+I found that repaint() calls were called every time the mouse was pressed.  This was because in the Binder class when the mouse was pressed the current page was set to the index of the page that contains the point at which the mouse is at.  When this occurs, a repaint() call was made so that the selection of the page (the red square drawn around the current page) is made visible.
+
+07-30-2006_01-38-11NoteLab.jar
+---------------------------------
+I turned off "quick rendering" instead of having the quick rendering done by the Renderer2D it should be done by the Paper, Stroke, .... classes.  Also, I fixed the selection the problem was I said to look at every index in a Stroke less than 'getNumItems()'.  It should be 'path.getNumItems()'.
+
+07-31-2006_12-56-33NoteLab.jar
+---------------------------------
+I have implemented reading arguments in to the system.  I have also implemented the SettingsManager and SettingsChangeListener.  Different classes implement SettingChangeListener and register themselves with the shared instance of SettingsManager.  Then when settings are changed, the registered classes update themselves accordingly.  I also fixed the loading of NoteLab files.  The problems were the Binder class wasn't beginning and ending a group.  Also, when the NoteLab file is loaded, the document is searched for FlowBinder but not Binder because it is a FlowBinder specifically and not just a Binder that is rendered.
+
+07-31-2006_01-10-42NoteLab.jar
+---------------------------------
+I fixed scaling in the FlowPoint2D class.
+
+07-31-2006_02-33-21NoteLab.jar
+---------------------------------
+Added support for the --version and --help options.
+
+08-01-2006_12-09-49NoteLab.jar
+---------------------------------
+Now when the page is zoomed or unzoomed, the strokes on the page have their size changed to looke as if they are zoomed also.
+
+08-01-2006_03-19-58NoteLab.jar
+---------------------------------
+I've started to add support for cut, copy, paste, and deleting.  However, it isn't working yet.  I also changed it so that when a stroke contains only a single point, the point is displayed correctly.  That is, when "i"s are dotted, the dots show up.  I also, implemented caching of Strokes and Paper to improve speed.  I've used the program to write a couple proofs and it works well.
+
+08-01-2006_05-13-39NoteLab.jar
+---------------------------------
+This build has an implementation of the cut, copy, and paste functionality.  However, it doesn't work correctly and in fact when strokes are drawn and then the page is zoomed, the strokes are not zoomed also.  I've decided to revert back to the previous build.
+
+08-02-2006_10-30-00NoteLab.jar
+---------------------------------
+I've fixed the problem that occured when zooming was performed.  That is, when a page was zoomed, the strokes were not zoomed.  To fix this I changed the Paper and Stroke classes to have a 'cacheZoomFactor' field.  This field holds the zoom factor used to render the cached image.  When the 'doRender' method is invoked and the zoom factor of the Renderer2D given as a parameter is different from the zoom factor of the cached image, the image is recached and then used.  The only things that needed to be changed was the ImageRenderer2D to include the ability to have the zoom factor set at the constructor.  Also, when determining the bounds of the image that should be cached, the strokes width and height need to be multiplied by the zoom factor to get the real width and height.  Otherwise, if the image is zoomed past 100% strokes appear to be 'cut off'.
+
+08-03-2006_07-03-17NoteLab.jar
+---------------------------------
+I implemented a NoteLabLoader class which uses SAX to parse NoteLab files.  This works to load large files.  However, when the files are loaded areas of the screen aren't updated as strokes are drawn.  As a results, as new strokes are added to the loaded file, the system is really sluggish.
+
+08-04-2006_04-52-32NoteLab.jar
+---------------------------------
+This backup has scaling working.  That is, when the canvas is zoomed, its binder is scaled which scales each of its pages which scale each of their strokes etc.  This works well and the width of strokes appears zoomed in also as the canvas is zoomed.  Now that Pages, Strokes, etc. store their real dimensions (and not their regular dimensions which are modified at render time to make them appear zoomed), when the objects are constructed their corresponding x and y scale levels have to be given to the constructor.  This lets the object know what 'zooming to level 1' (i.e. 100%) means.  Also, the SAX implementation for reading NoteLab files seems to be working well.  The only problem is that the last stroke on a page are sometimes given extra lines that extend down and across the page at the page's edge.  This will need to be fixed.
+
+08-04-2006_08-01-12NoteLab.jar
+---------------------------------
+I've fixed the NoteLabFileLoader.  What happed was when a multi-page document is loaded, the last stroke has three extra lines attached to the end of it that follows along the edge of the first page.  The problem was from the drawing of the paper (only if the paper was lined).  If the paper was disabled or plain, the problem wasn't existent.  To fix the problem I had the class ignore <line> tags if the SAX reader is reading a Paper.  I changed this so that <line> tags are only read if a Stroke is being read.  However, I had the code wrong.  I had the code say that a Stroke was being read when a <g id="Stroke"> tag is read and a stroke is not being read if a </Stroke> is encountered.  Instead, it should have ended if a </g> tag is read with the last ID read as "Stroke".  I changed the code to this and the strokes were read exactly as they should be.  Also, I noticed that the first "real" page read in always had college paper as its type.  To fix this I changed the code so that the first page (which is just a default empty page so that when the binder is constructed its not empty) is only deleted from the binder after the CompositeCanvas is created.  If it is removed beforehand, the problem of the wrong paper type occurs.  Removing it after fixes the problem.  I also removed some debugging println() that described the area of the screen that is being repainted.
+
+08-04-2006_11-11-04NoteLab.jar
+---------------------------------
+This build has an implementation of printing pages.  However it doesn't work yet.  This backup was made, however, because I fixed NoteLabFileLoader's problem that pages that were loaded always had their first page set to college rule.  This was because at the end of the constructor for the toolbar in PageSelectionCanvas, the 'college rule button' had a doClick() method invoked on it.  This would set the binder's current page to college rule.  Now the type of the binder's current page is found.  Then the appropriate button has its doClick() method performed.  This makes the toolbar have its state match that of the current page and the current page doesn't have its paper type changed.
+
+08-04-2006_11-28-26NoteLab.jar
+---------------------------------
+I've implemented "smart rendering" and it works REALLY WELL, at lot better than I expected.  It makes the system very useable.  Smart rendering is the technique were pages, papers, and strokes are only actually rendered if they are inside the clipping region.  That is, for example, when rendering a binder, for each page if the page is not in the clipping region, it is skipped.  Only if the page is in the clipping rectangle, it is rendered.  The same is done for strokes.
+
+08-05-2006_11-30-43NoteLab.jar
+---------------------------------
+This build has printing working as it should.
+
+08-05-2006_11-48-57NoteLab.jar
+---------------------------------
+Now the Binder class implements Pageable and the printer dialog allows the user to select the pages to print.
+
+08-05-2006_06-42-50NoteLab.jar
+---------------------------------
+"Smart rendering" was broken.  That is, if the binder contains more than one page, the pages other than the first isn't rendered.  This was because the Page class had its getBounds2D() method return the bounds of the Page's Paper.  This was wrong because the bounds of the paper was always at the point (0,0).  However, the location of most pages (other than the first) are not (0,0).  After I fixed this, "smart rendering" works just as it should.
+
+08-05-2006_11-38-25NoteLab.jar
+---------------------------------
+This backup has an implementation of the --file option.  The parameter to this option is the file to load.
+
+08-06-2006_12-21-53NoteLab.jar
+---------------------------------
+Now when specifying arguments they are of the form [parameters] [-- file1.ntlb file2.ntlb ....].  That is after specifying the parameters use the symbol -- to signal the end of the parameters.  Then the next command line arguments are interpreted as NoteLab files.
+
+08-06-2006_12-45-06NoteLab.jar
+---------------------------------
+In the method endDocument() in the class NoteLabFileLoader, I added a doLayout() call to the binder before making a CompositeCanvas.  This seems to fix the bug that would occur when files were loaded.  That is, when loading a two page file, there was a blank page for the first page and one could not draw on the first page.  This appears to be from the pages not being layed out.
+
+08-06-2006_01-03-09NoteLab.jar
+---------------------------------
+There was a problem in that if more than two pages were added to a binder if the user made a stroke on, for example, the third page it would render fine.  However, if the user made a stroke then on the second page the third page would not be rendered at all and would "disappear".  To fix this problem, I removed the statement from the renderInto() method of the binder class that checked if a page is in the clipping region before rendering it.  Now all pages are rendered no matter what.  The drop in performance doesn't really seem to be that bad however.  Also, in CompositeCanvas I changed the pointModIndex to 3 but it didn't seem to help performance.  Thus, I changed it back to its value of 1.
+
+08-06-2006_11-55-16NoteLab.jar
+---------------------------------
+There was a bug where the last pages of a binder were not rendered.  This was because as the Binder rendered itself, it translates for each page.  This modifies the clipping region and as a result the last pages aren't in the clipping region and are thus not rendered.  To fix this, for each Page, the Binder translates back to the origin and then check if the Page is in the clipping region and if so render the page.  For the next page, the renderer (the Graphics2D object) translated back to the origin, then checked if the page was in the clipping region and rendered it if it was.  This backup was made to make a backup of this fix.  Then, I will fix up the code by removing the debugging println() statements.
+
+08-07-2006_12-07-12NoteLab.jar
+---------------------------------
+I've removed the debugging println() statements as stated in the previous log entry.  I've also changed the SwingDrawingBoard class so that it draws a box of the screen the size of the clipping region if "display update boxes" is enabled in DebugSettings.  The program seems to work just as it would.
+
+08-07-2006_01-40-50NoteLab.jar
+---------------------------------
+I've implemented "save" and "save as" functionality.  The CompositeCanvas has a File field.  If the CompositeCanvas has been saved to a file, this field is set otherwise it is null.  The FileToolBar and NoteLabFileLoader classes have been changed to use this functionality.
+
+08-08-2006_12-48-42NoteLab.jar
+---------------------------------
+I've changed the code to use new icons.  The icons that NoteLab uses is the Dropline-Neu icons.  They are distributed under the GNU GPL.  Now I'm going to modify the way the custom buttons are made.  Currently, it is hard to specify their size.
+
+08-08-2006_02-11-18NoteLab.jar
+---------------------------------
+I changed DecoratedButton to have a preferred size parameter and a scale factor parameter.  The preferred size parameter is an int and the preferred size of the button is set to set using this int assuming the button is square.  I also changed DualDropButton, SizeControl, and NumberControl to reflect these changes.  Now the gui elements look very nice.
+
+08-08-2006_02-52-50NoteLab.jar
+---------------------------------
+I've added icons to the menus.  Also, the next and previous buttons don't work because I removed the ModListeners.  Thus, I'm going to have to make some listeners to get the buttons to work again.
+
+08-08-2006_01-57-42NoteLab.jar
+---------------------------------
+I was working on making scaling possible from the StrokeSelectionCanvas using the mouse instead of a NumberControl.  This doesn't work in this build, but before I made changes (which would be radical), I wanted to make a build of the code I had thus far.
+
+08-08-2006_02-41-49NoteLab.jar
+---------------------------------
+I've implemented scaling successfully.  To scale the user only has to select the scale toggle button.  As he/she drags the mouse, the selected strokes are scaled appropriately.
+
+08-08-2006_03-29-27NoteLab.jar
+---------------------------------
+I've changed MenuPath and DynamicMenuBar so that MenuPaths can have an icon associated with them.  Thus, the menus in the select menu have icons.  Also, I've added the BinderListener interface again and now notifications are done when pages are added and removed from a binder and when the current page of the binder changes.  Thus, now the next and previous buttons work as they should.  The BinderListener interface is a temporary, but correct, implementation.  When I implement undo and redo, the listeners involved will probably replace BinderListener.
+
+08-08-2006_03-51-45NoteLab.jar
+---------------------------------
+Now NoteLab asks the user if he/she wants to save before he/she exists the program.  However, this mechanism only checks if the CompositeCanvas's file is null or not to tell if its been saved.  Thus, if the user saves and then edits the canvas, the program won't ask to save when the user closes the application.
+
+08-08-2006_06-51-12NoteLab.jar
+---------------------------------
+I've replaced the logo icon with a new better icon.  I've also made a feather icon.  The new logo is a feather with the text NoteLab.  The feather icon is the exact same feather without the text.  I've also made a NoteLabFileChooser and NoteLabFileView so that now files in file choosers have custom icons.  Also, I've set the minimized icon for the application.
+
+08-11-2006_06-11-08NoteLab.jar
+---------------------------------
+I made ModListener and ModBroadcaster which are interfaces that classes implement so that they can notify objects that they have been modified.  Now CompositeCanvas, Binder, Page, Paper, Stroke, Path, ItemContainer, FloatPoint2D, and TransformRectangle2D all implement these interfaces.  Now when a session is modified, the CompositeCanvas knows about it and MainFrames title is set to "NoteLab .... (Modified)".  Also, when the CompositeCanvas is saved the MainFrame's title is set to not contain "(Modified)".  Also, if the CompositeCanvas is modified, if the user classes the MainFrame, it asks if the user wants to save the session.
+
+08-12-2006_03-15-18NoteLab.jar
+---------------------------------
+I've added the classes UndoRedoToolBar, UndoRedoManager, HistoryAction, and UndoRedoAction; I added the enum ActionType; and I added the interface UndoRedoListener.  Right now the only thing that can be "undone" and "redone" is the drawing of strokes on the canvas.  The only thing that doesn't work is that if a stroke is drawn, then undone, the page is zoomed, and last the drawing of the stroke is redone, the stroke won't be in the correct place because it doesn't take into account the zooming of the CompositeCanvas.
+
+08-15-2006_10-11-44NoteLab.jar
+---------------------------------
+I made this backup to store what I had after moving.
+
+08-15-2006_10-49-12NoteLab.jar
+---------------------------------
+I changed the undo-redo system.  Now it uses a more modular approach.  That is, the StrokeCanvas invokes actionDone(actionDone, undoAction) where the actions are HistoryAcion objects.  This interface just extends Runnable and the UndoRedoManager invokes the object's run() method when the user wants to undo and redo.  The program works just as well as it did in the previous build.
+
+08-15-2006_11-34-23NoteLab.jar
+---------------------------------
+I changed the DrawStrokeAction and DeleteStrokeAction to be able to draw and delete a vector of strokes.  The app still works as before.  Now I'm going to change StrokeSelectionCavnas to use a Hashtable to store the strokes selected given their page.
+
+08-16-2006_12-02-11NoteLab.jar
+---------------------------------
+I modified StrokeSelectionCanvas.  Now it uses a Hastable<Page, Vector<Stroke>> to store the vector of strokes per page.  The page is used to reference the strokes on it.  I did a quick test of the application and it seems to work just as it did before.
+
+08-16-2006_09-34-12NoteLab.jar
+---------------------------------
+Now when the user deletes a collection of selected strokes from the StrokeSelectionCanvas, they can click undo once and all of the deleted strokes are added back to the page.
+
+08-17-2006_09-46-02NoteLab.jar
+---------------------------------
+I'm going to implement scaling and translating for the SVGRenderer2D.  However, before doing so, I wanted to make a backup of the code.
+
+08-17-2006_10-12-10NoteLab.jar
+---------------------------------
+I modified SVGRenderer2D to support translating and scaling.  Now it works just as it should.  To get it to work I have the parameter "transform=scale(x,y) translate(x,y)" given when a new <g> tag is made.  To do this, when translate and scale are called, the translation and scaling is recorded and then applied when a new group is started.  To prevent things from being transformed multiple times, the stored transforms are cleared after being written into the svg code.
+
+08-29-2006_12-03-01NoteLab.jar
+---------------------------------
+Before modifying the code I wanted to make sure its previous state was backuped up.
+
+08-29-2006_12-30-29NoteLab.jar
+---------------------------------
+Added a refresh button which redraws the screen and a clear page button which removes all of the strokes from the current page.
+
+09-16-2006_02-54-55NoteLab.jar
+---------------------------------
+I've added LookAndFeelArg that allows the user to set the look and feel used for the application's gui elements.  Also I noticed that the setPenXSize parameter wasn't actually setting the pen's size and a '--' had to be appended to the end of parameters (if any were specified) or an ArrayIndexOutOfBounds exception would be thrown.  I haven't fixed either of these bugs because I wanted to make a build first.
+
+09-16-2006_03-08-24NoteLab.jar
+---------------------------------
+Modified the CommandInterpretor class so that if a '--' is not specified at all in the command list, then it is automatically appended to the end of the list.  Otherwise the interpretor would run into an ArrayIndexOutOfBoundsException.
+
+09-16-2006_03-45-41NoteLab.jar
+---------------------------------
+Modified CommandInterpretor so that if the user doesn't specify enough parameters for a command, the system just states that command X doesn't have enough parameters instead of saying that parameter X was not understood.  Otherwise the added -- at the end of the command list (which is added internally and not seen by the user) would sometimes be described as an unrecognized parameter.  This would confuse the user.  Also, I modified the StartUtilities and MainFrame classes by moving the code "SettingsManager.notifyOfChanges()" from the launchMainFrame() method of StartupUtilities to the end of the constructor in MainFrame.  The problem was that even though a MainFrame was constructed, its GUI elements might not be completely constructed yet.  As such they might not have added themselves as listeners to the SettingsManager yet, and thus when the SettingsManager notified all of its listeners, the GUI elements were not notified because they were not listeners yet.  Thus, the GUI didn't have the updated settings displayed because the GUI elements wouldn't find out about them.
+
+09-30-2006_03-02-20NoteLab.jar
+---------------------------------
+Now the CompositeCanvas class stores the previous point that was moved to (i.e. the point given to the mouseMoved() method on its last invocation).  Then when the mousePressed() method is invoked, this previous point is used to start the new stroke.  Also, the point given to the mousePressed() method is used as the next point of the stroke.  This fixes the problem where strokes would only begin to be drawn in Windows after the stylus has been moved slightly.  I think this was due to the fact that the Java Virtual Machine was only listening to Windows mouse events instead of stylus events.
+
+10-03-2006_01-48-01NoteLab.jar
+---------------------------------
+This build fixes the problem where drawing strokes in windows looked choppy.  The reason why this occured was because the JVM was coalescing multiple mouse dragged events into one event to remove redundency.  However, when using a tablet and stylus coalescing events made the drawing of strokes look choppy.  I've fixed this problem by overriding the coalesceEvents() method (from the Component class) in both SwingDrawingBoard and MainPanel.  As such now these methods return null signifying that no coalescing has occured.  I tried writing very quickly using windows and now its very nice and responsive.
+
+10-09-2006_10-50-37NoteLab.jar
+---------------------------------
+Now when the SVGRenderer2D renders an NTLB document it stores the XML version and namespace info, the DTD reference, the SVG namespace and version info, the bounding width, and bounding height of the svg image.  As such, except for the non-compliant scale attributes, the svg images produced can viewed with Firefox's svg viewer and the image looks correctly (Except not all pages are visible.  Howver, I think this is from the scale attributes).
+
+10-09-2006_11-40-30NoteLab.jar
+---------------------------------
+Modified Binder to implement CopyReady<Binder>, modified FLowBinder to implement the getCopy() method, modified CompositeCanvas to implement CopyReady<CompositeCanvas> and added the getCopy() method, and modified CompositeCanvas to implement Bounded.  Also, now FileToolBar takes the current CompositeCanvas and creates a copy and saves the copy when the user requests to save the current document.  With this it scales the canvas to a zoom level of 1.  Then the NoteLabFileLoader class has been modified to ignore the scaling of the canvas (because we know its at zoom level 1).  That is, the getScale() method always returns 1.  Also, the SVGRenderer2D class does not include the scaling information in the SVG document because it is really not needed and complicates the document.
+
+10-09-2006_11-51-16NoteLab.jar
+---------------------------------
+Cleaned up some (unneeded) commented code from the previous log message.
+
+10-10-2006_12-07-54NoteLab.jar
+---------------------------------
+Modified DecoratedButton so that if the button is selected it will be outlined with blue instead of red.  I also modified Paper such that if it is selected it is outlined with a dark gray border instead of a red one.  In both of these cases, it is clear that the item is selected.  However, the new selections are more subtle than outlining the objects in red.
+
+10-10-2006_12-25-23NoteLab.jar
+---------------------------------
+Modified NoteLabFileLoader such that no scaling information is read from the file.  Instead, whenever scaling information is needed a static final field SCALE_LEVEL is used which has value 1.  This very much simplifies the code and is valid because when a CompositeCanvas is saved, a copy of it with a zoom level of 1 is actually saved.  Thus, its safe to assume all scale factors are 1.
+
+10-16-2006_05-43-04NoteLab.jar
+---------------------------------
+I was trying to fix a bug in the SVG renderer where when viewed as an SVG image, a NoteLab file (.ntlb) doesn't show pages is a sequence.  Instead all of the pages are overlapped.  I made some progress.  However, I wanted to make some easier improvements.  Thus, I'm making a build of the code and then I'm going to revert back to the previous backup.
+
+10-16-2006_06-18-33NoteLab.jar
+---------------------------------
+I've changed the color of the selected paper in the Paper class to blue.  I've also modified SwingRenderer2D class to use a custom stroke SelectedStroke implemented from Stroke to be the stroke used to draw selected strokes.  It uses two BasicStroke's to render the selected strokes and is a lot more efficient compared to the old method.  The code is also much simplier.  However, the results look approximately the same visually.
+
+10-16-2006_06-40-49NoteLab.jar
+---------------------------------
+There was a bug where if the user selected any point on the screen, every stroke on the screen was selected (while in stroke selection mode).  This bug was started from the change that occured for the 09-30-2006_03-02-20NoteLab.jar backup.  Seeing that the changes in that backup really didn't solve the problem they were meant to, I reverted the code to the next previous date.  Now the selection of strokes works just as it should.
+
+10-16-2006_10-12-53NoteLab.jar
+---------------------------------
+Added the GNU License header to all of the files.  Also, changed the version number to 0.1rc1 (i.e. version 0.1 release candidate 1).
+
+10-25-2006_12-24-55NoteLab.jar
+---------------------------------
+Modified FileToolbar so that if an error occurs while opening a file, saving a file, exporting, or printing, a JOptionPane with the message is shown.  I also modified a bug wher the CompositeCanvas would not record when a file was saved.  This had the problem of causing corrupted files.  The problem was that I made a copy of the canvas and saved the copy.  However, I forgot to tell the ORIGINAL canvas that it was saved.
+
+11-19-2006_09-47-13NoteLab.jar
+---------------------------------
+This backup fixes the bug where to scaleTo() method doesn't work as it should in the Pen class.  Now the scaleTo() method works as it should.  This could serve as a build but before making a build I wanted to further test the code.
+
+11-20-2006_03-09-56NoteLab.jar
+---------------------------------
+This backup GREATLY improves the performance of the StrokeSelectionCanvas by recording the dirty regions of the screen so that after a stroke is selected, moved, or scaled, only the dirty region (not the entire screen) are repainted.
+
+11-20-2006_09-43-20NoteLab.jar
+---------------------------------
+I wanted to make a backup before modifying the SelectionCanvas to make it even more efficient.
+
+11-21-2006_12-25-47NoteLab.jar
+---------------------------------
+This backup has the SelectionCanvas working as efficiently as before (and possibly even more efficiently).  That is, instead of an entire bounding box being labeled dirty for a stroke (and hence repainted), the bounding boxes of each of the separate lines making up the stroke are repainted.  However, Java Swing appears to union all of thittle boxes into a big box roughly the size of the stroke anyway.  However on some systems this implementation may be faster.  In addition the code has been made more modular.
+
+11-21-2006_05-44-18NoteLab.jar
+---------------------------------
+This backup has box selection and unselection working in the sense that ther user can select to use a box selection tool to select or unselect strokes.  The rendering is relatively fast.  However, the tool doesn't yet have its own unique icon.  Also, deleting the strokes doesn't work yet.  However to implement this feature I am going to modify the page class.  However before doing this I wanted to make a backup.
+
+11-22-2006_03-38-03NoteLab.jar
+---------------------------------
+With this backup I modified the SelectionCanvas to improve its performance.  Specifically I've tried to change the scaling functionality so that the selected strokes don't appear to move as they are scaled.  Several methods didn't work.  As such I that the moving of the strokes as they are scaled isn't very bad.  Now when strokes are moved or scaled only the selected strokes on the current page (and not all pages) are modified.
+
+11-22-2006_10-14-25NoteLab.jar
+---------------------------------
+I have been having problems making the box selection work correctly.  Mainly the trouble was with defining the box and the region of the screen that should be redrawn.  It still doesn't work correctly.  However I wanted to make a backup of the current code before trying a new method.
+
+11-22-2006_11-19-41NoteLab.jar
+---------------------------------
+This backup contains another attempt at making the box selection work.  It still doesn't work correctly.  However, I wanted to make a backup before chaning the code.
+
+11-23-2006_02-22-23NoteLab.jar
+---------------------------------
+I've changed the Binder class's renderInto() method to be much more efficient.  Basically now the renderInto() method loops through each Page in the binder.  For each Page in the binder, the renderer checks if the page is in the current view, then it translates to the top left corner of the page, then it renders the page, and last it translates back to the origin.  This seems to fix the box selection problem.  After making only the SelectionCanvas the canvas that is rendered I have discovered that the problem probably lies in the rendering process of the binder.  That is the Binder modifies some aspect of the renderer that breaks the rendering of the SelectionCanvas.  Thus I think the change in the Binder class has fixed the SelectionCanvas box selection rendering problem.  However, now strokes aren't selected when a box is drawn.  This will need to be fixed.
+
+11-23-2006_02-40-24NoteLab.jar
+---------------------------------
+This backup has a fix for the box selection (where the box selection didn't actually select anything).  When debugging the rendering of the selection box I turned off the selection of strokes.  Thus all I had to do was uncomment the stroke selection code.  Also I have removed commented code that was unnecessary.  This backup has box selection working.  Scaling works but is a little finicky.
+
+12-18-2006_01-30-11NoteLab.jar
+---------------------------------
+This backup was made right after fall semester 2006.  I wanted to make a backup before making any changes.
+
+12-18-2006_03-25-44NoteLab.jar
+---------------------------------
+This backup has 1-1 scaling working correctly.  This was working in previous builds and was broken in later builds.  Now it works again.
+
+12-18-2006_03-32-22NoteLab.jar
+---------------------------------
+This build is the same as the previous except that System.out code and commented unnecessary code has been removed.
+
+12-19-2006_08-20-04NoteLab.jar
+---------------------------------
+This build does not compile.  I made the settings gui element.  I was going to change it.  However, before doing this, I wanted to make a backup.
+
+12-20-2006_12-42-55NoteLab.jar
+---------------------------------
+I have the settings gui working very well.  Also the startup scripts for UNIX based systems have been tested and work as they should.  The pen and paper settings have been implemented.  However the virtual machine settings have not been implemented yet.
+
+12-20-2006_11-31-35NoteLab.jar
+---------------------------------
+This backup has the settings gui working.  Specifically the memory settings panel has been implemented.
+
+12-21-2006_01-29-52NoteLab.jar
+---------------------------------
+This backup has the memory settings gui element working fine.  A test functionality has been added.  In addition the gui now contains a text area that explains how the values should be set.  Also, if the initial memory is set larger than the maximum area, a JLabel describes this error instead of having a JDialog open up and explain the error.
+
+12-21-2006_02-06-11NoteLab.jar
+---------------------------------
+I've removed some System.err.println() code which was unnecessary.  This backup serves as a checkpoint of a working state of the memory setings gui.  Using the test capability I'll be able to find the maximum allowed memory so that the user is only given the chose to choose allowed memory values.  Before making this change though, I wanted to make a backup of the code.
+
+12-21-2006_03-08-47NoteLab.jar
+---------------------------------
+This backup has an adaptive version of the memory settings gui element.  That is the element determines the maximum amount of memory that the system will allow be allocated for NoteLab.  Then only memory values below and containg this value are allowed.  This method works.  The only probably with the gui element is that it doesn't look ver.
+
+12-21-2006_01-39-12NoteLab.jar
+---------------------------------
+This backup has the memory settings gui element more streamlined.  Also NoteLab checks for the maximum amount of memory that the system allows.
+
+12-21-2006_03-09-17NoteLab.jar
+---------------------------------
+Now the memory settings gui element is working very well.  The restore defaults and revert to save buttons are working.  Also the gui dynamically determines the amount of memory allowed by the system.  Further the initial memory combobox has memory values only as high as the memory set in the maximum memory combobox.  As a result, the user cannot select to use more initial memory than there is maximum memory.
+
+12-21-2006_04-46-58NoteLab.jar
+---------------------------------
+The PageSettingsPanel was not setting the current value (from its superclass) and as such when the apply or ok buttons were pressed, the page backgroup color was not updated.  Now this problem has been fixed.
+
+12-21-2006_05-59-43NoteLab.jar
+---------------------------------
+The page settings gui element's code has been improved.  Also, the PrimitiveSettingsPanel uses a BorderLayout to layout its panel and the title of the panel is centered vertically.  Also the export dialog box has had its title changed to "Export?" and has had the method setApproveButtonText("Export") called.  However, the approve button still says "Save" instead of "Export".
+
+12-22-2006_09-39-30NoteLab.jar
+---------------------------------
+In this backup NoteLab puts quotation marks around variable values in the initenv file for Unix based systems and no quotation marks around the values on Windows based systems.  These changes were necessary.  Also if the SpinnerControl is given a value out of range as compared to its specified min and max it outputs a mendard out and sets the current value to the nearest safe value.  Previously the SpinnerControl would through an exception.
+
+12-23-2006_12-32-17NoteLab.jar
+---------------------------------
+This backup has an improved "About GUI" that displays the total used memory, the max memory, and the total free memory.  It also has buttons that allow the user to view NoteLab's license and credits.  Also when strokes were removed from a page different from the current page, the region to update did not include the region containing the deleted strokes.  This is because the region wasn't shifted to the current page.  This has been fixed and now removing strokes works as it should.
+
+12-23-2006_06-20-51NoteLab.jar
+---------------------------------
+This version has basic Jarnal file read support enabled.  That is Jarnal files can now be loaded into NoteLab.  The only problem is that if NoteLab is not online the SAX validation does not work, when reading Jarnal files, because it cannot locate the domain www.w3.org.
+
+12-23-2006_07-41-11NoteLab.jar
+---------------------------------
+Now NoteLab can load Jarnal files even if it is not online.  This is because the JarnalPageLoader class has the resolveEntity() overriden so that NoteLab looks for a local copy of the w3c DTD specification before looking online.
+
+12-28-2006_12-49-33NoteLab.jar
+---------------------------------
+In this backup the MainFrame displays, in its title, the name of the file to which the current document has been saved.
+
+12-28-2006_01-05-37NoteLab.jar
+---------------------------------
+Now if the current document has already been saved, the export gui has the name of the current file already listed in the gui.
+
+12-28-2006_01-36-48NoteLab.jar
+---------------------------------
+Added javadocs to the InfoCenter and FiniteStack classes.
+
+12-28-2006_01-39-42NoteLab.jar
+---------------------------------
+Removed the package noteLab.util.state and all its subpackages and classes since its code was not needed.  This is because the code was going to be used to store preferences and the argument system was instead used.
+
+12-28-2006_08-33-45NoteLab.jar
+---------------------------------
+Added some javadoc code documentation.
+
+12-29-2006_10-36-11NoteLab.jar
+---------------------------------
+Added the noteLab.gui.sequence and notelab.gui.install packages.  The noteLab.gui.sequence package is used to construct things such as installation "wizards".  The noteLab.gui.install package is an implementation for installation wizards.  Currently the code in teh noteLab.gui.install package does not compile.
+
+12-29-2006_01-27-53NoteLab.jar
+---------------------------------
+This backup has had the PercentChangedListener interface added.  It also has the extractor class implemented which serves to extract all of the current source code from one directory or jar file to another directory.
+
+12-30-2006_02-49-40NoteLab.jar
+---------------------------------
+The install frame is partially completed.  However it does not work yet.  I wanted to make a backup of the code before working further on the installation gui.
+
+12-31-2006_05-26-11NoteLab.jar
+---------------------------------
+This backup has the installer working correctly and has been tested on Linux.
+
+01-01-2007_04-33-37NoteLab.jar
+---------------------------------
+This backup has the InstallFrame and UninstallFrame working as they should.  They have been tested in both Linux and Windows.  This backup could serve as a build.
+
+01-01-2007_06-54-56NoteLab.jar
+---------------------------------
+This backup has the Installer class modified so that credit is given to the ISAW group.  That is the class contains comments that describe that some of the code was based on code from the IsawInstaller class.
+
+01-01-2007_07-32-40NoteLab.jar
+---------------------------------
+Now the Jarnal page loader can determine the amount at which the Jarnal document has been scaled.  However, I just have the Jarnal page loaded at 100%.  I've also fixed a problem where the Page loaded was not constructed of the correct size.
+
+01-01-2007_07-35-45NoteLab.jar
+---------------------------------
+Now the Jarnal loader scales the CompositeCanvas created to the amount specified in the Jarnal file.
+
+01-01-2007_07-59-04NoteLab.jar
+---------------------------------
+Now JarnalPageLoader sets the background color from the Jarnal file read.
+
+01-01-2007_08-13-35NoteLab.jar
+---------------------------------
+Now JarnalPageLoader sets the paper type to the closest match to the paper type specified in the Jarnal file loaded.
+
+01-01-2007_09-08-14NoteLab.jar
+---------------------------------
+With this backup if the user tries to load a Jarnal file which uses background images, a dialog is opened informing the user that NoteLab doesn't support background images.  Also the dialog states that NoteLab has guessed the best paper type.
+
+01-02-2007_12-11-55NoteLab.jar
+---------------------------------
+Fixed the spelling of 'success' in the installer and 'unfortunately' in the uninstaller.
+
+01-04-2007_02-59-35NoteLab.jar
+---------------------------------
+This backup has the installer fixed.  That is the installer would sometimes not be able to find the jar file from which the installer was run.  This was because if the path to the jarfile had spaces in it the spaces would be replaced with %20.  If NoteLab would ask for the file with the path that contained %20 symbols instead of spaces the system could not find the file.  Thus to find the file NoteLab needed to replace all occurences of %20 with a space.  The code in this backup is the code that is in NoteLab version 0.1.1.
+
+01-04-2007_05-09-26NoteLab.jar
+---------------------------------
+The TransformRectangle2D class has been modified so that it does not extend java.awt.Rectangle2D.Float.  This was done to prevent direct access to the fields x, y, width, and height.  Specifically, in the Page class if one of these fields are modified without modifying the same field for the Page's Paper, the Page is not rendered correctly.  In general it is not safe to give external classes direct access to fields.  Since one cannot reduce the visibility of fields, I instead had TransformRectangle2D not extend Rectangle2D.Float.  Then I used aggregation to implement the methods that were used in the Rectangle2D.Float class in the TransformRectangle2D class.  Specifically the TransformRectangle2D class has a field of type Rectangle2D.Float onto which it "offshores" its work to perform certain methods.  As such the functionality is exactly the same as before.  However, the fields are protected as they should be.  The only disadvantage of this is that direct field access is faster as it doesn't require a method invocation.  However the speed difference is not noticable.  In this backup I have also changed the Bounded interface so that the getBounds2D() emthod returns an object of type Rectangle2D.Float instead of an object of type Rectangle2D.
+
+01-04-2007_10-10-25NoteLab.jar
+---------------------------------
+This backup has the fix for the bug where documents would not look the same when written on one system and viewed on another.  This problem occured because the line spacing was specified in a certain number of centimeters to emulate the real size of college or wide rule paper.  However, the number of pixels that correspond to a centimeter is dependent on the screen resolution of the current display.  Thus if one opened NoteLab on one system and wrote a document and then opened the document on another system the line spacing would look incorrect if the two systems used a different value for the screen resolution (in dpi).  This was fixed in that the Unit.getValue() method required an extra parameter which describes the screen resolution.  Also the Page and Paper class constructors require the screen resolution as a parameter to ensure that the paper and page are rendered correctly.  In addition the static method Unit.getScreenResolution() was constructed to provide an easy way to calculate the current screen resolution.  st the 'desc' attribute of the FlowBinder element in native NoteLab documents now contains the screen resolution at which the document was constructed.  Thus when a Page is constructed as the NoteLab document is parsed, the screen resolution stored in the document is used as the screen resolution of the Page.  As such the page looks as it should with the proper line spacing.
+
+01-04-2007_10-21-30NoteLab.jar
+---------------------------------
+The Binder class would always save the current screen resolution as the screen resolution when saving documents.  This is incorrect if a document was loaded that didn't use the current system's screen resolution.  In this context saving refers to saving the information to a native NoteLab document.  Now the Binder class saves the screen resolution as the screen resolution of the first page in the Binder and uses the current screen resolution if the Binder is empty.
+
+01-05-2007_10-59-15NoteLab.jar
+---------------------------------
+With the current code files saved from NoteLab 0.1rc1 could not be opened in the current version if an internet connection couldn't be found.  I've fixed this problem by adding an entity resolver to NoteLabFileLoader which resolves the www.w3.org DTD and thus an internet connection is not needed.  I did this by making a class ResolverHandler that extends DefaultHandler and overrides resolveEntity().  The Jarnal and NoteLab file loaders then extend ResolverHandler.  I've also added better error checking in FileToolBar.  In particular if a Throwable was caught, the method for displaying the throwable in a JOptionPane was not implemented correctly.  This has been fixed.  I also changed a call to saveAs() which implicitly used the string ".ntlb".  This has been replaced to instead use InfoCenter.getFileExtension().  Last I've fixed StartupUtilities to use NoteLab's custom error icon when it displays an error dialog if an error has occured.
+
+01-05-2007_11-11-13NoteLab.jar
+---------------------------------
+Created static final fields BINDER_ID_NAME, PAGE_ID_NAME, and STROKE_ID_NAME in the class NoteLabFileLoader.  Then as a document is parsed element id's are compared against these fields instead of classnames.  For example the previous would check if an id equals FlowBinder.class.getName().  Now the code checks if an id is equal to BINDER_ID_NAME and BINDER_ID_NAME is the String "noteLab.model.binder.FlowBinder".  Thus it is gauranteed not to change between releases.  It has been verified that this backup loads files saved from all previous releases of NoteLab.
+
+01-05-2007_11-43-06NoteLab.jar
+---------------------------------
+Added error and warning support when loading NoteLab and Jarnal files.  The NoteLabFileLoadedListener interface's method noteLabFileLoaded() method has been modified to include a message parameter.  If this message is non-null and non-empty, listers display a JOptionFrame showing the message.  In addition the ResolverHandler class now overrides the warning(), error(), and fatalError() methods, and stores any error or warning encountered during parsing.  These warnings and errors compose the message given to NoteLabFileLoadedListeners.
+
+01-05-2007_12-32-41NoteLab.jar
+---------------------------------
+Now the VMSettingsPanel has the revert to saved functionality working.  To start, it looks at the initial memory and maximum memory as reported by the InfoCenter class.  Then the "saved" memory values are those currently being used by the system.  If the user has selected new values and clicked "ok" to save the values, static variables are set to store the new values.  Then when the user selects to revert to saved, if these static fields are set, they are used instead of the values currently being used by the system.
+
+01-05-2007_10-05-47NoteLab.jar
+---------------------------------
+The interface NoteLabFileConstants has been constructed and stores final String variables which represent the names of the SVG, line, g, stroke etc. tags.  SVGRenderer2D and NoteLabFileLoader now uses these variables so that files are opened and saved in a consistent way.  In addition now the SVGRenderer2D looks to see if a Renderable extends Binder, Stroke, or Page and uses the variables BINDER_ID_NAME, STROKE_ID_NAME, and PAGE_ID_NAME.  Previously the SVGRenderer2D used the Renderable's classname.  However, this could change from one build to the next.  By using the variables and looking at inheritence, the saving and loading of NoteLab files won't change if the NoteLab classes are moved around.
+
+01-05-2007_10-21-02NoteLab.jar
+---------------------------------
+Now when NoteLab native files are saved the DOCTYPE specification (refering to svg version 1.0) is saved in the file.  Also, the svg version is specified to be 1.0.  This is fine because the ResolverHandler resolves the dtd file for the specification if NoteLab is not online.
+
+01-09-2007_07-04-14NoteLab.jar
+---------------------------------
+This backup has the UndoRedoStack and UndoRedoManager and UndoRedoListener modified to support dynamically changing the 'history size' (the amount of actions that can be undone by the user).  Currently the --historySize argument has been implemented and tested.  However, a gui element hasn't been added to allow the changing of the history size.  Of special notice in this backup is that if the user selects a history size that is too large, a JOptionPane is displayed describing the error, and a default history size is used.
+
+01-14-2007_12-19-38NoteLab.jar
+---------------------------------
+I started working on the code from version 0.1.1 and have found how to change the code so that the fields in the TransformRectangle2D and FloatPoint2D classes are not public while still making NoteLab function as it should.  The code in this backup has a bug where users cannot write on pages constructed after the first page.  To fix this problem, I'm going to merge the fixed code with the current code.  However, before doing this, I wanted to make a backup of this code.
+
+01-14-2007_03-03-00NoteLab.jar
+---------------------------------
+This backup has the fixed code mentioned in the previous log message merged with the old code from the previous backup.  NoteLab still doesn't work as it should.  However, before making any changes I wanted to back up the code to establish a checkpoint.
+
+01-14-2007_06-09-58NoteLab.jar
+---------------------------------
+This backup has the "bug" in NoteLab fixed.  The problem was with only the Page and Paper classes.  Currently, the Page and Paper classes have just been copied from the code that works into the current code base.  This fixed the problem.  However, it breaks the functionality of adding platform independence to NoteLab files by storing the screen resolution of the screen used when the file was written so that when it is reopened the same resolution is used.  I will slowly add this functionality to see when it breaks the code.
+
+01-14-2007_06-32-41NoteLab.jar
+---------------------------------
+I've fixed the bug as well as included all of the functionalty that was originally in the Page and Paper classes.  The only problem was with the setX() and setY() methods in the Page class.  When invoked they would call super.setX() (or super.setY()) and then call this.paper.setX() (or this.paper.setY()).  This was incorrect since the Paper's location is relative to the location of the Page.  Thus the Paper's x and y coordinates are always (0,0).
+
+01-14-2007_06-57-44NoteLab.jar
+---------------------------------
+I've verified the current code against the code from backup 01-09-2007_07-04-14NoteLab.jar and the functionality of that backup should bein the current code.  The code seems to work just as it should.
+
+01-14-2007_07-09-48NoteLab.jar
+---------------------------------
+Changed the version number to 0.1.2rc3.
+
+01-14-2007_11-33-28NoteLab.jar
+---------------------------------
+This backup has a bug fixed with exporting to a jpg image.  The JPEG format doesn't support alpha channels.  Thus when an ImageRenderer2D is used to render the current document as an image, the image is rendered in the RGB (not ARGB) space.  Also, now printed and exported documents do not have their current page painted as if it is selected.
+
+01-16-2007_12-27-48NoteLab.jar
+---------------------------------
+Fixed a bug where dots drawn on pages other than the first were not painted immediately.  Also a bug was fixed where single selection did not work on pages after the first.  Also changed the SupportedFilesFilter so that along with displaying *.ntlb and *.jaj, it displays that the file types are NoteLab and Jarnal files.  Also changed the version number to 0.1.2rc4.
+
+01-17-2007_09-26-31NoteLab.jar
+---------------------------------
+Changed the mouse icon for a Pen from the system's crosshair icon to its normal pointer icon.
+
+01-18-2007_12-21-56NoteLab.jar
+---------------------------------
+Fixed a bug where if the user was zoomed into or away from the canvas and then selected a different pen size, the pen size didn't take into account the amount the user was zoomed in.  Thus the pen size was incorrect.
+
+01-18-2007_05-05-31NoteLab.jar
+---------------------------------
+I've modified StrokeSelection canvas so that the selection and unselection tools are grouped together.  I also added buttons that select all strokes in the binder and unselects all strokes in the binder.  Also I added a drive icon to the NoteLabFileView for filesystem roots.  This backup includes new icons for select_all, unselect_all, jump, server, drive_cdrom, and drive_harddisk.
+
+01-18-2007_06-15-17NoteLab.jar
+---------------------------------
+Modified the BinderToolbar class so that it has a button that makes the currently selected page visible.  That is if the user has a page selected, but scrolls up or down the page might now be visible.  By selecting this icon the page becomes visible.  I've also modified the code that to display a page the showCurrent() method in the binder class is used and not the show() method directly.
+
+01-18-2007_08-16-31NoteLab.jar
+---------------------------------
+Constructed the CutCopyPasteReady, CopyStateListener, CopyStateNotifier, and CutCopyPasteToolBar so that cutting, copying, and pasting of strokes can be implemented.  This implementation was completed in the backup and is performed by the StrokeSelectionCanvas's toolbar innerclass.  I also modfied CanvasControlBUtton so that the SubCanvas toolbars have their layout set to flowlayout (left) and don't have their border painted.  I've also modified StartupUtilities so that the startup window is nicely sized when the application starts.
+
+01-19-2007_10-06-16NoteLab.jar
+---------------------------------
+Fixed a bug where if Strokes were selected in the StrokeSelectionCanvas with the box tool the CopyStateListener was not notified.  I also changed the copy method so that all strokes are copied and then all strokes in the binder are unselected.  If the two operations are done together some strokes may not be copied because the vector of selected strokes is being read and modified at the same time.
+
+02-04-2007_12-45-08NoteLab.jar
+---------------------------------
+I'm working on having only the PageSelectionCanvas show the current page as being selected.  After implementing this I will add stroke smoothing (or more exactly stroke combing i.e. subsampling).  However before making any changes I wanted to take a snapshot of the current code.
+
+02-04-2007_01-39-19NoteLab.jar
+---------------------------------
+Now only pages are painted as selected when the current canvas is the PageSelectionCanvas.
+
+02-04-2007_02-00-10NoteLab.jar
+---------------------------------
+NOw stroke smoothing (more specifically stroke combing i.e. subsampling) has been enabled.  This is done by the comb() method of the Path class.
+
+02-04-2007_02-28-21NoteLab.jar
+---------------------------------
+Added the command line option --combFactor which allows the user to specify how much strokes are combed.
+
+02-04-2007_02-39-16NoteLab.jar
+---------------------------------
+Now when documents are printed they are printed in a separate thread.  Also, the CombFactorArg has been added to StartupUtilities as a possible command line argument.
+
+02-04-2007_03-44-40NoteLab.jar
+---------------------------------
+Now the StrokeSelectionCanvas has a button that allows the user to comb the selected strokes.
+
+02-04-2007_03-52-39NoteLab.jar
+---------------------------------
+Fixed the bug where the title of a MainFrame was not set to the filename of a NoteLab document if the document was opened when NoteLab was started.
+
+02-04-2007_04-16-50NoteLab.jar
+---------------------------------
+The previous log stated that I fixed the bug where if a file was loaded from the commandline, its name would not be initially displayed on NoteLab's main frame.  I thought I was fixing the stable code but was in fact modifing a forked version.  Now the bug fix has been added to the current stable code.
+
+02-06-2007_01-44-38NoteLab.jar
+---------------------------------
+The DrawStrokeAction and DeleteStrokeAction classes have been changed so that when the actions are performed only the region where the stroke was is repainted (instead of the entire canvas).  This greatly improves performance.
+
+02-06-2007_02-13-23NoteLab.jar
+---------------------------------
+I've modified the Path class so that if strokes are drawn with an average distance between points <= 2, one quarter of the scale factor is used to scale the distance used to comb the points out of the stroke.  Otherwise the entire scale factor is used.  Also the minimum size of 2 is scaled depending on the current zoom level of the canvas.
+
+02-07-2007_06-52-32NoteLab.jar
+---------------------------------
+I fixed a bug in the NoteLabFileLoader class.  When the first line of a Stroke is read only its first point is added to the current path.  This is bad since if a file is opened and saved repeateadly this has the effect of successively removing each point from the path.  Now this bug has been fixed.  Also, the Path's comb method has been changed to always use a constant comb factor.  This seems to work better than the previous method (see the previous log method).
+
+02-07-2007_08-42-45NoteLab.jar
+---------------------------------
+Added the abstract method drawPath() in the class Renderer2D.  Now the Path class has the concept of being stable and stores cached arrays of its x and y points (to save space).  These arrays are used by the Stroke class (actually the SwingRenderer2D class) to render a Stroke using the drawPath() method after its path has been stabalized.  Also the default comb factor has been set to 2.
+
+02-08-2007_04-03-07NoteLab.jar
+---------------------------------
+Fixed a bug where the SwingRenderer2D would not draw paths as selected.  Also, the JarnalPageLoader did not set strokes as stable after it constructed them.  Now it does.  This improves memory usage because it tells the Stroke's Path to cache its points.
+
+02-09-2007_12-46-51NoteLab.jar
+---------------------------------
+The NoteLabFileChooser has been remodeled to be much easier to use.  Now there are open, save, and export "file processors" which implement the method processFile() of the new FileProcessor interface.  The NoteLabFileChooser automatically checks if files already exist and asks the user if he/she wasnts to overwrite them.  If so the processFile() method is invoked on some FileProcessor.
+
+02-12-2007_07-07-59NoteLab.jar
+---------------------------------
+Now the DeleteStrokeAction and DrawStrokeAction classes take into account line widths when determine the areas of the screen to repaint after deleting/drawing strokes.
+
+02-12-2007_11-12-52NoteLab.jar
+---------------------------------
+Modified the CanvasControlToolBar so that long toolbars are enclosed in a JScrollPane.
+
+02-15-2007_01-59-56NoteLab.jar
+---------------------------------
+This is a backup of the version 0.1.2 code as it is in the build.
+
+02-20-2007_09-29-26NoteLab.jar
+---------------------------------
+Coalescing of AWT events has been re-enabled.  The coalescing of events seems to make the strokes drawn look better.
+
+02-28-2007_08-56-16NoteLab.jar
+---------------------------------
+Modified the FloatPoint2D class so that there is an Point2D.Float field that holds the initial point.  Then when scaleTo() method calls are made the scaling is based on the initial values.  This prevents rounding errors that change the look of the stroke.
+
+02-28-2007_08-58-23NoteLab.jar
+---------------------------------
+Now the FloatPoint2D class checks if the cursor is 1 pixel (instead of 20) from a stroke before saying the cursor is over the current stroke.
+
+02-28-2007_09-32-13NoteLab.jar
+---------------------------------
+Now the SwingRenderer2D sets coloring, interpolating, antialiasing, etc. all to quality instead of speed.  Also the default comb scale factor has been changed from 2 to 1.5f.
+
+02-28-2007_10-04-34NoteLab.jar
+---------------------------------
+Fixed some bugs in the Pen and FloatPoint2D class.  In the FloatPoint2D class the initial point's x and y values are set to x/xscalelevel and y/yscalelevel to acknowledge the current scale level.  In the pen class when a pen's width is changed to 'w' the width is actually set to 'w/scalelevel' to acknowledge the scale level.  Also the initial width of the pen is saved in a field and is used when the scaleTo() method is called.  This avoid rounding errors.
+
+03-01-2007_12-03-13NoteLab.jar
+---------------------------------
+Removed the getValue() method from the MValue class since it was not used.  It was replaced by the getValue() method in the Unit enum.  Also now the canvas starts out with the units scaled to 0.57 percent.
+
+03-01-2007_01-45-40NoteLab.jar
+---------------------------------
+Now unit scaling has been enabled.  However, files are not saved with this information encoded yet.  However, the NoteLabFileLoader class knows how to understand files with this information encoded.
+
+03-01-2007_01-55-42NoteLab.jar
+---------------------------------
+Now the Binder, Page, and Paper classes have methods to get the unit scale factor.  Also the unit scale factor is now encoded in NTLB files as it should be.
+
+03-01-2007_01-58-07NoteLab.jar
+---------------------------------
+Modified the MainFrame class so that the gui is started with the entire page visible.
+
+03-05-2007_05-23-37NoteLab.jar
+---------------------------------
+Modified the FlowBinder class's page gap to be set as 7.  The SVG rendererer doesn't render the code correctly.  However it didn't in the previous releases also.  I have also modified the StrokeCanvas class to observe the FlowBinder's x and y offset when rendering the stroke that is currently being rendered.  Without this strokes are rendered slightly offset.
+
+03-06-2007_06-36-16NoteLab.jar
+---------------------------------
+Now the FlowBinder class uses its current x scale level and y scale level for calculating bounds and its bounds x and y values.  Also the renderInto() method in the StrokeCanvas class is now empty because the StrokeCanvas classes doesn't need to render things anymore.  The path is added to the binder and it renders the stroke.
+
+03-09-2007_05-30-50NoteLab.jar
+---------------------------------
+This backup has a change with the SVGRenderer so that each time a translate or scale is done the translate or scale is added (multiplied respectively) by a field member.  Then whenever a begin group is called the transform is appended to the code.  This doesn't work.  However I wanted to backup this code and not throw it out.
+
+03-11-2007_06-31-03NoteLab.jar
+---------------------------------
+Fixed a bug in the SVGRenderer2D class where translations are not written to the SVG code correctly.  Now the renderer works just as it should.
+
+03-11-2007_08-29-01NoteLab.jar
+---------------------------------
+Removed the scale() from the Renderer2D class (and all subclasses) since this functionality isn't used in NoteLab and is slightly cumbersome to program for the SVG renderer.
+
+03-16-2007_06-15-24NoteLab.jar
+---------------------------------
+Fixed a bug in the SVGRenderer2D class.  The pop() method from the TranslationStack inner class wouldn't remove the top of the stack but would instead just return the top of the stack.  This caused rendering problems.  Also now the SVGRenderer2D's constructor takes an OutputStream to which the code is rendered.  Last the SVGRenderer2D can now output svg code or gzipped compressed svg code.  Next the saveAsSVG() method now only marks the document as saved if the SVG code is saved to a .ntlb document.  
+
+03-16-2007_07-32-33NoteLab.jar
+---------------------------------
+Implemented a command line argument and a gui element to change the unit scaling.
+
+03-16-2007_10-26-23NoteLab.jar
+---------------------------------
+Implemented an Argument that allows the unit scale factor to be set.  In addition the PageSettingsPanel has a panel added that allows this scale factor to be set.
+
+03-16-2007_10-30-03NoteLab.jar
+---------------------------------
+Fixed a bug in the PageSettingsPanel class where, when the panel is constructed, the page type settings are not set to reflect the current settings.
+
+03-16-2007_11-54-07NoteLab.jar
+---------------------------------
+This backup mostly fixes the unit scale factor so that when it is changed the document is dynamically changed.
+
+03-17-2007_02-08-26NoteLab.jar
+---------------------------------
+This build completely has a redesign of the unit scale factor that works very well.  The unit scale factor is just like the zoom level of the composite canvas and as such now only the composite canvas knows about the unit scale level.  The only problem with this build is that setting the unit scale factor doesn't work as it should.  However it is functional.
+
+03-17-2007_02-16-47NoteLab.jar
+---------------------------------
+Now the setting of the unit scale factor in the CompositeCanvas class works as it should.
+
+03-17-2007_02-24-37NoteLab.jar
+---------------------------------
+Now when a ImageRenderer2D is constructed with a given image.  The renderer fills the background of the Graphics2D object constructed from the image with white.  This fixes the problem where documents exported to raster images have the background (behind the pages) black.
+
+03-19-2007_07-13-49NoteLab.jar
+---------------------------------
+Modified CanvasFileProcessor to include a finally block so that even if an error occurs the current zoom level of a canvas is restored after saving a canvas to a file.  I also modified the getZoomLevel() method as it was not returning the correct zoom level.  It was returning this.scaleFactor when it should have been returning 'this.scaleFactor/this.unitScaleFactor'.
+
+03-20-2007_01-28-40NoteLab.jar
+---------------------------------
+This backup contains broken code.  It was used to determine why loading files with a factor and a unit scale factor set would not load properly.  I am reverting the code to the code in the jar file 03-19-2007_07-13-49NoteLab.jar.  I will work from that code.
+
+03-20-2007_01-45-48NoteLab.jar
+---------------------------------
+Fixed the bug where files would not load their canvas properly.  The fix was to set the zoom level of the canvas to 1/unitScaleFactor instead of 1 before saving the file.
+
+03-20-2007_01-49-02NoteLab.jar
+---------------------------------
+Fixed a bug in the main constructor of CompositeCanvas where there was code 'this.unitScaleFactor = scaleLevel' instead of 'this.unitScaleLevel = unitScaleLevel' (where scalelevel and unitScaleLevel are parameters).
+
+03-20-2007_01-59-22NoteLab.jar
+---------------------------------
+Fixed the bug where if a canvas was saved it would still say it was modified.  This was because after saving the file, the canvas would be zoomed back to its old scale.  Thus the canvas was set as being modified.
+
+03-22-2007_01-38-52NoteLab.jar
+---------------------------------
+Fixed a bug with the CompositeCanvas zooming where loaded files would have their zoom factor not set correctly so the pages would not be drawn correctly.
+
+03-22-2007_02-17-04NoteLab.jar
+---------------------------------
+Modified the code so that the 'unitScaleFactor' is located in the Binder class.  The CompositeCanvas knows nothing about unit scaling.  Only the Binder class knows of this.  Saving and loading files still works as it did in the previous build.  However, now the code is much better since multiple classes aren't maintaining a 'unit scale factor'.
+
+03-22-2007_02-40-05NoteLab.jar
+---------------------------------
+Now when the unit scale factor is changed, Pen's and the StrokeCanvas change the size of pen widths.
+
+03-22-2007_04-37-57NoteLab.jar
+---------------------------------
+Fixed a bug where strokes would have their widths changed after a save.  The problem was with the Pen class's scaleTo() method.  The solution was that the Pen class needed to know about the current unitScaleFactor to know how to accurately scale the pen's width.  The problem still persisted until I realized that the StrokeCanvas class needed to listen to changes to the unitScaleFactor and set its Pen's unitScaleFactor when the unitScaleFactor was changed (from probably the settings gui).  After adding this, everything works as it should.
+
+03-22-2007_05-04-47NoteLab.jar
+---------------------------------
+Fixed the bug where pages were not positioned correctly when added to the binder.  This was because I scaled the page before adding it to the binder (I just added this).  However this breaks the adding of pages.  Thus I removed it and now added pages works as it should.
+
+03-22-2007_05-12-38NoteLab.jar
+---------------------------------
+Fixed a bug where Strokes have the wrong width after a file has been loaded.  To fix this I changed the NoteLabFileLoader class to set the unitScaleFactor of all newly constructed Pen's to be 1 (not the unitScaleFactor stored in the file).
+
+03-24-2007_05-58-41NoteLab.jar
+---------------------------------
+After seeing all of the things that need to be changed to implement unit scaling, I now know how to easily implement unit scaling.  However before doing so, I wanted to make this backup of the current code.
+
+03-24-2007_06-34-04NoteLab.jar
+---------------------------------
+This backup has the change mentioned in the last backup implemented.  The code does not work yet, but before making any more changes I wanted to make a backup of the code.
+
+03-24-2007_06-38-07NoteLab.jar
+---------------------------------
+Fixed a bug where the canvas and pen tools would not be scaled correctly when the unit scale factor was changed.  The problem was scaleTo() was called when scaledBy() should have been called.  However, to fix the problem I didn't change the call to scaleTo() to a call to scaleBy().  Instead I changed the arguments to the method.
+
+03-27-2007_09-02-30NoteLab.jar
+---------------------------------
+Added a resizeTo() method to the Transformable interface and added the method to implementing classes.  However it doesn't work.  I'm trying to fix it, but before changed the code further I wanted to make a backup.
+
+03-27-2007_11-53-58NoteLab.jar
+---------------------------------
+Changed the resizeTo() method in the FloatPoint2D, TransformRectangle, CompositeCanvas, Pen, and Paper classes.  Now resizing works as it should.
+
+03-28-2007_12-17-43NoteLab.jar
+---------------------------------
+Fixed a bug where NoteLab files were not written and read correctly.  Before writing the file the resizeTo() method needed to be called on the CompositeCanvas with the argument '1/unitScaleFactor' to resize the canvas to its 'real' size and then the zoomTo(1) method was called to zoom it to 100%.  After saving the canvas it was resized and scaled back to the state it was in before saving.  The reader called the scaleTo() method instead of the resizeTo() method.  Otherwise the reader was working find.
+
+03-28-2007_12-56-32NoteLab.jar
+---------------------------------
+AAdded the adaptToUnitFactor() in the paper class that allows the JarnalPageLoader to change the line spacing on the pages it reads so that they are not influenced by unit scaling.  To make this method work the methods calcWideWidth(), calcCollegeWidth(), etc. were changed to have a new parameter 'float unitScaleFactor'.  Also the a new 'getValue()' method has been added to the Unit enum that has a new parameter 'float unitScaleFactor'.
+
+03-28-2007_10-19-02NoteLab.jar
+---------------------------------
+Added a resizeTo() method in the DecoratedButton class and changed the name of the method 'setScaleFactor' to scaleTo().  I also added a scaleBy() method in this class.  Now when scaling and resizing of the StrokeCanvas is done, the SizeControls are changed to reflect the current state of the pen.  Also modified the MValue constructor to use the Unit.getValue() method which accepts the unit scale factor.  The unit scale factor of 1 is always used since when an MValue is constructed, it should be constructed with the true sizes as specified (i.e. not have them scaled).  Not doing this broke the MValueNumberSpinners.  Now they are working as they should.  They were broken in that they would change values randomly.
+
+03-28-2007_10-22-48NoteLab.jar
+---------------------------------
+This is the 0.1.3rc1 candidate, i.e. the NoteLab version 0.1.3 release candidate 1.
+
+03-28-2007_02-39-44NoteLab.jar
+---------------------------------
+Fixed a bug in the CompositeCanvas and Paper classes.  In the CompositeCanvas when the UNIT_SCALE_FACTOR is changed, the resizeTo() should be called on the canvas with the parameter 'newFactor/oldFactor' (instead of just newFactor).  Also the paper class calculated paper line spacing and then multiplied by the scaling factor when the resizeTo() method was called.  This doesn't allow for dynamically changing the line spacing and the results look incorrect.  Now the current raw line spacing is scaled by the factor given to get dynamic results that look as they should.
+
+03-28-2007_03-53-43NoteLab.jar
+---------------------------------
+Added methods to the SettingsUtilities class to get/set the pen sizes and colors and the paper's type and color.
+
+03-28-2007_10-33-58NoteLab.jar
+---------------------------------
+This is the 0.1.3rc2 release.
+

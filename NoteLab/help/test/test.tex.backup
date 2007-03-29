@@ -1,0 +1,91 @@
+\documentclass[letterpaper,11pt]{article}
+
+\newcommand{\notelab}{NoteLab }
+
+% Specify the title
+\title{The \notelab User and Developer Guide}
+\author{Dominic Kramer}
+
+% Start the document
+\begin{document}
+  
+  % Make the title
+  \maketitle
+  
+  \textbf{Items}
+  \begin{enumerate}
+    \item Canvases
+          \begin{enumerate}
+            \item Stroke
+                  \begin{enumerate}
+                    \item Pen Size
+                    \item Pen Color
+                  \end{enumerate}
+            \item Stroke Selection
+            \item Page Selection
+          \end{enumerate}
+    \item Features
+          \begin{enumerate}
+            \item Undo/Redo
+            \item Zoom
+            \item Page forward/backward
+            \item New Page
+            \item Refresh page
+          \end{enumerate}
+    \item File menu
+          \begin{enumerate}
+            \item New Page
+            \item Open
+            \item Save/Save As
+            \item Export
+            \item Print
+          \end{enumerate}
+    \item Settings
+          \begin{enumerate}
+            \item Pen Settings
+            \item Paper Settings
+            \item Memory Settings
+          \end{enumerate}
+    \item Arguments
+          \begin{enumerate}
+            \item Debug
+                    \begin{enumerate}
+                      \item Notify of repaints
+                      \item Display Bounds
+                      \item Diable Paper
+                      \item Display Updates
+                    \end{enumerate}
+            \item Pen Color
+            \item Pen Size
+            \item Look and Feel
+            \item Help
+            \item Version
+            \item Paper Color
+            \item Paper Type
+          \end{enumerate}
+    \item Description
+    \item Installing
+    \item Requirements
+    \item Intended Audience
+    \item Credits
+    \item License
+  \end{enumerate}
+  
+  \textbf{Glossary}
+  \begin{enumerate}
+    \item Stylus
+    \item Tablet PC
+    \item Tablet
+    \item Java
+    \item Java Virtual Machine
+    \item Mb/Kb/Gb
+    \item Sh Scripts
+    \item Batch Scripts
+    \item Windows
+    \item UNIX
+    \item Solaris
+    \item Linux
+    \item MacOS X
+  \end{enumerate}
+  
+\end{document}

@@ -1,0 +1,35 @@
+\documentclass[letterpaper,11pt]{book}
+
+\newcommand{\notelab}{NoteLab }
+
+% Specify the title
+\title{The \notelab User and Developer Guide}
+\author{Dominic Kramer}
+
+% Start the document
+\begin{document}
+  % Tell LaTeX that the frontmatter is starting
+  \frontmatter
+  
+  % Make the title
+  \maketitle
+  
+  % Make the preface
+  \chapter*{Preface}
+  \input{preface/preface.tex}
+  
+  % Make the table of contents
+  \tableofcontents
+  
+  % Instruct LaTeX that the main content of the book is starting
+  \mainmatter
+  
+  \part{The User Guide}
+    \chapter{Introduction}
+      \input{introduction/introduction.tex}
+  \part{The Developer Guide}
+  
+  \appendix
+  \backmatter
+  
+\end{document}
