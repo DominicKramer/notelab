@@ -1,4 +1,0 @@
-NoteLab_12-23-2006_02-26-51_v0.1final.zip
-----------------------------------------
-This is the first build in which NoteLab is started by running a startup script.  As such now the user can select custom settings, and these settings will be automatically set when NoteLab is started.  Also strokes can be selected using a tool in which an entire region is selected as apposed to only a specific stroke.  In addition the selection, deselection, moving, resizing, and deleting of strokes has had its performance greatly improved.
-
