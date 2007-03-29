@@ -1,0 +1,1939 @@
+Title:  NoteLab
+Date:  June 17, 2006
+Author:  Dominic Kramer
+Description:  This is a snapshot of NoteLab before I change the architecture 
+               to include a CompositeCanvas which consists of a 
+               PrintCanvas and SelectionCanvas and DeletionCanvas.
+
+
+================================================================================
+  Table of Contents
+================================================================================
+
+       Section 1:  Package List
+       Section 2:  UML Diagrams Listed Alphabetically
+       Section 3:  Shortened Source Code Listed Alphabetically
+
+================================================================================
+Section 1:  Package List
+================================================================================
+
+       noteLab.gui
+       noteLab.gui.geom
+       noteLab.gui.prefs
+       noteLab.gui.toolbar
+       noteLab.materials.stroke
+       noteLab.materials
+       noteLab.materials.tools
+       noteLab.util
+       noteLab.util.geom
+       noteLab.util.geom.unit
+       noteLab.util.save
+       noteLab.util.state
+       noteLab.util.state.value
+
+================================================================================
+Section 2:  UML Diagrams Organized Alphabetically
+================================================================================
+
+        ------------------------------------------------ 
+       | Binder                                         |
+       |------------------------------------------------|
+       | -pageList:LinkedList                           |
+       | -curPage:int                                   |
+       | -curStroke:Stroke                              |
+       | -numColumns:int                                |
+       |------------------------------------------------|
+       | +Binder(Page;)                                 |
+       |------------------------------------------------|
+       | +main(String;):void                            |
+       | +next():void                                   |
+       | +print(Graphics, PageFormat, int):int          |
+       | +previous():void                               |
+       | +getLength(Unit):MValue                        |
+       | +getWidth(Unit):MValue                         |
+       | +renderInto(Graphics2D, MAffineTransform):void |
+       | +setNumColumns(int):void                       |
+       | +addNewPage():void                             |
+       | +copyPage():void                               |
+       | +getCurrentPage():Page                         |
+       | +isStrokeStarted():boolean                     |
+       | +addPointToStroke(MPoint):void                 |
+       | +setCurrentPage(MPoint):void                   |
+       | +startStroke(Tool, MPoint):void                |
+       | +finishStroke():void                           |
+       | -updateArrangement():void                      |
+       | +addPage(Page):void                            |
+       | +getNumColumns():int                           |
+       | +getPageIndexAtPoint(MPoint):int               |
+       | +setCurrentPageIndex(int):void                 |
+       | +isInCurrentPage(MPoint):boolean               |
+       | +getCurrentPageIndex():int                     |
+       | -getPointRelativeToCurrentPage(MPoint):MPoint  |
+       | -getCurrentLocatedPage():Binder$LocatedPage    |
+       | +getClippedPoint(MPoint):MPoint                |
+       | +appendSVGCode(StringBuffer):void              |
+        ------------------------------------------------ 
+        ------------------------------------------- 
+       | Binder$LocatedPage                        |
+       |-------------------------------------------|
+       | +page:Page                                |
+       | +location:MPoint                          |
+       | this$0:Binder                             |
+       |-------------------------------------------|
+       | +Binder$LocatedPage(Binder, Page)         |
+       | +Binder$LocatedPage(Binder, Page, MPoint) |
+       |-------------------------------------------|
+        ------------------------------------------- 
+        ------------------------------------------ 
+       | BinderCanvas                             |
+       |------------------------------------------|
+       | -binder:Binder                           |
+       | -tool:Tool                               |
+       | -zoomTransform:MAffineTransform          |
+       | -zoomTransformInverse:AffineTransform    |
+       | -zoomFactor:double                       |
+       |------------------------------------------|
+       | +BinderCanvas(Tool)                      |
+       |------------------------------------------|
+       | +main(String;):void                      |
+       | +paint(Graphics):void                    |
+       | access$0(BinderCanvas):Binder            |
+       | access$1(BinderCanvas):AffineTransform   |
+       | +setTool(Tool):void                      |
+       | +setZoomFactor(double):void              |
+       | +getTool():Tool                          |
+       | +getZoomFactor():double                  |
+       | +zoomBy(double):void                     |
+       | +getMTransform():MAffineTransform        |
+       | +getBinder():Binder                      |
+       | -updatePreferredSize():void              |
+       | -getZoomTransformInverse():AffineTransform |
+        ------------------------------------------ 
+        -------------------------------------------------- 
+       | BinderCanvas$StylusMotionListener                |
+       |--------------------------------------------------|
+       | this$0:BinderCanvas                              |
+       |--------------------------------------------------|
+       | +BinderCanvas$StylusMotionListener(BinderCanvas) |
+       |--------------------------------------------------|
+       | +mouseClicked(MouseEvent):void                   |
+       | +mouseDragged(MouseEvent):void                   |
+       | +mouseEntered(MouseEvent):void                   |
+       | +mouseExited(MouseEvent):void                    |
+       | +mouseMoved(MouseEvent):void                     |
+       | +mousePressed(MouseEvent):void                   |
+       | +mouseReleased(MouseEvent):void                  |
+       | -addPoint(MouseEvent):void                       |
+       | -createStroke(MouseEvent):void                   |
+       | -getPixelPoint(Point):MPoint                     |
+        -------------------------------------------------- 
+        ---------------------------------------- 
+       | ColorValue                             |
+       |----------------------------------------|
+       | -color:Color                           |
+       |----------------------------------------|
+       | +ColorValue()                          |
+       | +ColorValue(Color)                     |
+       |----------------------------------------|
+       | +setColor(Color):void                  |
+       | +getColor():Color                      |
+       | +getValueFromString(String):ColorValue |
+       | +getValueFromString(String):Object     |
+       | +getStringFromValue():String           |
+        ---------------------------------------- 
+        ----------------------------------------- 
+       | ColorfulButton                          |
+       |-----------------------------------------|
+       | -color:Color                            |
+       | -chooserDialog:JDialog                  |
+       | -colorChooser:JColorChooser             |
+       | -enabled:boolean                        |
+       |-----------------------------------------|
+       | +ColorfulButton(Color)                  |
+       |-----------------------------------------|
+       | +setEnabled(boolean):void               |
+       | #paintComponent(Graphics):void          |
+       | +setColor(Color):void                   |
+       | +actionPerformed(ActionEvent):void      |
+       | +getColor():Color                       |
+       | access$0(ColorfulButton):JColorChooser  |
+       | access$1(ColorfulButton):JDialog        |
+        ----------------------------------------- 
+        ------------------------------------------------ 
+       | ColorfulButton$CancelListener                  |
+       |------------------------------------------------|
+       | this$0:ColorfulButton                          |
+       |------------------------------------------------|
+       | ColorfulButton$CancelListener(ColorfulButton)  |
+       |------------------------------------------------|
+       | +actionPerformed(ActionEvent):void             |
+        ------------------------------------------------ 
+        -------------------------------------------- 
+       | ColorfulButton$OkListener                  |
+       |--------------------------------------------|
+       | this$0:ColorfulButton                      |
+       |--------------------------------------------|
+       | ColorfulButton$OkListener(ColorfulButton)  |
+       |--------------------------------------------|
+       | +actionPerformed(ActionEvent):void         |
+        -------------------------------------------- 
+        ----------------- 
+       | CopyReady       |
+       |-----------------|
+       | +getCopy():Object |
+        ----------------- 
+        ------------------------------ 
+       | DefinedIcon                  |
+       |------------------------------|
+       | +bigeraser2:DefinedIcon      |
+       | +bigeraser:DefinedIcon       |
+       | +blank:DefinedIcon           |
+       | +box:DefinedIcon             |
+       | +browser:DefinedIcon         |
+       | +bsp:DefinedIcon             |
+       | +calc:DefinedIcon            |
+       | +cap:DefinedIcon             |
+       | +clockcursor:DefinedIcon     |
+       | +clock:DefinedIcon           |
+       | +clonedoc:DefinedIcon        |
+       | +defaultPen:DefinedIcon      |
+       | +dotblk3:DefinedIcon         |
+       | +dotblk:DefinedIcon          |
+       | +editcopy:DefinedIcon        |
+       | +editcut:DefinedIcon         |
+       | +editpaste:DefinedIcon       |
+       | +erasebot:DefinedIcon        |
+       | +eraser:DefinedIcon          |
+       | +erasetop:DefinedIcon        |
+       | +fat:DefinedIcon             |
+       | +filesave:DefinedIcon        |
+       | +fine:DefinedIcon            |
+       | +fullscreen:DefinedIcon      |
+       | +handcursor:DefinedIcon      |
+       | +handmixed2:DefinedIcon      |
+       | +handmixed:DefinedIcon       |
+       | +hand:DefinedIcon            |
+       | +handstop:DefinedIcon        |
+       | +handyellow:DefinedIcon      |
+       | +heavy:DefinedIcon           |
+       | +highcursor:DefinedIcon      |
+       | +highlighterdef:DefinedIcon  |
+       | +highlightermag:DefinedIcon  |
+       | +highlighteryel:DefinedIcon  |
+       | +lc:DefinedIcon              |
+       | +leftarrow1:DefinedIcon      |
+       | +leftarrow2:DefinedIcon      |
+       | +medium:DefinedIcon          |
+       | +multi3:DefinedIcon          |
+       | +multi:DefinedIcon           |
+       | +newdoc:DefinedIcon          |
+       | +newPage:DefinedIcon         |
+       | +num:DefinedIcon             |
+       | +paintbrush:DefinedIcon      |
+       | +pencilblk:DefinedIcon       |
+       | +pencilblu:DefinedIcon       |
+       | +pencilred:DefinedIcon       |
+       | +razor:DefinedIcon           |
+       | +redo:DefinedIcon            |
+       | +rightarrow1:DefinedIcon     |
+       | +rightarrow2:DefinedIcon     |
+       | +rtn:DefinedIcon             |
+       | +ruler:DefinedIcon           |
+       | +select:DefinedIcon          |
+       | +selectrect:DefinedIcon      |
+       | +spc:DefinedIcon             |
+       | +sym:DefinedIcon             |
+       | +text:DefinedIcon            |
+       | +threepages:DefinedIcon      |
+       | +thumbs:DefinedIcon          |
+       | +undo:DefinedIcon            |
+       | +user:DefinedIcon            |
+       | +viewmagfit:DefinedIcon      |
+       | +viewmagMinus:DefinedIcon    |
+       | +viewmagPlus:DefinedIcon     |
+       | +whitecursor:DefinedIcon     |
+       | +whiteout:DefinedIcon        |
+       | +collegeRuled:DefinedIcon    |
+       | +wideRuled:DefinedIcon       |
+       | +graph:DefinedIcon           |
+       | -EXT:String                  |
+       | -ENUM$VALUES:DefinedIcon;    |
+       |------------------------------|
+       | -DefinedIcon(String, int)    |
+       |------------------------------|
+       | +toString():String           |
+       | +valueOf(String):DefinedIcon |
+       | +values():DefinedIcon;       |
+        ------------------------------ 
+        ---------------------------------- 
+       | InfoCenter                       |
+       |----------------------------------|
+       | -NAME:String                     |
+       | -VERSION:String                  |
+       | -ICON_PATH_NAME:String           |
+       | -PREF_HOME_NAME:String           |
+       | -APP_HOME:File                   |
+       | -PREF_HOME:File                  |
+       |----------------------------------|
+       | -InfoCenter()                    |
+       |----------------------------------|
+       | +main(String;):void              |
+       | -mkdir(File):String              |
+       | +getImage(DefinedIcon):ImageIcon |
+       | +getAppName():String             |
+       | +getAppHome():File               |
+       | +getAppVersion():String          |
+       | +getPreferencesHome():File       |
+       | +isAppHomeValid():String         |
+       | -isDirValid(File):String         |
+       | +buildAppHome():String           |
+        ---------------------------------- 
+        ----------------------------------- 
+       | MAffineTransform                  |
+       |-----------------------------------|
+       | -unit:Unit                        |
+       |-----------------------------------|
+       | +MAffineTransform(Unit)           |
+       | +MAffineTransform([D, Unit)       |
+       |-----------------------------------|
+       | +transform(MValue):MValue         |
+       | +transform(MPoint):MPoint         |
+       | +transform(MDimension):MDimension |
+       | +transform(MLine):MLine           |
+       | +transform(MRectangle):MRectangle |
+       | +setMatrix([D):void               |
+        ----------------------------------- 
+        ----------------------------- 
+       | MDimension                  |
+       |-----------------------------|
+       | -length:MValue              |
+       | -width:MValue               |
+       |-----------------------------|
+       | +MDimension(MValue, MValue) |
+       |-----------------------------|
+       | +toString():String          |
+       | +setLength(MValue):void     |
+       | +getLength():MValue         |
+       | +getWidth():MValue          |
+       | +getCopy():MDimension       |
+       | +getCopy():Object           |
+       | +setWidth(MValue):void      |
+        ----------------------------- 
+        ------------------------- 
+       | MLine                   |
+       |-------------------------|
+       | -point1:MPoint          |
+       | -point2:MPoint          |
+       |-------------------------|
+       | +MLine(MPoint, MPoint)  |
+       |-------------------------|
+       | +getCopy():MLine        |
+       | +getCopy():Object       |
+       | +getPoint1():MPoint     |
+       | +getPoint2():MPoint     |
+       | +setPoint1(MPoint):void |
+       | +setPoint2(MPoint):void |
+        ------------------------- 
+        ------------------------------------------ 
+       | MPoint                                   |
+       |------------------------------------------|
+       | -x:MValue                                |
+       | -y:MValue                                |
+       |------------------------------------------|
+       | +MPoint(MValue, MValue)                  |
+       |------------------------------------------|
+       | +toString():String                       |
+       | +getX():MValue                           |
+       | +getY():MValue                           |
+       | +getCopy():MPoint                        |
+       | +getCopy():Object                        |
+       | +difference(Unit, MPoint, MPoint):MPoint |
+       | +setX(MValue):void                       |
+       | +setY(MValue):void                       |
+       | +sum(Unit, MPoint;):MPoint               |
+        ------------------------------------------ 
+        --------------------------------- 
+       | MRectangle                      |
+       |---------------------------------|
+       | -topLeftCorner:MPoint           |
+       | -dimension:MDimension           |
+       |---------------------------------|
+       | +MRectangle(MPoint, MDimension) |
+       |---------------------------------|
+       | +getDimension():MDimension      |
+       | +getTopLeftCorner():MPoint      |
+       | +setTopLeftCorner(MPoint):void  |
+       | +setDimension(MDimension):void  |
+        --------------------------------- 
+        ------------------------------------------------- 
+       | MValue                                          |
+       |-------------------------------------------------|
+       | -PIXEL_PER_INCH:int                             |
+       | -CM_PER_INCH:float                              |
+       | -value:double                                   |
+       | -unit:Unit                                      |
+       |-------------------------------------------------|
+       | +MValue(double, Unit)                           |
+       |-------------------------------------------------|
+       | +main(String;):void                             |
+       | +toString():String                              |
+       | +getValue():double                              |
+       | +getValue(Unit):double                          |
+       | +getValue(double, Unit, Unit):double            |
+       | +setValue(double):void                          |
+       | +getCopy():MValue                               |
+       | +getCopy():Object                               |
+       | +difference(Unit, MValue, MValue):MValue        |
+       | +setUnit(Unit):void                             |
+       | +getUnit():Unit                                 |
+       | +quotient(Unit, MValue, MValue):MValue          |
+       | +sum(Unit, MValue;):MValue                      |
+       | +product(Unit, MValue;):MValue                  |
+       | +isGreater(Unit, MValue, MValue):boolean        |
+       | +isGreaterOrEqual(Unit, MValue, MValue):boolean |
+       | +isLess(Unit, MValue, MValue):boolean           |
+       | +isLessOrEqual(Unit, MValue, MValue):boolean    |
+        ------------------------------------------------- 
+        -------------------------------------------------------------- 
+       | MValueControl                                                |
+       |--------------------------------------------------------------|
+       | -spinner:JSpinner                                            |
+       | -unitCombo:UnitComboBox                                      |
+       |--------------------------------------------------------------|
+       | +MValueControl(String, double, double, double, double, Unit) |
+       |--------------------------------------------------------------|
+       | +getValue():MValue                                           |
+       | +setMValue(MValue):void                                      |
+        -------------------------------------------------------------- 
+        ---------------------- 
+       | MainFrame            |
+       |----------------------|
+       | -toolbarPanel:JPanel |
+       | -canvas:BinderCanvas |
+       |----------------------|
+       | +MainFrame()         |
+       | +MainFrame(int, int) |
+       |----------------------|
+       | +main(String;):void  |
+        ---------------------- 
+        ------------------------------ 
+       | MutableNumber                |
+       |------------------------------|
+       | -value:double                |
+       |------------------------------|
+       | +MutableNumber(int)          |
+       | +MutableNumber(double)       |
+       | +MutableNumber(String)       |
+       |------------------------------|
+       | +main(String;):void          |
+       | +toString():String           |
+       | +setIntValue(int):void       |
+       | +setDoubleValue(double):void |
+       | +getIntValue():int           |
+       | +getDoubleValue():double     |
+        ------------------------------ 
+        ----------------------------------------- 
+       | NumberValue                             |
+       |-----------------------------------------|
+       | -number:MutableNumber                   |
+       |-----------------------------------------|
+       | +NumberValue()                          |
+       | +NumberValue(MutableNumber)             |
+       |-----------------------------------------|
+       | +getNumber():MutableNumber              |
+       | +getValueFromString(String):NumberValue |
+       | +getValueFromString(String):Object      |
+       | +getStringFromValue():String            |
+       | -setNumber(MutableNumber):void          |
+        ----------------------------------------- 
+        ------------------------------------------ 
+       | ObjectState                              |
+       |------------------------------------------|
+       | -CLASS_SUFFIX:String                     |
+       | -table:Hashtable                         |
+       | -comment:String                          |
+       |------------------------------------------|
+       | +ObjectState()                           |
+       | +ObjectState(String)                     |
+       |------------------------------------------|
+       | +main(String;):void                      |
+       | +toString():String                       |
+       | +getValue(String):StringRecordable       |
+       | +load(File):ObjectState                  |
+       | +save(File):void                         |
+       | +containsKey(String):boolean             |
+       | +getComment():String                     |
+       | +setComment(String):void                 |
+       | +putValue(String, StringRecordable):void |
+        ------------------------------------------ 
+        ------------------------------------ 
+       | ObjectStateAccessible              |
+       |------------------------------------|
+       | +getDefaultObjectState():ObjectState |
+       | +getObjectState():ObjectState      |
+       | +setObjectState(ObjectState):void  |
+        ------------------------------------ 
+        ----------------------- 
+       | ObjectStateUtilities  |
+       |-----------------------|
+       | -ObjectStateUtilities() |
+       |-----------------------|
+        ----------------------- 
+        -------------------------------------------------------------------------------- 
+       | Paper                                                                          |
+       |--------------------------------------------------------------------------------|
+       | -GRID_WIDTH:int                                                                |
+       | -COLLEGE_WIDTH:int                                                             |
+       | -WIDE_WIDTH:int                                                                |
+       | -dimension:MDimension                                                          |
+       | -type:Paper$PaperType                                                          |
+       |--------------------------------------------------------------------------------|
+       | +Paper(Paper$PaperType, MDimension)                                            |
+       |--------------------------------------------------------------------------------|
+       | +setLength(MValue):void                                                        |
+       | +getLength():MValue                                                            |
+       | +getWidth():MValue                                                             |
+       | +getDimension():MDimension                                                     |
+       | +getCopy():Paper                                                               |
+       | +getCopy():Object                                                              |
+       | +setWidth(MValue):void                                                         |
+       | +renderInto(Graphics2D, MAffineTransform):void                                 |
+       | +getPaperType():Paper$PaperType                                                |
+       | +setDimension(MDimension):void                                                 |
+       | +setPaperType(Paper$PaperType):void                                            |
+       | -getPixelWidth(MAffineTransform):int                                           |
+       | -getPixelHeight(MAffineTransform):int                                          |
+       | -renderLinesAcross(Graphics2D, int, int, int, int, int, MAffineTransform):void |
+       | -renderLinesDown(Graphics2D, int, int, int, int, int, MAffineTransform):void   |
+       | -renderLinedPage(Graphics2D, int, MAffineTransform):void                       |
+       | -transformPixelLength(int, MAffineTransform):int                               |
+        -------------------------------------------------------------------------------- 
+        ------------------------- 
+       | PageAdapter             |
+       |-------------------------|
+       | -SAVE_KEY:String        |
+       | -page:Page              |
+       |-------------------------|
+       | +PageAdapter(Page)      |
+       |-------------------------|
+       | +getTitle():String      |
+       | +getSaveKey():String    |
+       | +getOptionsPanel():JPanel |
+        ------------------------- 
+        ---------------------------------- 
+       | Paper$PaperType                  |
+       |----------------------------------|
+       | +Plain:Paper$PaperType           |
+       | +Graph:Paper$PaperType           |
+       | +CollegeRuled:Paper$PaperType    |
+       | +WideRuled:Paper$PaperType       |
+       | -ENUM$VALUES:Paper$PaperType;    |
+       |----------------------------------|
+       | -Paper$PaperType(String, int)    |
+       |----------------------------------|
+       | +valueOf(String):Paper$PaperType |
+       | +values():Paper$PaperType;       |
+        ---------------------------------- 
+        ------------------------------------ 
+       | PageToolBar                        |
+       |------------------------------------|
+       | -PLAIN_PAPER:String                |
+       | -GRAPH_PAPER:String                |
+       | -WIDE_RULED_PAPER:String           |
+       | -COLLEGE_RULED_PAPER:String        |
+       | -ZOOM_OUT:String                   |
+       | -ZOOM_NORMAL:String                |
+       | -ZOOM_IN:String                    |
+       | -CONTINUOUS:String                 |
+       | -THUMBS:String                     |
+       | -NEW_PAGE:String                   |
+       | -COPY_PAGE:String                  |
+       | -ZOOM_IN_FACTOR:double             |
+       | -ZOOM_OUT_FACTOR:double            |
+       | -plainButton:JButton               |
+       | -graphButton:JButton               |
+       | -collegeButton:JButton             |
+       | -wideButton:JButton                |
+       | -zoomInButton:JButton              |
+       | -zoomNormalButton:JButton          |
+       | -zoomOutButton:JButton             |
+       | -contButton:JButton                |
+       | -quadButton:JButton                |
+       | -newPageButton:JButton             |
+       | -copyPageButton:JButton            |
+       | -canvas:BinderCanvas               |
+       |------------------------------------|
+       | +PageToolBar(BinderCanvas)         |
+       |------------------------------------|
+       | +actionPerformed(ActionEvent):void |
+        ------------------------------------ 
+        ------------------------------------------------------ 
+       | Pen                                                  |
+       |------------------------------------------------------|
+       | -PEN_NAME:String                                     |
+       | -PEN_HOT_SPOT:Point                                  |
+       | -WIDTH_KEY:String                                    |
+       | -COLOR_KEY:String                                    |
+       | -DEFAULT_WIDTH:int                                   |
+       | -DEFAULT_COLOR:Color                                 |
+       | -DEFAULT_STATE:ObjectState                           |
+       | -width:int                                           |
+       | -color:Color                                         |
+       | -penImage:BufferedImage                              |
+       |------------------------------------------------------|
+       | +Pen()                                               |
+       | +Pen(int, Color)                                     |
+       |------------------------------------------------------|
+       | +getWidth():float                                    |
+       | +setColor(Color):void                                |
+       | +getColor():Color                                    |
+       | +drawLine(Graphics2D, MPoint, MAffineTransform):void |
+       | +getCopy():Pen                                       |
+       | +getCopy():Object                                    |
+       | +setWidth(int):void                                  |
+       | +getToolImage():Image                                |
+       | +getToolHotSpot():Point                              |
+       | +getToolName():String                                |
+       | +getDefaultObjectState():ObjectState                 |
+       | +getObjectState():ObjectState                        |
+       | +setObjectState(ObjectState):void                    |
+       | +renderInto(Graphics2D):void                         |
+       | -fillObjectState(ObjectState, float, Color):void     |
+       | -drawPenImage():void                                 |
+       | -constructJavaStroke():BasicStroke                   |
+        ------------------------------------------------------ 
+        ------------------------------------ 
+       | PenToolBar                         |
+       |------------------------------------|
+       | -SELECT_PEN:String                 |
+       | -penWidth:PenToolBar$PenWidth      |
+       | -penColor:PenToolBar$PenColor      |
+       | -pen:Pen                           |
+       | -canvas:BinderCanvas               |
+       |------------------------------------|
+       | +PenToolBar(BinderCanvas)          |
+       |------------------------------------|
+       | +actionPerformed(ActionEvent):void |
+       | +getPen():Pen                      |
+       | -setPen(Pen):void                  |
+       | -adjustPen():void                  |
+        ------------------------------------ 
+        ----------------------------------------------------------- 
+       | PenToolBar$PenColor                                       |
+       |-----------------------------------------------------------|
+       | +black:PenToolBar$PenColor                                |
+       | +blue:PenToolBar$PenColor                                 |
+       | +red:PenToolBar$PenColor                                  |
+       | +white:PenToolBar$PenColor                                |
+       | -$SWITCH_TABLE$noteLab$gui$toolbar$PenToolBar$PenColor:[I |
+       | -ENUM$VALUES:PenToolBar$PenColor;                         |
+       |-----------------------------------------------------------|
+       | PenToolBar$PenColor(String, int)                          |
+       |-----------------------------------------------------------|
+       | +valueOf(String):PenToolBar$PenColor                      |
+       | +values():PenToolBar$PenColor;                            |
+       | +getColor():Color                                         |
+       | $SWITCH_TABLE$noteLab$gui$toolbar$PenToolBar$PenColor():[I |
+        ----------------------------------------------------------- 
+        ----------------------------------------------------------- 
+       | PenToolBar$PenWidth                                       |
+       |-----------------------------------------------------------|
+       | +fine:PenToolBar$PenWidth                                 |
+       | +medium:PenToolBar$PenWidth                               |
+       | +thick:PenToolBar$PenWidth                                |
+       | -$SWITCH_TABLE$noteLab$gui$toolbar$PenToolBar$PenWidth:[I |
+       | -ENUM$VALUES:PenToolBar$PenWidth;                         |
+       |-----------------------------------------------------------|
+       | PenToolBar$PenWidth(String, int)                          |
+       |-----------------------------------------------------------|
+       | +valueOf(String):PenToolBar$PenWidth                      |
+       | +values():PenToolBar$PenWidth;                            |
+       | +getWidth():int                                           |
+       | $SWITCH_TABLE$noteLab$gui$toolbar$PenToolBar$PenWidth():[I |
+        ----------------------------------------------------------- 
+        ------------------------- 
+       | PreferenceAdapter       |
+       |-------------------------|
+       | +getTitle():String      |
+       | +getSaveKey():String    |
+       | +getOptionsPanel():JPanel |
+        ------------------------- 
+        ----------------------------------------- 
+       | PreferenceCapable                       |
+       |-----------------------------------------|
+       | +getPreferenceAdapter():PreferenceAdapter |
+        ----------------------------------------- 
+        ------------------------------------ 
+       | PreferencesFrame                   |
+       |------------------------------------|
+       | -SAVE_TEXT:String                  |
+       | -DEFAULTS_TEXT:String              |
+       | -REVERT_TEXT:String                |
+       | -CANCEL_TEXT:String                |
+       | -canvas:BinderCanvas               |
+       | -tabbedPane:JTabbedPane            |
+       |------------------------------------|
+       | +PreferencesFrame(BinderCanvas)    |
+       |------------------------------------|
+       | +actionPerformed(ActionEvent):void |
+       | -addTab(PreferenceCapable):void    |
+        ------------------------------------ 
+        ------------------------------------------------ 
+       | Renderable                                     |
+       |------------------------------------------------|
+       | +renderInto(Graphics2D, MAffineTransform):void |
+        ------------------------------------------------ 
+        ----------------------------------- 
+       | SVGExportable                     |
+       |-----------------------------------|
+       | +appendSVGCode(StringBuffer):void |
+        ----------------------------------- 
+        ------------------------------------ 
+       | StringRecordable                   |
+       |------------------------------------|
+       | +getValueFromString(String):Object |
+       | +getStringFromValue():String       |
+        ------------------------------------ 
+        ------------------------------------------------ 
+       | Stroke                                         |
+       |------------------------------------------------|
+       | -lineList:LinkedList                           |
+       | -tool:Tool                                     |
+       | -curPoint:MPoint                               |
+       | -svgGen:StrokeSVGGenerator                     |
+       | -printMan:StrokePrintManager                   |
+       |------------------------------------------------|
+       | +Stroke(Tool, MPoint)                          |
+       |------------------------------------------------|
+       | +print(Graphics, PageFormat, int):int          |
+       | +getCopy():Stroke                              |
+       | +getCopy():Object                              |
+       | +addPoint(MPoint):void                         |
+       | +setTool(Tool):void                            |
+       | +renderInto(Graphics2D, MAffineTransform):void |
+       | +getTool():Tool                                |
+       | +finishStroke():void                           |
+       | +appendSVGCode(StringBuffer):void              |
+       | -setCurrentPoint(MPoint):void                  |
+        ------------------------------------------------ 
+        ------------------------------------------------ 
+       | Page                                           |
+       |------------------------------------------------|
+       | -dimension:MDimension                          |
+       | -strokeList:LinkedList                         |
+       | -paper:Paper                                   |
+       |------------------------------------------------|
+       | +Page()                                        |
+       | +Page(MDimension)                              |
+       | +Page(MDimension, Paper$PaperType)             |
+       |------------------------------------------------|
+       | +toString():String                             |
+       | +print(Graphics, PageFormat, int):int          |
+       | +setLength(MValue):void                        |
+       | +getLength():MValue                            |
+       | +getWidth():MValue                             |
+       | +getDimension():MDimension                     |
+       | +getCopy():Page                                |
+       | +getCopy():Object                              |
+       | +setWidth(MValue):void                         |
+       | +getDefaultObjectState():ObjectState           |
+       | +getObjectState():ObjectState                  |
+       | +setObjectState(ObjectState):void              |
+       | +renderInto(Graphics2D, MAffineTransform):void |
+       | +getPaper():Paper                              |
+       | +addStroke(Stroke):void                        |
+       | +appendSVGCode(StringBuffer):void              |
+       | +setDimension(MDimension):void                 |
+       | +setPaper(Paper$PaperType):void                |
+        ------------------------------------------------ 
+        --------------------------------------- 
+       | StrokePrintManager                    |
+       |---------------------------------------|
+       | -stroke:Stroke                        |
+       |---------------------------------------|
+       | +StrokePrintManager(Stroke)           |
+       |---------------------------------------|
+       | +print(Graphics, PageFormat, int):int |
+       | +getStroke():Stroke                   |
+       | +setStroke(Stroke):void               |
+        --------------------------------------- 
+        ----------------------------------- 
+       | StrokeSVGGenerator                |
+       |-----------------------------------|
+       | -stroke:Stroke                    |
+       |-----------------------------------|
+       | +StrokeSVGGenerator(Stroke)       |
+       |-----------------------------------|
+       | +getStroke():Stroke               |
+       | +setStroke(Stroke):void           |
+       | +appendSVGCode(StringBuffer):void |
+        ----------------------------------- 
+        ----------------------------------------- 
+       | StringValue                             |
+       |-----------------------------------------|
+       | -str:String                             |
+       |-----------------------------------------|
+       | +StringValue()                          |
+       | +StringValue(String)                    |
+       |-----------------------------------------|
+       | +getString():String                     |
+       | +setString(String):void                 |
+       | +getValueFromString(String):StringValue |
+       | +getValueFromString(String):Object      |
+       | +getStringFromValue():String            |
+        ----------------------------------------- 
+        ------------------------------------------------------ 
+       | Tool                                                 |
+       |------------------------------------------------------|
+       | +drawLine(Graphics2D, MPoint, MAffineTransform):void |
+       | +getToolImage():Image                                |
+       | +getToolHotSpot():Point                              |
+       | +getToolName():String                                |
+        ------------------------------------------------------ 
+        ----------------------- 
+       | Unit                  |
+       |-----------------------|
+       | +PIXEL:Unit           |
+       | +INCH:Unit            |
+       | +CM:Unit              |
+       | -ENUM$VALUES:Unit;    |
+       |-----------------------|
+       | -Unit(String, int)    |
+       |-----------------------|
+       | +valueOf(String):Unit |
+       | +values():Unit;       |
+        ----------------------- 
+        --------------------- 
+       | UnitComboBox        |
+       |---------------------|
+       | +UnitComboBox()     |
+       | +UnitComboBox(Unit) |
+       |---------------------|
+       | +setUnit(Unit):void |
+       | +getUnit():Unit     |
+        --------------------- 
+
+================================================================================
+Section 3:  Shortened Source Code Organized Alphabetically
+================================================================================
+
+       package noteLab.materials
+       public class Binder extends Object implements Printable, SVGExportable, Renderable 
+       { 
+         Attributes
+         =======
+           private LinkedList pageList 
+           private int curPage 
+           private Stroke curStroke 
+           private int numColumns 
+        
+         Constructor
+         =========
+           public transient Binder( Page; ) 
+        
+         Methods
+         ======
+           public static void main( String; ) 
+           public void next( ) 
+           public int print( Graphics, PageFormat, int ) 
+           public void previous( ) 
+           public MValue getLength( Unit ) 
+           public MValue getWidth( Unit ) 
+           public void renderInto( Graphics2D, MAffineTransform ) 
+           public void setNumColumns( int ) 
+           public void addNewPage( ) 
+           public void copyPage( ) 
+           public Page getCurrentPage( ) 
+           public boolean isStrokeStarted( ) 
+           public void addPointToStroke( MPoint ) 
+           public void setCurrentPage( MPoint ) 
+           public void startStroke( Tool, MPoint ) 
+           public void finishStroke( ) 
+           private void updateArrangement( ) 
+           public void addPage( Page ) 
+           public int getNumColumns( ) 
+           public int getPageIndexAtPoint( MPoint ) 
+           public void setCurrentPageIndex( int ) 
+           public boolean isInCurrentPage( MPoint ) 
+           public int getCurrentPageIndex( ) 
+           private MPoint getPointRelativeToCurrentPage( MPoint ) 
+           private Binder$LocatedPage getCurrentLocatedPage( ) 
+           public MPoint getClippedPoint( MPoint ) 
+           public void appendSVGCode( StringBuffer ) 
+       }
+
+       package noteLab.materials
+       private class Binder$LocatedPage extends Object
+       { 
+         Attributes
+         =======
+           public Page page 
+           public MPoint location 
+           final Binder this$0 
+        
+         Constructors
+         =========
+           public Binder$LocatedPage( Binder, Page ) 
+           public Binder$LocatedPage( Binder, Page, MPoint ) 
+        
+         Methods
+         ======
+       }
+
+       package noteLab.gui
+       public class BinderCanvas extends JPanel
+       { 
+         Attributes
+         =======
+           private Binder binder 
+           private Tool tool 
+           private MAffineTransform zoomTransform 
+           private AffineTransform zoomTransformInverse 
+           private double zoomFactor 
+        
+         Constructor
+         =========
+           public BinderCanvas( Tool ) 
+        
+         Methods
+         ======
+           public static void main( String; ) 
+           public void paint( Graphics ) 
+           static Binder access$0( BinderCanvas ) 
+           static AffineTransform access$1( BinderCanvas ) 
+           public void setTool( Tool ) 
+           public void setZoomFactor( double ) 
+           public Tool getTool( ) 
+           public double getZoomFactor( ) 
+           public void zoomBy( double ) 
+           public MAffineTransform getMTransform( ) 
+           public Binder getBinder( ) 
+           private void updatePreferredSize( ) 
+           private AffineTransform getZoomTransformInverse( ) 
+       }
+
+       package noteLab.gui
+       private class BinderCanvas$StylusMotionListener extends Object implements MouseMotionListener, MouseListener 
+       { 
+         Attribute
+         =======
+           final BinderCanvas this$0 
+        
+         Constructor
+         =========
+           public BinderCanvas$StylusMotionListener( BinderCanvas ) 
+        
+         Methods
+         ======
+           public void mouseClicked( MouseEvent ) 
+           public void mouseDragged( MouseEvent ) 
+           public void mouseEntered( MouseEvent ) 
+           public void mouseExited( MouseEvent ) 
+           public void mouseMoved( MouseEvent ) 
+           public void mousePressed( MouseEvent ) 
+           public void mouseReleased( MouseEvent ) 
+           private void addPoint( MouseEvent ) 
+           private void createStroke( MouseEvent ) 
+           private MPoint getPixelPoint( Point ) 
+       }
+
+       package noteLab.util.state.value
+       public class ColorValue extends Object implements StringRecordable 
+       { 
+         Attribute
+         =======
+           private Color color 
+        
+         Constructors
+         =========
+           public ColorValue( ) 
+           public ColorValue( Color ) 
+        
+         Methods
+         ======
+           public void setColor( Color ) 
+           public Color getColor( ) 
+           public ColorValue getValueFromString( String ) 
+           public volatile Object getValueFromString( String ) 
+           public String getStringFromValue( ) 
+       }
+
+       package noteLab.gui
+       public class ColorfulButton extends JButton implements ActionListener 
+       { 
+         Attributes
+         =======
+           private Color color 
+           private JDialog chooserDialog 
+           private JColorChooser colorChooser 
+           private boolean enabled 
+        
+         Constructor
+         =========
+           public ColorfulButton( Color ) 
+        
+         Methods
+         ======
+           public void setEnabled( boolean ) 
+           protected void paintComponent( Graphics ) 
+           public void setColor( Color ) 
+           public void actionPerformed( ActionEvent ) 
+           public Color getColor( ) 
+           static JColorChooser access$0( ColorfulButton ) 
+           static JDialog access$1( ColorfulButton ) 
+       }
+
+       package noteLab.gui
+       private class ColorfulButton$CancelListener extends Object implements ActionListener 
+       { 
+         Attribute
+         =======
+           final ColorfulButton this$0 
+        
+         Constructor
+         =========
+           ColorfulButton$CancelListener( ColorfulButton ) 
+        
+         Method
+         ======
+           public void actionPerformed( ActionEvent ) 
+       }
+
+       package noteLab.gui
+       private class ColorfulButton$OkListener extends Object implements ActionListener 
+       { 
+         Attribute
+         =======
+           final ColorfulButton this$0 
+        
+         Constructor
+         =========
+           ColorfulButton$OkListener( ColorfulButton ) 
+        
+         Method
+         ======
+           public void actionPerformed( ActionEvent ) 
+       }
+
+       package noteLab.util
+       public, abstract interface CopyReady
+       { 
+         Attributes
+         =======
+        
+         Constructors
+         =========
+        
+         Method
+         ======
+           public abstract Object getCopy( ) 
+       }
+
+       package noteLab.gui
+       public, final class DefinedIcon extends Enum
+       { 
+         Attributes
+         =======
+           public static final DefinedIcon bigeraser2 
+           public static final DefinedIcon bigeraser 
+           public static final DefinedIcon blank 
+           public static final DefinedIcon box 
+           public static final DefinedIcon browser 
+           public static final DefinedIcon bsp 
+           public static final DefinedIcon calc 
+           public static final DefinedIcon cap 
+           public static final DefinedIcon clockcursor 
+           public static final DefinedIcon clock 
+           public static final DefinedIcon clonedoc 
+           public static final DefinedIcon defaultPen 
+           public static final DefinedIcon dotblk3 
+           public static final DefinedIcon dotblk 
+           public static final DefinedIcon editcopy 
+           public static final DefinedIcon editcut 
+           public static final DefinedIcon editpaste 
+           public static final DefinedIcon erasebot 
+           public static final DefinedIcon eraser 
+           public static final DefinedIcon erasetop 
+           public static final DefinedIcon fat 
+           public static final DefinedIcon filesave 
+           public static final DefinedIcon fine 
+           public static final DefinedIcon fullscreen 
+           public static final DefinedIcon handcursor 
+           public static final DefinedIcon handmixed2 
+           public static final DefinedIcon handmixed 
+           public static final DefinedIcon hand 
+           public static final DefinedIcon handstop 
+           public static final DefinedIcon handyellow 
+           public static final DefinedIcon heavy 
+           public static final DefinedIcon highcursor 
+           public static final DefinedIcon highlighterdef 
+           public static final DefinedIcon highlightermag 
+           public static final DefinedIcon highlighteryel 
+           public static final DefinedIcon lc 
+           public static final DefinedIcon leftarrow1 
+           public static final DefinedIcon leftarrow2 
+           public static final DefinedIcon medium 
+           public static final DefinedIcon multi3 
+           public static final DefinedIcon multi 
+           public static final DefinedIcon newdoc 
+           public static final DefinedIcon newPage 
+           public static final DefinedIcon num 
+           public static final DefinedIcon paintbrush 
+           public static final DefinedIcon pencilblk 
+           public static final DefinedIcon pencilblu 
+           public static final DefinedIcon pencilred 
+           public static final DefinedIcon razor 
+           public static final DefinedIcon redo 
+           public static final DefinedIcon rightarrow1 
+           public static final DefinedIcon rightarrow2 
+           public static final DefinedIcon rtn 
+           public static final DefinedIcon ruler 
+           public static final DefinedIcon select 
+           public static final DefinedIcon selectrect 
+           public static final DefinedIcon spc 
+           public static final DefinedIcon sym 
+           public static final DefinedIcon text 
+           public static final DefinedIcon threepages 
+           public static final DefinedIcon thumbs 
+           public static final DefinedIcon undo 
+           public static final DefinedIcon user 
+           public static final DefinedIcon viewmagfit 
+           public static final DefinedIcon viewmagMinus 
+           public static final DefinedIcon viewmagPlus 
+           public static final DefinedIcon whitecursor 
+           public static final DefinedIcon whiteout 
+           public static final DefinedIcon collegeRuled 
+           public static final DefinedIcon wideRuled 
+           public static final DefinedIcon graph 
+           private String EXT 
+           private static final DefinedIcon; ENUM$VALUES 
+        
+         Constructor
+         =========
+           private DefinedIcon( String, int ) 
+        
+         Methods
+         ======
+           public String toString( ) 
+           public static final DefinedIcon valueOf( String ) 
+           public static final DefinedIcon; values( ) 
+       }
+
+       package noteLab.util
+       public class InfoCenter extends Object
+       { 
+         Attributes
+         =======
+           private static final String NAME 
+           private static final String VERSION 
+           private static final String ICON_PATH_NAME 
+           private static final String PREF_HOME_NAME 
+           private static final File APP_HOME 
+           private static final File PREF_HOME 
+        
+         Constructor
+         =========
+           private InfoCenter( ) 
+        
+         Methods
+         ======
+           public static void main( String; ) 
+           private static final String mkdir( File ) 
+           public static ImageIcon getImage( DefinedIcon ) 
+           public static final String getAppName( ) 
+           public static final File getAppHome( ) 
+           public static final String getAppVersion( ) 
+           public static final File getPreferencesHome( ) 
+           public static final String isAppHomeValid( ) 
+           private static final String isDirValid( File ) 
+           public static final String buildAppHome( ) 
+       }
+
+       package noteLab.util.geom
+       public class MAffineTransform extends AffineTransform
+       { 
+         Attribute
+         =======
+           private Unit unit 
+        
+         Constructors
+         =========
+           public MAffineTransform( Unit ) 
+           public MAffineTransform( [D, Unit ) 
+        
+         Methods
+         ======
+           public MValue transform( MValue ) 
+           public MPoint transform( MPoint ) 
+           public MDimension transform( MDimension ) 
+           public MLine transform( MLine ) 
+           public MRectangle transform( MRectangle ) 
+           public void setMatrix( [D ) 
+       }
+
+       package noteLab.util.geom
+       public class MDimension extends Object implements CopyReady 
+       { 
+         Attributes
+         =======
+           private MValue length 
+           private MValue width 
+        
+         Constructor
+         =========
+           public MDimension( MValue, MValue ) 
+        
+         Methods
+         ======
+           public String toString( ) 
+           public void setLength( MValue ) 
+           public MValue getLength( ) 
+           public MValue getWidth( ) 
+           public MDimension getCopy( ) 
+           public volatile Object getCopy( ) 
+           public void setWidth( MValue ) 
+       }
+
+       package noteLab.util.geom
+       public class MLine extends Object implements CopyReady 
+       { 
+         Attributes
+         =======
+           private MPoint point1 
+           private MPoint point2 
+        
+         Constructor
+         =========
+           public MLine( MPoint, MPoint ) 
+        
+         Methods
+         ======
+           public MLine getCopy( ) 
+           public volatile Object getCopy( ) 
+           public MPoint getPoint1( ) 
+           public MPoint getPoint2( ) 
+           public void setPoint1( MPoint ) 
+           public void setPoint2( MPoint ) 
+       }
+
+       package noteLab.util.geom
+       public class MPoint extends Object implements CopyReady 
+       { 
+         Attributes
+         =======
+           private MValue x 
+           private MValue y 
+        
+         Constructor
+         =========
+           public MPoint( MValue, MValue ) 
+        
+         Methods
+         ======
+           public String toString( ) 
+           public MValue getX( ) 
+           public MValue getY( ) 
+           public MPoint getCopy( ) 
+           public volatile Object getCopy( ) 
+           public static MPoint difference( Unit, MPoint, MPoint ) 
+           public void setX( MValue ) 
+           public void setY( MValue ) 
+           public static transient MPoint sum( Unit, MPoint; ) 
+       }
+
+       package noteLab.util.geom
+       public class MRectangle extends Object
+       { 
+         Attributes
+         =======
+           private MPoint topLeftCorner 
+           private MDimension dimension 
+        
+         Constructor
+         =========
+           public MRectangle( MPoint, MDimension ) 
+        
+         Methods
+         ======
+           public MDimension getDimension( ) 
+           public MPoint getTopLeftCorner( ) 
+           public void setTopLeftCorner( MPoint ) 
+           public void setDimension( MDimension ) 
+       }
+
+       package noteLab.util.geom.unit
+       public class MValue extends Object implements CopyReady 
+       { 
+         Attributes
+         =======
+           private static final int PIXEL_PER_INCH 
+           private static final float CM_PER_INCH 
+           private double value 
+           private Unit unit 
+        
+         Constructor
+         =========
+           public MValue( double, Unit ) 
+        
+         Methods
+         ======
+           public static void main( String; ) 
+           public String toString( ) 
+           public double getValue( ) 
+           public double getValue( Unit ) 
+           public static double getValue( double, Unit, Unit ) 
+           public void setValue( double ) 
+           public MValue getCopy( ) 
+           public volatile Object getCopy( ) 
+           public static MValue difference( Unit, MValue, MValue ) 
+           public void setUnit( Unit ) 
+           public Unit getUnit( ) 
+           public static MValue quotient( Unit, MValue, MValue ) 
+           public static transient MValue sum( Unit, MValue; ) 
+           public static transient MValue product( Unit, MValue; ) 
+           public static boolean isGreater( Unit, MValue, MValue ) 
+           public static boolean isGreaterOrEqual( Unit, MValue, MValue ) 
+           public static boolean isLess( Unit, MValue, MValue ) 
+           public static boolean isLessOrEqual( Unit, MValue, MValue ) 
+       }
+
+       package noteLab.gui.geom
+       public class MValueControl extends JPanel
+       { 
+         Attributes
+         =======
+           private JSpinner spinner 
+           private UnitComboBox unitCombo 
+        
+         Constructor
+         =========
+           public MValueControl( String, double, double, double, double, Unit ) 
+        
+         Methods
+         ======
+           public MValue getValue( ) 
+           public void setMValue( MValue ) 
+       }
+
+       package noteLab.gui
+       public class MainFrame extends JFrame
+       { 
+         Attributes
+         =======
+           private JPanel toolbarPanel 
+           private BinderCanvas canvas 
+        
+         Constructors
+         =========
+           public MainFrame( ) 
+           public MainFrame( int, int ) 
+        
+         Method
+         ======
+           public static void main( String; ) 
+       }
+
+       package noteLab.util.state.value
+       public class MutableNumber extends Object
+       { 
+         Attribute
+         =======
+           private double value 
+        
+         Constructors
+         =========
+           public MutableNumber( int ) 
+           public MutableNumber( double ) 
+           public MutableNumber( String ) 
+        
+         Methods
+         ======
+           public static void main( String; ) 
+           public String toString( ) 
+           public void setIntValue( int ) 
+           public void setDoubleValue( double ) 
+           public int getIntValue( ) 
+           public double getDoubleValue( ) 
+       }
+
+       package noteLab.util.state.value
+       public class NumberValue extends Object implements StringRecordable 
+       { 
+         Attribute
+         =======
+           private MutableNumber number 
+        
+         Constructors
+         =========
+           public NumberValue( ) 
+           public NumberValue( MutableNumber ) 
+        
+         Methods
+         ======
+           public MutableNumber getNumber( ) 
+           public NumberValue getValueFromString( String ) 
+           public volatile Object getValueFromString( String ) 
+           public String getStringFromValue( ) 
+           private void setNumber( MutableNumber ) 
+       }
+
+       package noteLab.util.state
+       public class ObjectState extends Object
+       { 
+         Attributes
+         =======
+           private static final String CLASS_SUFFIX 
+           private Hashtable table 
+           private String comment 
+        
+         Constructors
+         =========
+           public ObjectState( ) 
+           public ObjectState( String ) 
+        
+         Methods
+         ======
+           public static void main( String; ) 
+           public String toString( ) 
+           public StringRecordable getValue( String ) 
+           public static ObjectState load( File ) 
+           public void save( File ) 
+           public boolean containsKey( String ) 
+           public String getComment( ) 
+           public void setComment( String ) 
+           public void putValue( String, StringRecordable ) 
+       }
+
+       package noteLab.util.state
+       public, abstract interface ObjectStateAccessible
+       { 
+         Attributes
+         =======
+        
+         Constructors
+         =========
+        
+         Methods
+         ======
+           public abstract ObjectState getDefaultObjectState( ) 
+           public abstract ObjectState getObjectState( ) 
+           public abstract void setObjectState( ObjectState ) 
+       }
+
+       package noteLab.util.state
+       public class ObjectStateUtilities extends Object
+       { 
+         Attributes
+         =======
+        
+         Constructor
+         =========
+           private ObjectStateUtilities( ) 
+        
+         Methods
+         ======
+       }
+
+       package noteLab.materials
+       public class Page extends Object implements Renderable, SVGExportable, Printable, CopyReady, ObjectStateAccessible 
+       { 
+         Attributes
+         =======
+           private MDimension dimension 
+           private LinkedList strokeList 
+           private Paper paper 
+        
+         Constructors
+         =========
+           public Page( ) 
+           public Page( MDimension ) 
+           public Page( MDimension, Paper$PaperType ) 
+        
+         Methods
+         ======
+           public String toString( ) 
+           public int print( Graphics, PageFormat, int ) 
+           public void setLength( MValue ) 
+           public MValue getLength( ) 
+           public MValue getWidth( ) 
+           public MDimension getDimension( ) 
+           public Page getCopy( ) 
+           public volatile Object getCopy( ) 
+           public void setWidth( MValue ) 
+           public ObjectState getDefaultObjectState( ) 
+           public ObjectState getObjectState( ) 
+           public void setObjectState( ObjectState ) 
+           public void renderInto( Graphics2D, MAffineTransform ) 
+           public Paper getPaper( ) 
+           public void addStroke( Stroke ) 
+           public void appendSVGCode( StringBuffer ) 
+           public void setDimension( MDimension ) 
+           public void setPaper( Paper$PaperType ) 
+       }
+
+       package noteLab.materials
+       public class PageAdapter extends JPanel implements PreferenceAdapter 
+       { 
+         Attributes
+         =======
+           private static final String SAVE_KEY 
+           private Page page 
+        
+         Constructor
+         =========
+           public PageAdapter( Page ) 
+        
+         Methods
+         ======
+           public String getTitle( ) 
+           public String getSaveKey( ) 
+           public JPanel getOptionsPanel( ) 
+       }
+
+       package noteLab.gui.toolbar
+       public class PageToolBar extends JToolBar implements ActionListener 
+       { 
+         Attributes
+         =======
+           private static final String PLAIN_PAPER 
+           private static final String GRAPH_PAPER 
+           private static final String WIDE_RULED_PAPER 
+           private static final String COLLEGE_RULED_PAPER 
+           private static final String ZOOM_OUT 
+           private static final String ZOOM_NORMAL 
+           private static final String ZOOM_IN 
+           private static final String CONTINUOUS 
+           private static final String THUMBS 
+           private static final String NEW_PAGE 
+           private static final String COPY_PAGE 
+           private static final double ZOOM_IN_FACTOR 
+           private static final double ZOOM_OUT_FACTOR 
+           private JButton plainButton 
+           private JButton graphButton 
+           private JButton collegeButton 
+           private JButton wideButton 
+           private JButton zoomInButton 
+           private JButton zoomNormalButton 
+           private JButton zoomOutButton 
+           private JButton contButton 
+           private JButton quadButton 
+           private JButton newPageButton 
+           private JButton copyPageButton 
+           private BinderCanvas canvas 
+        
+         Constructor
+         =========
+           public PageToolBar( BinderCanvas ) 
+        
+         Method
+         ======
+           public void actionPerformed( ActionEvent ) 
+       }
+
+       package noteLab.materials
+       public class Paper extends Object implements Renderable, CopyReady 
+       { 
+         Attributes
+         =======
+           private static int GRID_WIDTH 
+           private static int COLLEGE_WIDTH 
+           private static int WIDE_WIDTH 
+           private MDimension dimension 
+           private Paper$PaperType type 
+        
+         Constructor
+         =========
+           public Paper( Paper$PaperType, MDimension ) 
+        
+         Methods
+         ======
+           public void setLength( MValue ) 
+           public MValue getLength( ) 
+           public MValue getWidth( ) 
+           public MDimension getDimension( ) 
+           public Paper getCopy( ) 
+           public volatile Object getCopy( ) 
+           public void setWidth( MValue ) 
+           public void renderInto( Graphics2D, MAffineTransform ) 
+           public Paper$PaperType getPaperType( ) 
+           public void setDimension( MDimension ) 
+           public void setPaperType( Paper$PaperType ) 
+           private int getPixelWidth( MAffineTransform ) 
+           private int getPixelHeight( MAffineTransform ) 
+           private void renderLinesAcross( Graphics2D, int, int, int, int, int, MAffineTransform ) 
+           private void renderLinesDown( Graphics2D, int, int, int, int, int, MAffineTransform ) 
+           private void renderLinedPage( Graphics2D, int, MAffineTransform ) 
+           private int transformPixelLength( int, MAffineTransform ) 
+       }
+
+       package noteLab.materials
+       public, static, final class Paper$PaperType extends Enum
+       { 
+         Attributes
+         =======
+           public static final Paper$PaperType Plain 
+           public static final Paper$PaperType Graph 
+           public static final Paper$PaperType CollegeRuled 
+           public static final Paper$PaperType WideRuled 
+           private static final Paper$PaperType; ENUM$VALUES 
+        
+         Constructor
+         =========
+           private Paper$PaperType( String, int ) 
+        
+         Methods
+         ======
+           public static final Paper$PaperType valueOf( String ) 
+           public static final Paper$PaperType; values( ) 
+       }
+
+       package noteLab.materials.tools
+       public class Pen extends Object implements Tool 
+       { 
+         Attributes
+         =======
+           private static final String PEN_NAME 
+           private static final Point PEN_HOT_SPOT 
+           private static final String WIDTH_KEY 
+           private static final String COLOR_KEY 
+           private static final int DEFAULT_WIDTH 
+           private static final Color DEFAULT_COLOR 
+           private static final ObjectState DEFAULT_STATE 
+           private int width 
+           private Color color 
+           private BufferedImage penImage 
+        
+         Constructors
+         =========
+           public Pen( ) 
+           public Pen( int, Color ) 
+        
+         Methods
+         ======
+           public float getWidth( ) 
+           public void setColor( Color ) 
+           public Color getColor( ) 
+           public void drawLine( Graphics2D, MPoint, MAffineTransform ) 
+           public Pen getCopy( ) 
+           public volatile Object getCopy( ) 
+           public void setWidth( int ) 
+           public Image getToolImage( ) 
+           public Point getToolHotSpot( ) 
+           public String getToolName( ) 
+           public ObjectState getDefaultObjectState( ) 
+           public ObjectState getObjectState( ) 
+           public void setObjectState( ObjectState ) 
+           public void renderInto( Graphics2D ) 
+           private static void fillObjectState( ObjectState, float, Color ) 
+           private void drawPenImage( ) 
+           private BasicStroke constructJavaStroke( ) 
+       }
+
+       package noteLab.gui.toolbar
+       public class PenToolBar extends JToolBar implements ActionListener 
+       { 
+         Attributes
+         =======
+           private static final String SELECT_PEN 
+           private PenToolBar$PenWidth penWidth 
+           private PenToolBar$PenColor penColor 
+           private Pen pen 
+           private BinderCanvas canvas 
+        
+         Constructor
+         =========
+           public PenToolBar( BinderCanvas ) 
+        
+         Methods
+         ======
+           public void actionPerformed( ActionEvent ) 
+           public Pen getPen( ) 
+           private void setPen( Pen ) 
+           private void adjustPen( ) 
+       }
+
+       package noteLab.gui.toolbar
+       private, static, final class PenToolBar$PenColor extends Enum
+       { 
+         Attributes
+         =======
+           public static final PenToolBar$PenColor black 
+           public static final PenToolBar$PenColor blue 
+           public static final PenToolBar$PenColor red 
+           public static final PenToolBar$PenColor white 
+           private static [I $SWITCH_TABLE$noteLab$gui$toolbar$PenToolBar$PenColor 
+           private static final PenToolBar$PenColor; ENUM$VALUES 
+        
+         Constructor
+         =========
+           PenToolBar$PenColor( String, int ) 
+        
+         Methods
+         ======
+           public static final PenToolBar$PenColor valueOf( String ) 
+           public static final PenToolBar$PenColor; values( ) 
+           public Color getColor( ) 
+           static [I $SWITCH_TABLE$noteLab$gui$toolbar$PenToolBar$PenColor( ) 
+       }
+
+       package noteLab.gui.toolbar
+       private, static, final class PenToolBar$PenWidth extends Enum
+       { 
+         Attributes
+         =======
+           public static final PenToolBar$PenWidth fine 
+           public static final PenToolBar$PenWidth medium 
+           public static final PenToolBar$PenWidth thick 
+           private static [I $SWITCH_TABLE$noteLab$gui$toolbar$PenToolBar$PenWidth 
+           private static final PenToolBar$PenWidth; ENUM$VALUES 
+        
+         Constructor
+         =========
+           PenToolBar$PenWidth( String, int ) 
+        
+         Methods
+         ======
+           public static final PenToolBar$PenWidth valueOf( String ) 
+           public static final PenToolBar$PenWidth; values( ) 
+           public int getWidth( ) 
+           static [I $SWITCH_TABLE$noteLab$gui$toolbar$PenToolBar$PenWidth( ) 
+       }
+
+       package noteLab.gui.prefs
+       public, abstract interface PreferenceAdapter
+       { 
+         Attributes
+         =======
+        
+         Constructors
+         =========
+        
+         Methods
+         ======
+           public abstract String getTitle( ) 
+           public abstract String getSaveKey( ) 
+           public abstract JPanel getOptionsPanel( ) 
+       }
+
+       package noteLab.gui.prefs
+       public, abstract interface PreferenceCapable
+       { 
+         Attributes
+         =======
+        
+         Constructors
+         =========
+        
+         Method
+         ======
+           public abstract PreferenceAdapter getPreferenceAdapter( ) 
+       }
+
+       package noteLab.gui
+       public class PreferencesFrame extends JFrame implements ActionListener 
+       { 
+         Attributes
+         =======
+           private static final String SAVE_TEXT 
+           private static final String DEFAULTS_TEXT 
+           private static final String REVERT_TEXT 
+           private static final String CANCEL_TEXT 
+           private BinderCanvas canvas 
+           private JTabbedPane tabbedPane 
+        
+         Constructor
+         =========
+           public PreferencesFrame( BinderCanvas ) 
+        
+         Methods
+         ======
+           public void actionPerformed( ActionEvent ) 
+           private void addTab( PreferenceCapable ) 
+       }
+
+       package noteLab.gui
+       public, abstract interface Renderable
+       { 
+         Attributes
+         =======
+        
+         Constructors
+         =========
+        
+         Method
+         ======
+           public abstract void renderInto( Graphics2D, MAffineTransform ) 
+       }
+
+       package noteLab.util.save
+       public, abstract interface SVGExportable
+       { 
+         Attributes
+         =======
+        
+         Constructors
+         =========
+        
+         Method
+         ======
+           public abstract void appendSVGCode( StringBuffer ) 
+       }
+
+       package noteLab.util.state
+       public, abstract interface StringRecordable
+       { 
+         Attributes
+         =======
+        
+         Constructors
+         =========
+        
+         Methods
+         ======
+           public abstract Object getValueFromString( String ) 
+           public abstract String getStringFromValue( ) 
+       }
+
+       package noteLab.materials.stroke
+       public class Stroke extends Object implements Printable, SVGExportable, Renderable, CopyReady 
+       { 
+         Attributes
+         =======
+           private LinkedList lineList 
+           private Tool tool 
+           private MPoint curPoint 
+           private StrokeSVGGenerator svgGen 
+           private StrokePrintManager printMan 
+        
+         Constructor
+         =========
+           public Stroke( Tool, MPoint ) 
+        
+         Methods
+         ======
+           public int print( Graphics, PageFormat, int ) 
+           public Stroke getCopy( ) 
+           public volatile Object getCopy( ) 
+           public void addPoint( MPoint ) 
+           public void setTool( Tool ) 
+           public void renderInto( Graphics2D, MAffineTransform ) 
+           public Tool getTool( ) 
+           public void finishStroke( ) 
+           public void appendSVGCode( StringBuffer ) 
+           private void setCurrentPoint( MPoint ) 
+       }
+
+       package noteLab.materials.stroke
+       public class StrokePrintManager extends Object implements Printable 
+       { 
+         Attribute
+         =======
+           private Stroke stroke 
+        
+         Constructor
+         =========
+           public StrokePrintManager( Stroke ) 
+        
+         Methods
+         ======
+           public int print( Graphics, PageFormat, int ) 
+           public Stroke getStroke( ) 
+           public void setStroke( Stroke ) 
+       }
+
+       package noteLab.materials.stroke
+       public class StrokeSVGGenerator extends Object implements SVGExportable 
+       { 
+         Attribute
+         =======
+           private Stroke stroke 
+        
+         Constructor
+         =========
+           public StrokeSVGGenerator( Stroke ) 
+        
+         Methods
+         ======
+           public Stroke getStroke( ) 
+           public void setStroke( Stroke ) 
+           public void appendSVGCode( StringBuffer ) 
+       }
+
+       package noteLab.util.state.value
+       public class StringValue extends Object implements StringRecordable 
+       { 
+         Attribute
+         =======
+           private String str 
+        
+         Constructors
+         =========
+           public StringValue( ) 
+           public StringValue( String ) 
+        
+         Methods
+         ======
+           public String getString( ) 
+           public void setString( String ) 
+           public StringValue getValueFromString( String ) 
+           public volatile Object getValueFromString( String ) 
+           public String getStringFromValue( ) 
+       }
+
+       package noteLab.materials.tools
+       public, abstract interface Tool implements ObjectStateAccessible, CopyReady 
+       { 
+         Attributes
+         =======
+        
+         Constructors
+         =========
+        
+         Methods
+         ======
+           public abstract void drawLine( Graphics2D, MPoint, MAffineTransform ) 
+           public abstract Image getToolImage( ) 
+           public abstract Point getToolHotSpot( ) 
+           public abstract String getToolName( ) 
+       }
+
+       package noteLab.util.geom.unit
+       public, final class Unit extends Enum
+       { 
+         Attributes
+         =======
+           public static final Unit PIXEL 
+           public static final Unit INCH 
+           public static final Unit CM 
+           private static final Unit; ENUM$VALUES 
+        
+         Constructor
+         =========
+           private Unit( String, int ) 
+        
+         Methods
+         ======
+           public static final Unit valueOf( String ) 
+           public static final Unit; values( ) 
+       }
+
+       package noteLab.gui.geom
+       public class UnitComboBox extends JComboBox
+       { 
+         Attributes
+         =======
+        
+         Constructors
+         =========
+           public UnitComboBox( ) 
+           public UnitComboBox( Unit ) 
+        
+         Methods
+         ======
+           public void setUnit( Unit ) 
+           public Unit getUnit( ) 
+       }
+
+================================================================================
+================================================================================
