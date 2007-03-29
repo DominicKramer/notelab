@@ -1,9 +1,0 @@
-NoteLab Version 0.1final Release Notes
---------------------------------------
-With this version of NoteLab, stroke selection has been greatly improved.  First a new box selection tool has been added.  With this tool a rectangular region of a page can be selected to select all of the strokes entirely inside the rectangular region.  As with previous releases the hand selection tool can be used to select single strokes.
-
-Second the stroke selection has been greatly optimized.  That is only regions of the screen that have to be redrawn are actually redrawn when strokes are selected, moved, resized, or deleted.  This makes the selection, moving, resizing, and deleting of strokes much more responsive.
-
-Next NoteLab's settings can now be specified using a graphical element in NoteLab.  Specifically pen and paper settings can be specified.  Additionally, NoteLab now dynamically determines the maximum amount of memory that it can use on a given system.  Furthermore the amount of memory that should be given to NoteLab at startup, as well as the maximum amount of memory NoteLab can use, can be set graphically.  As such if NoteLab is running slow the user can increase the amount of memory given to NoteLab to improve its performance.  Furthermore, NoteLab will not let the user select values the system can't support.
-
-To allow NoteLab to dynamically set its startup memory as well as specify NoteLab specific settings, the method at which NoteLab is launched has been changed.  That is instead of launching NoteLab from an executable jar file, startup scripts are used to start NoteLab.  As such NoteLab is now bundled as a zip file.  This zip file contains NoteLab and the startup codes used to start NoteLab.

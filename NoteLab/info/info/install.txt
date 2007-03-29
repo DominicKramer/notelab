@@ -1,3 +1,0 @@
- 
-NoteLab can be installed anywhere on your computer.  It does not need to be installed in any 
-special location.  To install NoteLab, simply extract the NoteLab zip file that was downloaded.
