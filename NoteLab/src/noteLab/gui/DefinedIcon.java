@@ -102,7 +102,6 @@ public enum DefinedIcon
    feather, 
    box_select, 
    box_unselect, 
-//   empty, 
    drive_cdrom, 
    drive_harddisk, 
    jump, 
@@ -116,6 +115,9 @@ public enum DefinedIcon
                                                             BufferedImage.
                                                                TYPE_INT_ARGB));
    
+   private static final Hashtable<Integer, ImageIcon> EMPTY_ICON_TABLE = 
+                                                         new Hashtable<Integer, ImageIcon>();
+   
    public static final int ORIGINAL_SIZE = -1;
    
    private static final String EXT = ".png";
@@ -125,8 +127,7 @@ public enum DefinedIcon
    
    private DefinedIcon()
    {
-//      if (this != DefinedIcon.empty)
-         this.initIcon = InfoCenter.getImage(this);
+      this.initIcon = InfoCenter.getImage(this);
       this.iconTable = new Hashtable<Integer, ImageIcon>();
       checkInitIcon();
    }
@@ -137,36 +138,40 @@ public enum DefinedIcon
          this.initIcon = EMPTY_ICON;
    }
    
-   public static ImageIcon getEmptyIcon(int size)
-   {
-      Image scaleImage = EMPTY_ICON.getImage().getScaledInstance(size, size, Image.SCALE_FAST);
-      return new ImageIcon(scaleImage);
-   }
-   
    @Override
    public String toString()
    {
       return super.toString()+EXT;
    }
    
+   public static ImageIcon getEmptyIcon(int size)
+   {
+      return getIcon(EMPTY_ICON, EMPTY_ICON_TABLE, size);
+   }
+   
    public ImageIcon getIcon(int size)
    {
+      return getIcon(this.initIcon, this.iconTable, size);
+   }
+   
+   private static ImageIcon getIcon(ImageIcon initIcon, 
+                                    Hashtable<Integer, ImageIcon> iconTable, 
+                                    int size)
+   {
       if (size == ORIGINAL_SIZE)
-         return this.initIcon;
+         return initIcon;
       
-      ImageIcon sizeIcon = this.iconTable.get(size);
+      ImageIcon sizeIcon = iconTable.get(size);
       if (sizeIcon != null)
          return sizeIcon;
       
-      if (this.initIcon == null)
-         this.initIcon = EMPTY_ICON;
+      if (initIcon == null)
+         initIcon = EMPTY_ICON;
       
-      Image scaleImage = this.initIcon.getImage().
-                            getScaledInstance(size, size, 
-                                              Image.SCALE_SMOOTH);
+      Image scaleImage = initIcon.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);
       
       ImageIcon newIcon = new ImageIcon(scaleImage);
-      this.iconTable.put(size, newIcon);
+      iconTable.put(size, newIcon);
       
       return newIcon;
    }
