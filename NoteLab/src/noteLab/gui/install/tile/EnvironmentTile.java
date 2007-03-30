@@ -62,7 +62,7 @@ public class EnvironmentTile extends SequenceTile
       this.extractTile = prevTile;
       
       int size = GuiSettingsConstants.SMALL_BUTTON_SIZE;
-      ImageIcon blankIcon = DefinedIcon.empty.getIcon(size);
+      ImageIcon blankIcon = DefinedIcon.getEmptyIcon(size);
       this.checkIcon = DefinedIcon.ok.getIcon(size);
       
       this.homeDirLabel = new JLabel("Building "+InfoCenter.getAppName()+
