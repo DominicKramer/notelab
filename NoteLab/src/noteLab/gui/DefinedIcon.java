@@ -102,7 +102,7 @@ public enum DefinedIcon
    feather, 
    box_select, 
    box_unselect, 
-   empty, 
+//   empty, 
    drive_cdrom, 
    drive_harddisk, 
    jump, 
@@ -125,7 +125,7 @@ public enum DefinedIcon
    
    private DefinedIcon()
    {
-      if (this != DefinedIcon.empty)
+//      if (this != DefinedIcon.empty)
          this.initIcon = InfoCenter.getImage(this);
       this.iconTable = new Hashtable<Integer, ImageIcon>();
       checkInitIcon();
@@ -135,6 +135,12 @@ public enum DefinedIcon
    {
       if (this.initIcon == null)
          this.initIcon = EMPTY_ICON;
+   }
+   
+   public static ImageIcon getEmptyIcon(int size)
+   {
+      Image scaleImage = EMPTY_ICON.getImage().getScaledInstance(size, size, Image.SCALE_FAST);
+      return new ImageIcon(scaleImage);
    }
    
    @Override
