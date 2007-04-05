@@ -45,7 +45,7 @@ public class CombFileArg extends Argument
    
    public CombFileArg()
    {
-      super(SettingsKeys.COMB_FACTOR, 1, PARAM_DESCS, DESC);
+      super(SettingsKeys.COMB_FACTOR, 1, PARAM_DESCS, DESC, true);
    }
    
    @Override
