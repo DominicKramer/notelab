@@ -37,6 +37,15 @@ public class Polynomial
       this.coefArr = new float[degree+1];
    }
    
+   // coeffs are in the order x^0, x^1, x^2, ...., x^n
+   public Polynomial(float ... coeffs)
+   {
+      if (coeffs == null)
+         throw new NullPointerException();
+      
+      this.coefArr = coeffs;
+   }
+   
    public float getCoefficient(int index)
    {
       return this.coefArr[index];
