@@ -186,7 +186,13 @@ public class CommandInterpretor
       }
       
       if (!arg.decode(paramArr))
+      {
+         System.out.println(InfoCenter.getAppName()+" could not be started because " +
+                            "the argument "+Argument.PREFIX+arg.getIdentifier()+
+                            " has an error.");
+         
          return 0;
+      }
       
       return index+1;
    }
