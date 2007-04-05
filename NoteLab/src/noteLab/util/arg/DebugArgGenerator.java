@@ -67,7 +67,7 @@ public class DebugArgGenerator implements SettingsKeys
    {
       public BooleanArg(String key, String desc)
       {
-         super(key, 0, PARAM_DESCS, desc);
+         super(key, 0, PARAM_DESCS, desc, false);
       }
       
       @Override
