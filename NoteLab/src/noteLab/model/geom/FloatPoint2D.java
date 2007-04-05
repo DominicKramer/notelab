@@ -104,6 +104,16 @@ public class FloatPoint2D implements Transformable,
       this(pt.x, pt.y, xScaleLevel, yScaleLevel);
    }
    
+   public float getXScaleLevel()
+   {
+      return this.xScaleLevel;
+   }
+   
+   public float getYScaleLevel()
+   {
+      return this.yScaleLevel;
+   }
+   
    /**
     * Scales this point by the given amount.  To understand how a 
     * point is scaled, imagine the point as being glued onto the 
