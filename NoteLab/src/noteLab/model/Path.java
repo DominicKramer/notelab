@@ -233,15 +233,30 @@ public class Path
       
       Polynomial xCurve = new Polynomial(2);
       Polynomial yCurve = new Polynomial(2);
+      FloatPoint2D curPt;
+      float xScale = 1;
+      float yScale = 1;
       for (int i=numPts; i<numItems-numPts; i++)
       {
          findCurve(i, numPts, true, xCurve);
          findCurve(i, numPts, false, yCurve);
          
+         curPt = getItemAt(i);
+         if (curPt != null)
+         {
+            xScale = curPt.getXScaleLevel();
+            yScale = curPt.getYScaleLevel();
+         }
+         else
+         {
+            xScale = this.xScaleLevel;
+            yScale = this.yScaleLevel;
+         }
+         
          newPts.add(new FloatPoint2D(xCurve.eval(numPts+1), 
                                      yCurve.eval(numPts+1), 
-                                     this.xScaleLevel, 
-                                     this.yScaleLevel));
+                                     xScale, 
+                                     yScale));
       }
       
       for (int i=numItems-numPts; i<numItems; i++)
