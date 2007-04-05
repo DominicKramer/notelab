@@ -59,7 +59,8 @@ public class LookAndFeelArg extends Argument
    public LookAndFeelArg()
    {
       super("lookAndFeel", 1, PARAM_DESCS, 
-            "Used to set the look and feel of the graphical elements.");
+            "Used to set the look and feel of the graphical elements.", 
+            false);
    }
    
    private static String getGluedString(String str)

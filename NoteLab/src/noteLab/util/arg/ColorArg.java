@@ -48,7 +48,7 @@ public class ColorArg extends Argument
    
    public ColorArg(String id, String desc)
    {
-      super(id, 3, PARAM_DESCS, desc);
+      super(id, 3, PARAM_DESCS, desc, false);
    }
    
    public String encode(Color color)

@@ -32,7 +32,8 @@ public class VersionArg extends Argument
    {
       super("version", 0, new ParamInfo[0], 
             "Displays the application's version.  Currently it is "+
-            InfoCenter.getAppVersion());
+            InfoCenter.getAppVersion(), 
+            false);
    }
    
    @Override
