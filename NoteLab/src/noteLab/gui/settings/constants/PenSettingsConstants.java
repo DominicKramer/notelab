@@ -41,4 +41,6 @@ public interface PenSettingsConstants extends GuiSettingsConstants
    public static final Color PEN_1_COLOR = Color.BLACK;
    public static final Color PEN_2_COLOR = Color.BLUE;
    public static final Color PEN_3_COLOR = Color.RED;
+   
+   public static final int SMOOTH_FACTOR = 4;
 }
