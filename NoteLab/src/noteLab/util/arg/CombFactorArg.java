@@ -41,7 +41,7 @@ public class CombFactorArg extends Argument
    
    public CombFactorArg()
    {
-      super(SettingsKeys.COMB_FACTOR, 1, PARAM_DESCS, DESC);
+      super(SettingsKeys.COMB_FACTOR, 1, PARAM_DESCS, DESC, true);
    }
    
    public String encode(float combFactor)
