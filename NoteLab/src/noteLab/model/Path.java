@@ -31,6 +31,7 @@ import noteLab.model.geom.FloatPoint2D;
 import noteLab.util.CopyReady;
 import noteLab.util.geom.Bounded;
 import noteLab.util.geom.ItemContainer;
+import noteLab.util.math.Polynomial;
 import noteLab.util.settings.SettingsKeys;
 import noteLab.util.settings.SettingsManager;
 
@@ -214,6 +215,112 @@ public class Path
       clear();
       for (FloatPoint2D pt : newPts)
          addItem(pt); 
+   }
+   
+   public void smooth(int numPts)
+   {
+      if (numPts <= 0)
+         return;
+      
+      int numItems = getNumItems();
+      
+      if (numItems < 2*numPts+1)
+         return;
+      
+      Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numItems);
+      for (int i=0; i<numPts; i++)
+         newPts.add(getItemAt(i).getCopy());
+      
+      Polynomial xCurve = new Polynomial(2);
+      Polynomial yCurve = new Polynomial(2);
+      for (int i=numPts; i<numItems-numPts; i++)
+      {
+         findCurve(i, numPts, true, xCurve);
+         findCurve(i, numPts, false, yCurve);
+         
+         newPts.add(new FloatPoint2D(xCurve.eval(numPts+1), 
+                                     yCurve.eval(numPts+1), 
+                                     this.xScaleLevel, 
+                                     this.yScaleLevel));
+      }
+      
+      for (int i=numItems-numPts; i<numItems; i++)
+         newPts.add(getItemAt(i).getCopy());
+      
+      clear();
+      for (FloatPoint2D pt : newPts)
+         addItem(pt);
+   }
+   
+   public void findCurve(int index, int numPts, boolean useX, Polynomial curve)
+   {
+      if (curve == null)
+         throw new NullPointerException();
+      
+      if (curve.getDegree() < 2)
+         throw new IllegalArgumentException("A polynomial of at least degree 2 is needed " +
+                                            "to smooth the points.  However a " +
+                                            "polynomial of degree "+curve.getDegree()+
+                                            " was given.");
+      
+      if (index < 0 || index >= getNumItems())
+         throw new ArrayIndexOutOfBoundsException("index="+index+
+                                                  " is not in the range [0,"+
+                                                  getNumItems()+")");
+      
+      if (numPts < 0)
+         throw new IllegalArgumentException("The number of points to interpolate the points " +
+                                            "cannot be negative.  " +
+                                            "The value "+numPts+" was given");
+      
+      if (index - numPts < 0)
+         throw new IllegalArgumentException("Smoothing cannot continue because there is not " +
+                                             "enough points to the left " +
+                                            "of the current point to use to construct the " +
+                                            "smoothing polynomial.");
+      
+      if (index + numPts >= getNumItems())
+         throw new IllegalArgumentException("Smoothing cannot continue because there is not " +
+                                            "enough points to the right " +
+                                            "of the current point to use to construct the " +
+                                            "smoothing polynomial.");
+      
+      float sumY    = 0;
+      float sumxY   = 0;
+      float sumx2Y  = 0;
+      float curVal  = 0;
+      int   counter = 1;
+      for (int i=index-numPts; i<=index+numPts; i++)
+      {
+         curVal = (useX)?(getItemAt(i).getX()):(getItemAt(i).getY());
+         
+         sumY   += curVal;
+         sumxY  += counter*curVal;
+         sumx2Y += counter*counter*curVal;
+         
+         counter++;
+      }
+      
+      /* There is a mistake in these coefficients
+      float c1 = (float)(Math.pow(n,3)-3*Math.pow(n,3)+2*n);
+      float c2 = (float)(Math.pow(n,4)-Math.pow(n,3)-4*Math.pow(n,2)+4*n);
+      float c3 = (float)(Math.pow(n,5)-5*Math.pow(n,3)+4*n);
+      float c4 = (float)(9*Math.pow(n,2)+9*n+6);
+      float c5 = 12*(float)(16*Math.pow(n,2)+30*n+11);
+      float c6 = -18*(float)(1+2*n);
+      */
+      
+      int n = 2*numPts+1;
+      float c1 = 2*n-3*n*n+n*n*n;
+      float c2 = (-1+n)*n*(-4+n*n);
+      float c3 = (float)(4*n-5*Math.pow(n, 3)+Math.pow(n, 5));
+      float c4 = 6+9*n+9*n*n;
+      float c5 = 12*(1+2*n)*(11+8*n);
+      float c6 = -18*(1+2*n);
+      
+      curve.setCoefficient(0, c4/c1*sumY + c6/c1*sumxY + 30/c1*sumx2Y);
+      curve.setCoefficient(1, c6/c1*sumY + c5/c3*sumxY - 180/c2*sumx2Y);
+      curve.setCoefficient(2, 30/c1*sumY - 180/c2*sumxY + 180/c3*sumx2Y);
    }
    
    public void setIsStable(boolean isStable)
