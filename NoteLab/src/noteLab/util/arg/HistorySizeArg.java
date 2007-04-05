@@ -43,7 +43,7 @@ public class HistorySizeArg extends Argument implements UndoRedoConstants
    
    public HistorySizeArg()
    {
-      super(SettingsKeys.HISTORY_SIZE_KEY, 1, PARAM_DESCS, DESC);
+      super(SettingsKeys.HISTORY_SIZE_KEY, 1, PARAM_DESCS, DESC, false);
    }
    
    public String encode(int size)

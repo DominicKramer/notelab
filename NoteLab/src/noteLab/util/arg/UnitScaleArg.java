@@ -48,7 +48,7 @@ public class UnitScaleArg extends Argument
    
    public UnitScaleArg()
    {
-      super(SettingsKeys.UNIT_SCALE_FACTOR, 1, PARAM_DESCS, DESC);
+      super(SettingsKeys.UNIT_SCALE_FACTOR, 1, PARAM_DESCS, DESC, false);
    }
    
    public String encode(float size)

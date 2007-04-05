@@ -52,7 +52,7 @@ public class PaperTypeArg extends Argument
    
    public PaperTypeArg()
    {
-      super(SettingsKeys.PAPER_TYPE_KEY, 1, PARAM_DESCS, DESC);
+      super(SettingsKeys.PAPER_TYPE_KEY, 1, PARAM_DESCS, DESC, false);
    }
    
    public String encode(PaperType type)

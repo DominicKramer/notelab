@@ -41,7 +41,7 @@ public class PenSizeArg extends Argument
    
    public PenSizeArg(String penSizeKey, int penNum)
    {
-      super(penSizeKey, 2, PARAM_DESCS, getDesc(penNum));
+      super(penSizeKey, 2, PARAM_DESCS, getDesc(penNum), false);
    }
    
    private static String getDesc(int penNum)
