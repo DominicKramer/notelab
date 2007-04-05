@@ -175,6 +175,16 @@ public class CommandInterpretor
          }
       }
       
+      if (arg.isDeprecated())
+      {
+         System.out.println("Warning:  The argument '"+id+
+                            "' is deprecated and will be ignored.");
+         System.out.println("          Future versions of "+InfoCenter.getAppName()+
+                            " may not support this argument.");
+         
+         return index+1;
+      }
+      
       if (!arg.decode(paramArr))
          return 0;
       
@@ -185,7 +195,7 @@ public class CommandInterpretor
    {
       public HelpArgument()
       {
-         super("help", 0, new ParamInfo[0], "Prints this help message");
+         super("help", 0, new ParamInfo[0], "Prints this help message", false);
       }
 
       @Override
