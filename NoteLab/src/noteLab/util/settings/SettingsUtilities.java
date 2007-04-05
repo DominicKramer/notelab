@@ -180,4 +180,22 @@ public class SettingsUtilities implements SettingsKeys
       
       SettingsManager.getSharedInstance().setValue(PEN_3_COLOR_KEY, color);
    }
+   
+   public static int getSmoothFactor()
+   {
+      Object val = SettingsManager.getSharedInstance().getValue(SMOOTH_FACTOR);
+      if (val == null || !(val instanceof Integer))
+         return PenSettingsConstants.SMOOTH_FACTOR;
+      
+      return (Integer)val;
+   }
+   
+   public static void setSmoothFactor(int factor)
+   {
+      if (factor < 0)
+         throw new IllegalArgumentException("The smoothing factor "+factor+
+                                            " is not valid since it must be nonnegative");
+      
+      SettingsManager.getSharedInstance().setValue(SMOOTH_FACTOR, factor);
+   }
 }
