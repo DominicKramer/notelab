@@ -60,6 +60,7 @@ import noteLab.model.Stroke;
 import noteLab.model.binder.Binder;
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.tool.Pen;
+import noteLab.util.geom.RectangleUnioner;
 import noteLab.util.geom.unit.MValue;
 import noteLab.util.geom.unit.Unit;
 import noteLab.util.render.Renderer2D;
@@ -125,10 +126,16 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       {
          public void run()
          {
+            RectangleUnioner unioner = new RectangleUnioner();
+            unioner.union(rawCurStroke.getBounds2D());
+            
             rawCurStroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
             rawCurStroke.setIsStable(true);
             
-            Rectangle2D.Float bounds = rawCurStroke.getBounds2D();
+            unioner.union(rawCurStroke.getBounds2D());
+            
+            Rectangle2D bounds = unioner.getUnion();
+            
             float x = (float)bounds.getX()+page.getX();
             float y = (float)bounds.getY()+page.getY();
             float width = (float)bounds.getWidth();

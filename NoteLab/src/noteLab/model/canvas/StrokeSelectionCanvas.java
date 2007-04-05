@@ -685,10 +685,13 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                   if (curStroke == null)
                      continue;
                   
+                  // add the stroke's current bounding box to the dirty region
+                  dirtyUnioner.union(curStroke.getBounds2D());
+                  
                   curStroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
                   maxWidth = Math.max(maxWidth, curStroke.getPen().getWidth());
                   
-                  // add the stroke's bounding box to the dirty region
+                  // add the stroke's new bounding box to the dirty region
                   dirtyUnioner.union(curStroke.getBounds2D());
                }
             }
