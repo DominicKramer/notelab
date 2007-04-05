@@ -65,6 +65,7 @@ import noteLab.util.geom.RectangleUnioner;
 import noteLab.util.geom.unit.MValue;
 import noteLab.util.geom.unit.Unit;
 import noteLab.util.render.Renderer2D;
+import noteLab.util.settings.SettingsUtilities;
 import noteLab.util.structure.CopyVector;
 import noteLab.util.undoRedo.action.DeletePagedStrokeAction;
 import noteLab.util.undoRedo.action.DrawPagedStrokeAction;
@@ -684,7 +685,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                   if (curStroke == null)
                      continue;
                   
-                  curStroke.getPath().comb();
+                  curStroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
                   maxWidth = Math.max(maxWidth, curStroke.getPen().getWidth());
                   
                   // add the stroke's bounding box to the dirty region
