@@ -32,9 +32,11 @@ public abstract class Argument
    private int numArgs;
    private String desc;
    private ParamInfo[] paramInfoArr;
+   private boolean isDeprecated;
    
    public Argument(String id, int numArgs, 
-                   ParamInfo[] paramInfoArr, String desc)
+                   ParamInfo[] paramInfoArr, String desc, 
+                   boolean isDeprecated)
    {
       if (id == null || paramInfoArr == null || desc == null)
          throw new NullPointerException();
@@ -47,6 +49,12 @@ public abstract class Argument
       this.numArgs = numArgs;
       this.paramInfoArr = paramInfoArr;
       this.desc = desc;
+      this.isDeprecated = isDeprecated;
+   }
+   
+   public boolean isDeprecated()
+   {
+      return this.isDeprecated;
    }
    
    public String getIdentifier()
