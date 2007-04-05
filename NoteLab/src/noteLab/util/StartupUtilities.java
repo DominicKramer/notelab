@@ -46,6 +46,7 @@ import noteLab.util.arg.PaperColorArg;
 import noteLab.util.arg.PaperTypeArg;
 import noteLab.util.arg.PenColorArg;
 import noteLab.util.arg.PenSizeArg;
+import noteLab.util.arg.SmoothFactorArg;
 import noteLab.util.arg.UnitScaleArg;
 import noteLab.util.arg.VersionArg;
 import noteLab.util.io.noteLab.NoteLabFileLoadedListener;
@@ -101,6 +102,7 @@ public class StartupUtilities implements SettingsKeys
       interpretor.registerArgument(new HistorySizeArg());
       
       interpretor.registerArgument(new CombFactorArg());
+      interpretor.registerArgument(new SmoothFactorArg());
       
       interpretor.registerArgument(new UnitScaleArg());
       
