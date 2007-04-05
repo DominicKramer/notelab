@@ -43,6 +43,8 @@ public interface SettingsKeys
    public static final String COMB_FACTOR = "combFactor";
    public static final String UNIT_SCALE_FACTOR = "unitFactor";
    
+   public static final String SMOOTH_FACTOR = "smoothFactor";
+   
    //The keys below are not implemented yet
    public static final String WINDOW_SIZE = "windowSize";
    public static final String WINDOW_LOCATION = "windowLocation";
