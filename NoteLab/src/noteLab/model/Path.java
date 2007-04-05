@@ -45,6 +45,154 @@ public class Path
                 extends ItemContainer<FloatPoint2D> 
                            implements CopyReady<Path>, Bounded
 {
+   private static final Polynomial POLY_3_1  = new Polynomial(0, 
+                                                              0, 
+                                                              0,
+                                                              0,
+                                                              1f/42000f, 
+                                                              0, 
+                                                              -13f/151200f, 
+                                                              0, 
+                                                              713f/6048000f,
+                                                              0, 
+                                                              -23f/302400f,
+                                                              0,
+                                                              71f/3024000f,
+                                                              0, 
+                                                              -1f/302400f,
+                                                              0, 
+                                                              1f/6048000f);
+   private static final Polynomial POLY_3_2  = new Polynomial(0,
+                                                              0,
+                                                              0,
+                                                              -1f/10500f,
+                                                              -1f/2520f,
+                                                              -29f/75600f,
+                                                              1f/2400f,
+                                                              103f/108000f,
+                                                              1f/2520f,
+                                                              -7f/21600f,
+                                                              -11f/25200f,
+                                                              -151f/756000f,
+                                                              0,
+                                                              1f/21600f,
+                                                              1f/50400f,
+                                                              1f/378000f);
+   private static final Polynomial POLY_3_3  = new Polynomial(0, 
+                                                              0, 
+                                                              0, 
+                                                              1f/2520f, 
+                                                              13f/10800f, 
+                                                              43f/50400f, 
+                                                              -391f/302400f, 
+                                                              -1f/360f, 
+                                                              -131f/100800f, 
+                                                              2f/1575f, 
+                                                              71f/43200f, 
+                                                              1f/2520f, 
+                                                              -71f/302400f, 
+                                                              -1f/7200f, 
+                                                              -1f/50400f);
+   private static final Polynomial POLY_3_4  = new Polynomial(0, 
+                                                              0, 
+                                                              0, 
+                                                              -1f/2100f, 
+                                                              -23f/12600f, 
+                                                              -29f/25200f, 
+                                                              31f/10080f, 
+                                                              13f/3150f, 
+                                                              -1f/2400f, 
+                                                              -1f/350f, 
+                                                              -11f/10080f, 
+                                                              1f/3150f, 
+                                                              13f/50400f, 
+                                                              1f/25200f);
+   private static final Polynomial POLY_3_5  = new Polynomial(0, 
+                                                              0, 
+                                                              0, 
+                                                              1f/1800f, 
+                                                              11f/10800f, 
+                                                              -1f/1440f, 
+                                                              -19f/8640f, 
+                                                              -1f/2400f, 
+                                                              19f/14400f, 
+                                                              1f/1440f, 
+                                                              -1f/8640f, 
+                                                              -1f/7200f, 
+                                                              -1f/43200f);
+   private static final Polynomial POLY_3_6  = new Polynomial(0, 
+                                                              0, 
+                                                              0, 
+                                                              -11f/7560f, 
+                                                              -1f/252f, 
+                                                              -23f/10080f, 
+                                                              3f/560f, 
+                                                              1f/105f, 
+                                                              1f/480f, 
+                                                              -187f/30240f, 
+                                                              -11f/2520f, 
+                                                              1f/5040f, 
+                                                              1f/1120f, 
+                                                              1f/5040f);
+   private static final Polynomial POLY_3_7  = new Polynomial(0, 
+                                                              0, 
+                                                              0, 
+                                                              1f/504f, 
+                                                              31f/5040f, 
+                                                              1f/672f, 
+                                                              -27f/2240f, 
+                                                              -1f/96f, 
+                                                              1f/192f, 
+                                                              17f/2016f, 
+                                                              23f/20160f, 
+                                                              -1f/672f, 
+                                                              -1f/2240f);
+   private static final Polynomial POLY_3_8  = new Polynomial(0, 
+                                                              0, 
+                                                              0, 
+                                                              -11f/5400f, 
+                                                              -1f/360f, 
+                                                              1f/288f, 
+                                                              1f/160f, 
+                                                              -1f/1800f, 
+                                                              -1f/240f, 
+                                                              -1f/864f, 
+                                                              1f/1440f, 
+                                                              1f/3600f);
+   private static final Polynomial POLY_3_9  = new Polynomial(0, 
+                                                              0, 
+                                                              0, 
+                                                              -13f/4200f, 
+                                                              -1f/120f, 
+                                                              3f/1120f, 
+                                                              3f/160f, 
+                                                              1f/200f, 
+                                                              -1f/80f, 
+                                                              -19f/3360f, 
+                                                              1f/480f, 
+                                                              3f/2800f);
+   private static final Polynomial POLY_3_10 = new Polynomial(0, 
+                                                              0, 
+                                                              0, 
+                                                              1f/360f, 
+                                                              1f/360f, 
+                                                              -1f/160f, 
+                                                              -1f/160f, 
+                                                              1f/240f, 
+                                                              1f/240f, 
+                                                              -1f/1440f, 
+                                                              -1f/1440f);
+   private static final Polynomial POLY_3_11 = new Polynomial(0, 
+                                                              0, 
+                                                              0, 
+                                                              -1f/540f, 
+                                                              0, 
+                                                              1f/240f, 
+                                                              0, 
+                                                              -1f/360f, 
+                                                              0, 
+                                                              1f/2160f);
+   
    private static final float DEFAULT_COMB_FACTOR = 2;//1.5f;//5;
    
    private float distSum;
@@ -231,15 +379,15 @@ public class Path
       for (int i=0; i<numPts; i++)
          newPts.add(getItemAt(i).getCopy());
       
-      Polynomial xCurve = new Polynomial(2);
-      Polynomial yCurve = new Polynomial(2);
+      Polynomial xCurve = new Polynomial(3);
+      Polynomial yCurve = new Polynomial(3);
       FloatPoint2D curPt;
       float xScale = 1;
       float yScale = 1;
       for (int i=numPts; i<numItems-numPts; i++)
       {
-         findCurve(i, numPts, true, xCurve);
-         findCurve(i, numPts, false, yCurve);
+         fillCubic(i, numPts, true, xCurve);
+         fillCubic(i, numPts, false, yCurve);
          
          curPt = getItemAt(i);
          if (curPt != null)
@@ -267,7 +415,83 @@ public class Path
          addItem(pt);
    }
    
-   public void findCurve(int index, int numPts, boolean useX, Polynomial curve)
+   public void fillCubic(int index, int numPts, boolean useX, Polynomial curve)
+   {
+      if (curve == null)
+         throw new NullPointerException();
+      
+      if (curve.getDegree() < 3)
+         throw new IllegalArgumentException("A polynomial of at least degree 3 is needed " +
+                                            "to smooth the points.  However a " +
+                                            "polynomial of degree "+curve.getDegree()+
+                                            " was given.");
+      
+      if (index < 0 || index >= getNumItems())
+         throw new ArrayIndexOutOfBoundsException("index="+index+
+                                                  " is not in the range [0,"+
+                                                  getNumItems()+")");
+      
+      if (numPts < 0)
+         throw new IllegalArgumentException("The number of points to interpolate the points " +
+                                            "cannot be negative.  " +
+                                            "The value "+numPts+" was given");
+      
+      if (index - numPts < 0)
+         throw new IllegalArgumentException("Smoothing cannot continue because there is not " +
+                                             "enough points to the left " +
+                                            "of the current point to use to construct the " +
+                                            "smoothing polynomial.");
+      
+      if (index + numPts >= getNumItems())
+         throw new IllegalArgumentException("Smoothing cannot continue because there is not " +
+                                            "enough points to the right " +
+                                            "of the current point to use to construct the " +
+                                            "smoothing polynomial.");
+      
+      float sumY    = 0;
+      float sumxY   = 0;
+      float sumx2Y  = 0;
+      float sumx3Y  = 0;
+      
+      float curVal  = 0;
+      int   counter = 1;
+      for (int i=index-numPts; i<=index+numPts; i++)
+      {
+         curVal = (useX)?(getItemAt(i).getX()):(getItemAt(i).getY());
+         
+         sumY   += curVal;
+         sumxY  += counter*curVal;
+         sumx2Y += counter*counter*curVal;
+         sumx3Y += counter*counter*counter*curVal;
+         
+         counter++;
+      }
+      
+      float numTotal = 2*numPts+1;
+      float c1  = POLY_3_1.eval(numTotal);
+      float c2  = POLY_3_2.eval(numTotal);
+      float c3  = POLY_3_3.eval(numTotal);
+      float c4  = POLY_3_4.eval(numTotal);
+      float c5  = POLY_3_5.eval(numTotal);
+      float c6  = POLY_3_6.eval(numTotal);
+      float c7  = POLY_3_7.eval(numTotal);
+      float c8  = POLY_3_8.eval(numTotal);
+      float c9  = POLY_3_9.eval(numTotal);
+      float c10 = POLY_3_10.eval(numTotal);
+      float c11 = POLY_3_11.eval(numTotal);
+      
+      float a0 = (c2*sumY + c3*sumxY +  c4*sumx2Y +  c5*sumx3Y)/c1;
+      float a1 = (c3*sumY + c6*sumxY +  c7*sumx2Y +  c8*sumx3Y)/c1;
+      float a2 = (c4*sumY + c7*sumxY +  c9*sumx2Y + c10*sumx3Y)/c1;
+      float a3 = (c5*sumY + c8*sumxY + c10*sumx2Y + c11*sumx3Y)/c1;
+      
+      curve.setCoefficient(0, a0);
+      curve.setCoefficient(1, a1);
+      curve.setCoefficient(2, a2);
+      curve.setCoefficient(3, a3);
+   }
+   
+   public void fillQuadratic(int index, int numPts, boolean useX, Polynomial curve)
    {
       if (curve == null)
          throw new NullPointerException();
@@ -405,5 +629,20 @@ public class Path
       }
       
       return yPts;
+   }
+   
+   public static void main(String[] args)
+   {
+      Path path = new Path(1, 1);
+      path.addItem(new FloatPoint2D(1,1,1,1));
+      path.addItem(new FloatPoint2D(3,3,1,1));
+      path.addItem(new FloatPoint2D(4,4,1,1));
+      path.addItem(new FloatPoint2D(5,5,1,1));
+      path.addItem(new FloatPoint2D(2,2,1,1));
+      
+      Polynomial curve = new Polynomial(3);
+      path.fillCubic(2, 2, true, curve);
+      
+      System.err.println(curve);
    }
 }
