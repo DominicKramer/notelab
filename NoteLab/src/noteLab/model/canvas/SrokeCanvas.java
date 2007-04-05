@@ -125,15 +125,15 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       {
          public void run()
          {
+            rawCurStroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
+            rawCurStroke.setIsStable(true);
+            
             Rectangle2D.Float bounds = rawCurStroke.getBounds2D();
             float x = (float)bounds.getX()+page.getX();
             float y = (float)bounds.getY()+page.getY();
             float width = (float)bounds.getWidth();
             float height = (float)bounds.getHeight();
             float delta = rawCurStroke.getPen().getWidth();
-            
-            rawCurStroke.getPath().comb();
-            rawCurStroke.setIsStable(true);
             
             doRepaint(x, y, width, height, delta);
          }
