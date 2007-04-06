@@ -363,7 +363,9 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       {
          float width = (float)this.sizeControl.getControlValue().getValue(Unit.PIXEL);
          float unitScaleLevel = SettingsUtilities.getUnitScaleFactor();
-         width *= unitScaleLevel;
+         float zoomLevel = getCompositeCanvas().getZoomLevel();
+         
+         width *= unitScaleLevel*zoomLevel;
          
          Color color = this.colorControl.getControlValue();
          
