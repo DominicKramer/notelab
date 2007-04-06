@@ -67,14 +67,21 @@ public class SwingRenderer2D extends Renderer2D
       
       this.g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
                                 RenderingHints.VALUE_RENDER_QUALITY);
+      
       this.g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
                                 RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+      
       this.g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, 
                                 RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+      
       this.g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, 
                                 RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+      
       this.g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
-                                RenderingHints.VALUE_STROKE_NORMALIZE);
+                                RenderingHints.VALUE_STROKE_PURE);
+      
+      this.g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
+                                RenderingHints.VALUE_DITHER_ENABLE);
    }
    
    @Override
