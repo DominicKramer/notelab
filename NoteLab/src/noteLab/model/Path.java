@@ -45,6 +45,8 @@ public class Path
                 extends ItemContainer<FloatPoint2D> 
                            implements CopyReady<Path>, Bounded
 {
+   private static final int ZERO_DEGREE_KNOT_NUM = 2;
+   
    private static final Polynomial POLY_3_1  = new Polynomial(0, 
                                                               0, 
                                                               0,
@@ -403,8 +405,8 @@ public class Path
             yScale = this.yScaleLevel;
          }
          
-         xVal = (calculateAverage(i, 1, true)+xCurve.eval(numPts+1))/2f;
-         yVal = (calculateAverage(i, 1, false)+yCurve.eval(numPts+1))/2f;
+         xVal = (calculateAverage(i, ZERO_DEGREE_KNOT_NUM, true)+xCurve.eval(numPts+1))/2f;
+         yVal = (calculateAverage(i, ZERO_DEGREE_KNOT_NUM, false)+yCurve.eval(numPts+1))/2f;
          
          newPts.add(new FloatPoint2D(xVal, 
                                      yVal, 
