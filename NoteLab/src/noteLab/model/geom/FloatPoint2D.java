@@ -182,8 +182,8 @@ public class FloatPoint2D implements Transformable,
       this.srcPoint.x += x;
       this.srcPoint.y += y;
       
-      this.initPoint.x = this.srcPoint.x;
-      this.initPoint.y = this.srcPoint.y;
+      this.initPoint.x = this.srcPoint.x/this.xScaleLevel;
+      this.initPoint.y = this.srcPoint.y/this.yScaleLevel;
       
       notifyModListeners(ModType.TranslateBy);
    }
