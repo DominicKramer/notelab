@@ -64,7 +64,7 @@ public class SwingDrawingBoard extends JPanel implements Scrollable
       //class (as this class agrees to do), small painting 
       //anamolies may result.
       setOpaque(true);
-      setDoubleBuffered(false);
+      setDoubleBuffered(true);
    }
    
    public void paintComponent(Graphics g)
