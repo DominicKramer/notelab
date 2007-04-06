@@ -384,6 +384,8 @@ public class Path
       FloatPoint2D curPt;
       float xScale = 1;
       float yScale = 1;
+      float xVal;
+      float yVal;
       for (int i=numPts; i<numItems-numPts; i++)
       {
          fillCubic(i, numPts, true, xCurve);
@@ -401,8 +403,11 @@ public class Path
             yScale = this.yScaleLevel;
          }
          
-         newPts.add(new FloatPoint2D(xCurve.eval(numPts+1), 
-                                     yCurve.eval(numPts+1), 
+         xVal = (calculateAverage(i, 1, true)+xCurve.eval(numPts+1))/2f;
+         yVal = (calculateAverage(i, 1, false)+yCurve.eval(numPts+1))/2f;
+         
+         newPts.add(new FloatPoint2D(xVal, 
+                                     yVal, 
                                      xScale, 
                                      yScale));
       }
@@ -415,7 +420,29 @@ public class Path
          addItem(pt);
    }
    
-   public void fillCubic(int index, int numPts, boolean useX, Polynomial curve)
+   private float calculateAverage(int index, int numPts, boolean calcX)
+   {
+      int numTotal = getNumItems();
+
+      if (index < 0 || index >= numTotal)
+         throw new ArrayIndexOutOfBoundsException();
+
+      if (numPts < 0)
+         throw new IllegalArgumentException();
+
+      if ( (index-numPts < 0) || (index+numPts >= numTotal) )
+         return (calcX)?(getItemAt(index).getX()):(getItemAt(index).getY());
+      
+      float sum = 0;
+      for (int i=index-numPts; i<=index+numPts; i++)
+         sum += (calcX)?(getItemAt(i).getX()):(getItemAt(i).getY());
+
+      sum /= (2*numPts+1f);
+
+      return sum;
+   }
+   
+   private void fillCubic(int index, int numPts, boolean useX, Polynomial curve)
    {
       if (curve == null)
          throw new NullPointerException();
@@ -491,7 +518,7 @@ public class Path
       curve.setCoefficient(3, a3);
    }
    
-   public void fillQuadratic(int index, int numPts, boolean useX, Polynomial curve)
+   private void fillQuadratic(int index, int numPts, boolean useX, Polynomial curve)
    {
       if (curve == null)
          throw new NullPointerException();
