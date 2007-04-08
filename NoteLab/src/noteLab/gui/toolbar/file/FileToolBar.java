@@ -253,7 +253,7 @@ public class FileToolBar
          boolean notCancelled = printerJob.printDialog();
          if (notCancelled)
          {
-            SwingUtilities.invokeLater(new Runnable()
+            new Thread((new Runnable()
             {
                public void run()
                {
@@ -266,7 +266,7 @@ public class FileToolBar
                      CanvasFileProcessor.notifyOfThrowable(printEx);
                   }
                }
-            });
+            })).start();
          }
       }
       else if (cmmd.equals(SETTINGS))
