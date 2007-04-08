@@ -116,14 +116,6 @@ public class ButtonPair implements ActionListener, GuiSettingsConstants
    
    public void setValue(double val)
    {
-      double min = getMin();
-      double max = getMax();
-      double step = this.spinnerModel.getStepSize().doubleValue();
-      if (val < min)
-         val = min+step;
-      else if (val > max)
-         val = max-step;
-      
       this.spinnerModel.setValue(new Double(val));
    }
    
