@@ -133,10 +133,13 @@ public abstract class CanvasFileProcessor implements FileProcessor
                messageBuffer.append("Saving ");
             else
                messageBuffer.append("Exporting ");
-            messageBuffer.append("completed ");
+            messageBuffer.append("to the file '");
+            messageBuffer.append(file.getAbsolutePath());
+            messageBuffer.append("' ");
             if (!hasBeenSaved)
-               messageBuffer.append("un");
-            messageBuffer.append("successfully.");
+               messageBuffer.append("failed.");
+            else
+               messageBuffer.append("completed successfully.");
             
             mainFrame.setMessage(messageBuffer.toString(), 
                                  (!hasBeenSaved)?Color.RED:Color.BLACK);
