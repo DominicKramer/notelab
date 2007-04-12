@@ -54,4 +54,7 @@ public interface NoteLabFileConstants
    public static final String INCH_UNIT_NAME = "in";
    public static final String CM_UNIT_NAME = "cm";
    public static final String PIXEL_UNIT_NAME = "px";
+   
+   public static final String PATH_NAME = "path";
+   public static final String PATH_ATT_NAME = "d";
 }
