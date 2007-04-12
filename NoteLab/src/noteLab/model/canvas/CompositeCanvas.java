@@ -96,6 +96,8 @@ public class CompositeCanvas
    
    private UndoRedoManager undoRedoManager;
    
+   private boolean isEnabled;
+   
    public CompositeCanvas(float scaleLevel)
    {
       this(new FlowBinder(scaleLevel, scaleLevel), scaleLevel);
@@ -147,8 +149,19 @@ public class CompositeCanvas
       }.start();
       
       this.hasBeenModified = false;
+      this.isEnabled = true;
       
       SettingsManager.getSharedInstance().addSettingsListener(this);
+   }
+   
+   public boolean isEnabled()
+   {
+      return this.isEnabled;
+   }
+   
+   public void setEnabled(boolean isEnabled)
+   {
+      this.isEnabled = isEnabled;
    }
    
    public UndoRedoManager getUndoRedoManager()
@@ -430,6 +443,9 @@ public class CompositeCanvas
       
       public void mousePressed(final MouseEvent e)
       {
+         if (!isEnabled)
+            return;
+         
          SwingUtilities.invokeLater(new Runnable()
          {
             public void run()
@@ -455,6 +471,9 @@ public class CompositeCanvas
 
       public void mouseReleased(final MouseEvent e)
       {
+         if (!isEnabled)
+            return;
+         
          SwingUtilities.invokeLater(new Runnable()
          {
             public void run()
@@ -479,6 +498,9 @@ public class CompositeCanvas
       
       public void mouseDragged(final MouseEvent e)
       {
+         if (!isEnabled)
+            return;
+         
          pointCount = (pointCount+1)%pointModIndex;
          if (pointCount != 0)
             return;
