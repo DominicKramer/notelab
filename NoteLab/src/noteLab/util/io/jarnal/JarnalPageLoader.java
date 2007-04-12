@@ -27,7 +27,6 @@ package noteLab.util.io.jarnal;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -41,7 +40,6 @@ import noteLab.model.Paper;
 import noteLab.model.Path;
 import noteLab.model.Stroke;
 import noteLab.model.Paper.PaperType;
-import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.tool.Pen;
 import noteLab.util.geom.unit.Unit;
 import noteLab.util.io.ResolvableHandler;
@@ -223,43 +221,6 @@ public class JarnalPageLoader extends ResolvableHandler implements Runnable
       return !this.bgName.equalsIgnoreCase(NO_BG_NAME);
    }
    
-   private static Path constructPath(String pathText, float scale)
-   {
-      if (pathText == null)
-         throw new NullPointerException();
-      
-      Path path = new Path(scale, scale);
-      
-      StringTokenizer tokenizer = new StringTokenizer(pathText);
-      String token1, token2;
-      float x, y;
-      while (tokenizer.hasMoreTokens())
-      {
-         token1 = tokenizer.nextToken();
-         if (tokenizer.hasMoreTokens())
-            token2 = tokenizer.nextToken();
-         else
-            break;
-         
-         // pull the letter away from the front of the token
-         token1 = token1.substring(1);
-         
-         try
-         {
-            x = Float.parseFloat(token1);
-            y = Float.parseFloat(token2);
-            
-            path.addItem(new FloatPoint2D(x, y, scale, scale));
-         }
-         catch (NumberFormatException e)
-         {
-            break;
-         }
-      }
-      
-      return path;
-   }
-   
    private static Color constructColor(String colorStr)
    {
       if (colorStr == null)
@@ -356,7 +317,8 @@ public class JarnalPageLoader extends ResolvableHandler implements Runnable
       else if (localName.equals(PATH_NAME))
       {
          String pathText = attributes.getValue(PATH_ATT_NAME);
-         Path path = constructPath(pathText, this.scale);
+         Path path = new Path(this.scale, this.scale);
+         fillPath(path, pathText, this.scale);
          
          String colorStr = attributes.getValue(STROKE_COLOR_ATT_NAME);
          Color color = constructColor(colorStr);
