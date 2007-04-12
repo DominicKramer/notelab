@@ -114,7 +114,18 @@ public class NoteLabFileChooser extends JFileChooser implements ActionListener
       }
    }
    
-   private void processFile(File file)
+   private void processFile(final File file)
+   {
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            doProcessFile(file);
+         }
+      }).start();
+   }
+   
+   private void doProcessFile(File file)
    {
       if (file.exists() && this.checkOverwrite)
       {
