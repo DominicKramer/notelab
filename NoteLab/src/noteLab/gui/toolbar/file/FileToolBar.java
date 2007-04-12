@@ -182,7 +182,7 @@ public class FileToolBar
    
    public void actionPerformed(ActionEvent e)
    {
-      CompositeCanvas canvas = this.mainFrame.getCompositeCanvas();
+      final CompositeCanvas canvas = this.mainFrame.getCompositeCanvas();
       
       String cmmd = e.getActionCommand();
       if (cmmd.equals(NEW))
@@ -258,7 +258,12 @@ public class FileToolBar
                {
                   try
                   {
-                     printerJob.print();
+                     synchronized(canvas)
+                     {
+                        canvas.setEnabled(false);
+                        printerJob.print();
+                        canvas.setEnabled(true);
+                     }
                   }
                   catch (PrinterException printEx)
                   {
