@@ -272,7 +272,7 @@ public class FileToolBar
                   catch (PrinterException printEx)
                   {
                      CanvasFileProcessor.notifyOfThrowable(printEx);
-                     mainFrame.setMessage("Printing completed unsucessfully.", Color.RED);
+                     mainFrame.setMessage("Printing failed.", Color.RED);
                   }
                }
             })).start();
