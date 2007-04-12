@@ -37,7 +37,6 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
@@ -277,13 +276,20 @@ public class FileToolBar
    
    public void save(boolean forceSaveAs)
    {
-      File file = this.mainFrame.getCompositeCanvas().getFile();
+      final File file = this.mainFrame.getCompositeCanvas().getFile();
       if (!forceSaveAs && file != null)
       {
-         CanvasFileProcessor.saveAsSVG(this.mainFrame, 
-                                       file, 
-                                       InfoCenter.getFileExtension(), 
-                                       true);
+         new Thread(new Runnable()
+         {
+            public void run()
+            {
+               CanvasFileProcessor.saveAsSVG(mainFrame, 
+                                             file, 
+                                             InfoCenter.getFileExtension(), 
+                                             true);
+            }
+         }).start();
+         
          return;
       }
       
