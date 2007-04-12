@@ -52,9 +52,9 @@ public class AboutFrame
    private static final String VIEW_LICENSE_TEXT = "View License";
    private static final String VIEW_CREDITS_TEXT = "View Credits";
    
-   private static final String MAX_MEMORY_LABEL = "Maximum available memory:  ";
-   private static final String FREE_MEMORY_LABEL = "Total free memory:  ";
-   private static final String USED_MEMORY_LABEL = "Total used memory:  ";
+   private static final String MAX_MEMORY_LABEL = "Maximum Available Memory:  ";
+   private static final String FREE_MEMORY_LABEL = "Total Free Memory:  ";
+   private static final String USED_MEMORY_LABEL = "Total Used Memory:  ";
    private static final String MB_LABEL = " Mb";
    
    private JLabel maxLabel;
@@ -77,7 +77,9 @@ public class AboutFrame
       JPanel infoPanel = new JPanel();
       infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
       
-      JLabel versionLabel = new JLabel("Version:  "+InfoCenter.getAppVersion());
+      JLabel versionLabel = new JLabel(InfoCenter.getAppName()+
+                                       " Version:  "+
+                                       InfoCenter.getAppVersion());
         Font font = versionLabel.getFont().deriveFont(Font.PLAIN);
         versionLabel.setFont(font);
       infoPanel.add(versionLabel);
@@ -86,6 +88,12 @@ public class AboutFrame
                                       " ("+InfoCenter.getAuthorEmail()+")");
         authorLabel.setFont(font);
       infoPanel.add(authorLabel);
+      
+      JLabel javaLabel = new JLabel("Using Java Version:  "+
+                                    System.getProperty("java.version"));
+        javaLabel.setFont(font);
+      infoPanel.add(javaLabel);
+      infoPanel.add(new JLabel("     "));
       
       String blankStr = "           ";
       
