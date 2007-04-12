@@ -24,6 +24,7 @@
 
 package noteLab.gui.toolbar.file;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
@@ -260,14 +261,18 @@ public class FileToolBar
                   {
                      synchronized(canvas)
                      {
+                        mainFrame.setMessage("Printing the session requires momentarily " +
+                                             "disabling the canvas.", Color.BLACK);
                         canvas.setEnabled(false);
                         printerJob.print();
                         canvas.setEnabled(true);
+                        mainFrame.setMessage("Printing completed sucessfully.", Color.BLACK);
                      }
                   }
                   catch (PrinterException printEx)
                   {
                      CanvasFileProcessor.notifyOfThrowable(printEx);
+                     mainFrame.setMessage("Printing completed unsucessfully.", Color.RED);
                   }
                }
             })).start();
