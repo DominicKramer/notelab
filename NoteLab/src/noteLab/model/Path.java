@@ -395,7 +395,7 @@ public class Path
       for (int i=1; i<numItems-1; i++)
       {
          evalIndex = i;
-         if (i < numPts)
+         if (i <= numPts)
             evalIndex = numPtsPlus1;
          else if (i > endDiff)
             evalIndex = endDiff;
