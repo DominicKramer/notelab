@@ -26,6 +26,10 @@ package noteLab.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.StringTokenizer;
+
+import noteLab.model.Path;
+import noteLab.model.geom.FloatPoint2D;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -89,6 +93,39 @@ public class ResolvableHandler extends DefaultHandler
       }
       
       return null;
+   }
+   
+   public static void fillPath(Path path, String pathText, float scale)
+   {
+      if (pathText == null)
+         throw new NullPointerException();
+      
+      StringTokenizer tokenizer = new StringTokenizer(pathText);
+      String token1, token2;
+      float x, y;
+      while (tokenizer.hasMoreTokens())
+      {
+         token1 = tokenizer.nextToken();
+         if (tokenizer.hasMoreTokens())
+            token2 = tokenizer.nextToken();
+         else
+            break;
+         
+         // pull the letter away from the front of the token
+         token1 = token1.substring(1);
+         
+         try
+         {
+            x = Float.parseFloat(token1);
+            y = Float.parseFloat(token2);
+            
+            path.addItem(new FloatPoint2D(x, y, scale, scale));
+         }
+         catch (NumberFormatException e)
+         {
+            break;
+         }
+      }
    }
    
    private void appendMessage(SAXParseException exception, String prefix)
