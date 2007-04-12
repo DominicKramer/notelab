@@ -69,7 +69,7 @@ public class InfoCenter
    private static final String AUTHOR = "Dominic Kramer";
    
    /** This application's author's email address. */
-   private static final String AUTHOR_EMAIL = "kramerd@iastate.edu";
+   private static final String AUTHOR_EMAIL = "kramerd@users.sourceforge.net";
    
    /** This application's homepage. */
    private static final String HOMEPAGE = "java-notelab.sourceforge.net";
