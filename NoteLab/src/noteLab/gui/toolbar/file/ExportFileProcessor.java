@@ -58,7 +58,12 @@ public class ExportFileProcessor extends CanvasFileProcessor
          new BufferedImage( (int)width, (int)height, 
                             BufferedImage.TYPE_INT_RGB );
       ImageRenderer2D image2D = new ImageRenderer2D(image);
-      canvas.renderInto(image2D);
+      synchronized(canvas)
+      {
+         canvas.setEnabled(false);
+         canvas.renderInto(image2D);
+         canvas.setEnabled(true);
+      }
       
       String ext = getExtension(file);
       File formatFile = getFormattedName(file);
