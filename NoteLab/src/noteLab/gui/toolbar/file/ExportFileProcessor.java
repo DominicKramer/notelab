@@ -86,15 +86,22 @@ public class ExportFileProcessor extends CanvasFileProcessor
          return;
       }
       
+      StringBuffer messageBuffer = new StringBuffer("Exporting to the file '");
+      messageBuffer.append(formatFile.getAbsolutePath());
+      
       try
       {
          ImageIO.write(image, ext, formatFile);
-         mainFrame.setMessage("Exporting completed successfully.", Color.BLACK);
+         
+         messageBuffer.append("' completed successfully.");
+         mainFrame.setMessage(messageBuffer.toString(), Color.BLACK);
       }
       catch (Throwable throwable)
       {
          notifyOfThrowable(throwable);
-         mainFrame.setMessage("Exporting completed unsuccessfully.", Color.RED);
+         
+         messageBuffer.append("' failed.");
+         mainFrame.setMessage(messageBuffer.toString(), Color.RED);
       }
    }
 
