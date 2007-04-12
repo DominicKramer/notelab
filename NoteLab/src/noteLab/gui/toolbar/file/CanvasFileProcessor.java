@@ -64,10 +64,10 @@ public abstract class CanvasFileProcessor implements FileProcessor
       saveAsSVG(getMainFrame(), file, ext, zip);
    }
    
-   public static void saveAsSVG(MainFrame mainFrame, 
-                                File file, 
-                                String ext, 
-                                boolean zip)
+   public static synchronized void saveAsSVG(MainFrame mainFrame, 
+                                             File file, 
+                                             String ext, 
+                                             boolean zip)
    {
       if (mainFrame == null || file == null || ext == null)
          throw new NullPointerException();
