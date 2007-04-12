@@ -119,15 +119,51 @@ public class SVGRenderer2D extends Renderer2D implements NoteLabFileConstants
       int size = path.getNumItems();
       if (size == 0)
          return;
-      else if (size == 1)
+      
+      append("<");
+      append(PATH_NAME);
+      append(" ");
+      append(PATH_ATT_NAME);
+      append("=\"");
+      
+      FloatPoint2D first = path.getFirst();
+      append("M");
+      append(""+first.getX());
+      append(" ");
+      append(""+first.getY());
+      
+      if (size == 1)
       {
-         FloatPoint2D pt = path.getFirst();
-         drawLine(pt, pt);
-         return;
+         append(" L");
+         append(""+first.getX());
+         append(" ");
+         append(""+first.getY());
+      }
+      else
+      {
+         FloatPoint2D curPt;
+         for (int i=1; i<size; i++)
+         {
+            curPt = path.getItemAt(i);
+            
+            append(" L");
+            append(""+curPt.getX());
+            append(" ");
+            append(""+curPt.getY());
+         }
       }
       
-      for (int i=0; i<size-1; i++)
-         drawLine(path.getItemAt(i), path.getItemAt(i+1));
+      append("\" ");
+      append(STROKE_WIDTH_NAME);
+      append("=\"");
+      append(""+this.width);
+      append("\" ");
+      append(STROKE_NAME);
+      append("=\"");
+      append(this.color.toString());
+      append("\" ");
+      append(FILL_NAME);
+      append("=\"none\" />");
    }
    
    @Override
