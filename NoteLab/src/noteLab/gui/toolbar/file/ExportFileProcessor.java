@@ -24,6 +24,7 @@
 
 package noteLab.gui.toolbar.file;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -48,7 +49,8 @@ public class ExportFileProcessor extends CanvasFileProcessor
       if (file == null)
          throw new NullPointerException();
       
-      CompositeCanvas canvas = getMainFrame().getCompositeCanvas();
+      MainFrame mainFrame = getMainFrame();
+      CompositeCanvas canvas = mainFrame.getCompositeCanvas();
       
       Binder binder = canvas.getBinder();
       float width = binder.getWidth();
@@ -60,6 +62,8 @@ public class ExportFileProcessor extends CanvasFileProcessor
       ImageRenderer2D image2D = new ImageRenderer2D(image);
       synchronized(canvas)
       {
+         mainFrame.setMessage("Exporting the session requires momentarily disabling the canvas.", 
+                              Color.BLACK);
          canvas.setEnabled(false);
          canvas.renderInto(image2D);
          canvas.setEnabled(true);
@@ -85,10 +89,12 @@ public class ExportFileProcessor extends CanvasFileProcessor
       try
       {
          ImageIO.write(image, ext, formatFile);
+         mainFrame.setMessage("Exporting completed successfully.", Color.BLACK);
       }
       catch (Throwable throwable)
       {
          notifyOfThrowable(throwable);
+         mainFrame.setMessage("Exporting completed unsuccessfully.", Color.RED);
       }
    }
 
