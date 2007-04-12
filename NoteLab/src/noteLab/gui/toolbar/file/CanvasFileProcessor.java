@@ -64,10 +64,10 @@ public abstract class CanvasFileProcessor implements FileProcessor
       saveAsSVG(getMainFrame(), file, ext, zip);
    }
    
-   public static synchronized void saveAsSVG(MainFrame mainFrame, 
-                                             File file, 
-                                             String ext, 
-                                             boolean zip)
+   public static void saveAsSVG(MainFrame mainFrame, 
+                                File file, 
+                                String ext, 
+                                boolean zip)
    {
       if (mainFrame == null || file == null || ext == null)
          throw new NullPointerException();
@@ -80,43 +80,50 @@ public abstract class CanvasFileProcessor implements FileProcessor
       }
       
       CompositeCanvas canvas = mainFrame.getCompositeCanvas();
-      float zoomFactor = canvas.getZoomLevel();
-      float unitScaleFactor = SettingsUtilities.getUnitScaleFactor();
-      canvas.zoomTo(1);
-      canvas.resizeTo(1/unitScaleFactor);
-      boolean hasBeenSaved = false;
-      
-      try
+      synchronized(canvas)
       {
-         if (!file.exists())
-            file.createNewFile();
+         canvas.setEnabled(false);
          
-         OutputStream outStream = new FileOutputStream(file);
-         if (zip)
-            outStream = new GZIPOutputStream(outStream);
+         float zoomFactor = canvas.getZoomLevel();
+         float unitScaleFactor = SettingsUtilities.getUnitScaleFactor();
+         canvas.zoomTo(1);
+         canvas.resizeTo(1/unitScaleFactor);
+         boolean hasBeenSaved = false;
          
-         SVGRenderer2D msvg2D = new SVGRenderer2D(canvas, outStream);
-         canvas.renderInto(msvg2D);
-         
-         Exception error = msvg2D.getError();
-         if (error != null)
-            throw error;
-         
-         hasBeenSaved = true;
-         
-         if (ext.equalsIgnoreCase(InfoCenter.getFileExtension()))
-            canvas.setFile(file);
-      }
-      catch (Throwable throwable)
-      {
-         notifyOfThrowable(throwable);
-      }
-      finally
-      {
-         canvas.resizeTo(unitScaleFactor);
-         canvas.zoomTo(zoomFactor);
-         if (hasBeenSaved)
-            mainFrame.hasBeenSaved();
+         try
+         {
+            if (!file.exists())
+               file.createNewFile();
+            
+            OutputStream outStream = new FileOutputStream(file);
+            if (zip)
+               outStream = new GZIPOutputStream(outStream);
+            
+            SVGRenderer2D msvg2D = new SVGRenderer2D(canvas, outStream);
+            canvas.renderInto(msvg2D);
+            
+            Exception error = msvg2D.getError();
+            if (error != null)
+               throw error;
+            
+            hasBeenSaved = true;
+            
+            if (ext.equalsIgnoreCase(InfoCenter.getFileExtension()))
+               canvas.setFile(file);
+         }
+         catch (Throwable throwable)
+         {
+            notifyOfThrowable(throwable);
+         }
+         finally
+         {
+            canvas.resizeTo(unitScaleFactor);
+            canvas.zoomTo(zoomFactor);
+            if (hasBeenSaved)
+               mainFrame.hasBeenSaved();
+            
+            canvas.setEnabled(true);
+         }
       }
    }
    
