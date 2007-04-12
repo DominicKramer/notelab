@@ -53,6 +53,8 @@ import noteLab.util.settings.SettingsUtilities;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import sun.java2d.loops.FillSpans;
+
 public class NoteLabFileLoader 
                 extends ResolvableHandler  
                            implements FileLoader, 
@@ -218,6 +220,37 @@ public class NoteLabFileLoader
             Color bgColor = getColor(attributes, FILL_NAME);
             this.curPage.getPaper().setBackgroundColor(bgColor);
          }
+      }
+      else if (localName.equals(PATH_NAME))
+      {
+         String pathText = attributes.getValue(PATH_ATT_NAME);
+         if (this.curStroke == null)
+         {
+            System.err.println(NoteLabFileLoader.class.getName()+
+                               " ERROR:  The start of a path was found " +
+                               "but a stroke hasn't been constructed yet.");
+            
+            System.err.println("Local name = "+localName);
+            System.err.println("Attributes");
+            for (int i=0; i<attributes.getLength(); i++)
+            {
+               System.err.println(""+attributes.getLocalName(i)+"=\""+
+                                  attributes.getValue(i)+"\"");
+            }
+            
+            this.curStroke = new Stroke(new Pen(SCALE_LEVEL), 
+                                        new Path(SCALE_LEVEL, 
+                                                 SCALE_LEVEL));
+         }
+         
+         fillPath(this.curStroke.getPath(), pathText, SCALE_LEVEL);
+         
+         Color color = getColor(attributes, STROKE_NAME);
+         float width = getLineWidth(attributes);
+         
+         Pen pen = this.curStroke.getPen();
+         pen.setColor(color);
+         pen.setWidth(width);
       }
       else if (localName.equals(LINE_TAG_NAME))
       {
