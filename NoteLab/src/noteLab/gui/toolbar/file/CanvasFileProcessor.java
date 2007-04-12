@@ -24,6 +24,7 @@
 
 package noteLab.gui.toolbar.file;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -79,9 +80,13 @@ public abstract class CanvasFileProcessor implements FileProcessor
          file = new File(fullPath);
       }
       
+      final boolean isNativeFile = ext.equalsIgnoreCase(InfoCenter.getFileExtension());
+      
       CompositeCanvas canvas = mainFrame.getCompositeCanvas();
       synchronized(canvas)
       {
+         mainFrame.setMessage("Saving the session requires momentarily disabling the canvas.", 
+                              Color.BLACK);
          canvas.setEnabled(false);
          
          float zoomFactor = canvas.getZoomLevel();
@@ -108,7 +113,7 @@ public abstract class CanvasFileProcessor implements FileProcessor
             
             hasBeenSaved = true;
             
-            if (ext.equalsIgnoreCase(InfoCenter.getFileExtension()))
+            if (isNativeFile)
                canvas.setFile(file);
          }
          catch (Throwable throwable)
@@ -123,6 +128,18 @@ public abstract class CanvasFileProcessor implements FileProcessor
                mainFrame.hasBeenSaved();
             
             canvas.setEnabled(true);
+            StringBuffer messageBuffer = new StringBuffer();
+            if (isNativeFile)
+               messageBuffer.append("Saving ");
+            else
+               messageBuffer.append("Exporting ");
+            messageBuffer.append("completed ");
+            if (!hasBeenSaved)
+               messageBuffer.append("un");
+            messageBuffer.append("successfully.");
+            
+            mainFrame.setMessage(messageBuffer.toString(), 
+                                 (!hasBeenSaved)?Color.RED:Color.BLACK);
          }
       }
    }
