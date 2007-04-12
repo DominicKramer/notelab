@@ -378,8 +378,7 @@ public class Path
          return;
       
       Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numItems);
-      for (int i=0; i<numPts; i++)
-         newPts.add(getItemAt(i).getCopy());
+      newPts.add(getFirst().getCopy());
       
       Polynomial xCurve = new Polynomial(3);
       Polynomial yCurve = new Polynomial(3);
@@ -388,10 +387,21 @@ public class Path
       float yScale = 1;
       float xVal;
       float yVal;
-      for (int i=numPts; i<numItems-numPts; i++)
+      int   evalIndex;
+      
+      int numPtsPlus1 = numPts+1;
+      int endDiff = numItems-numPts-1;
+      
+      for (int i=1; i<numItems-1; i++)
       {
-         fillCubic(i, numPts, true, xCurve);
-         fillCubic(i, numPts, false, yCurve);
+         evalIndex = i;
+         if (i < numPts)
+            evalIndex = numPtsPlus1;
+         else if (i > endDiff)
+            evalIndex = endDiff;
+         
+         fillCubic(evalIndex, numPts, true, xCurve);
+         fillCubic(evalIndex, numPts, false, yCurve);
          
          curPt = getItemAt(i);
          if (curPt != null)
@@ -414,8 +424,7 @@ public class Path
                                      yScale));
       }
       
-      for (int i=numItems-numPts; i<numItems; i++)
-         newPts.add(getItemAt(i).getCopy());
+      newPts.add(getLast().getCopy());
       
       clear();
       for (FloatPoint2D pt : newPts)
