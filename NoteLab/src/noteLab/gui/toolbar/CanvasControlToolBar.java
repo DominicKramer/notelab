@@ -25,18 +25,15 @@
 package noteLab.gui.toolbar;
 
 import java.awt.CardLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
-import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.ToolBarButton;
 import noteLab.model.canvas.CompositeCanvas;
 
@@ -78,27 +75,14 @@ public class CanvasControlToolBar extends JToolBar implements ActionListener
          
          tempPanel = toolBar.getToolBar();
          
-         this.controlPanel.add(
-               new JScrollPane(tempPanel, 
-                               JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-                               JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), 
-                               cmmd);
+         this.controlPanel.add(tempPanel, cmmd);
       }
-      
-      int size = GuiSettingsConstants.BUTTON_SIZE;
-      Dimension curDim = this.controlPanel.getPreferredSize();
-      Dimension newDim = new Dimension(Math.min(curDim.width, 16*size), 
-                                       (int)(1.18*curDim.height));
-      
-      this.controlPanel.setPreferredSize(newDim);
-      this.controlPanel.setSize(newDim);
       
       setLayout(new FlowLayout(FlowLayout.LEFT));
       add(this.buttonPanel);
       add(this.controlPanel);
       
       this.toolBarVec.firstElement().doClick();
-      //setPreferredSize(new Dimension(200, 40));
    }
 
    public void actionPerformed(ActionEvent e)
