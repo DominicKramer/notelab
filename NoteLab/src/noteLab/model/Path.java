@@ -45,7 +45,7 @@ public class Path
                 extends ItemContainer<FloatPoint2D> 
                            implements CopyReady<Path>, Bounded
 {
-   private static final int ZERO_DEGREE_KNOT_NUM = 1;
+   private static final int ZERO_DEGREE_KNOT_NUM = 0;
    
    private static final Polynomial POLY_3_1  = new Polynomial(0, 
                                                               0, 
@@ -369,6 +369,13 @@ public class Path
    
    public void smooth(int numPts)
    {
+      for (int i=0; i<=2; i++)
+         smoothImpl(numPts+i, i);
+   }
+   
+   /*
+   private void smoothImpl(int numPts)
+   {
       if (numPts <= 0)
          return;
       
@@ -425,6 +432,73 @@ public class Path
       }
       
       newPts.add(getLast().getCopy());
+      
+      clear();
+      for (FloatPoint2D pt : newPts)
+         addItem(pt);
+   }
+   */
+   
+   private void smoothImpl(int numPts, int offset)
+   {
+      if (numPts <= 0)
+         return;
+      
+      int numItems = getNumItems()-offset;
+      
+      if (numItems < 2*numPts+1)
+         return;
+      
+      Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numItems);
+      for (int i=0; i<=offset; i++)
+         newPts.add(getItemAt(i).getCopy());
+      
+      Polynomial xCurve = new Polynomial(3);
+      Polynomial yCurve = new Polynomial(3);
+      FloatPoint2D curPt;
+      float xScale = 1;
+      float yScale = 1;
+      float xVal;
+      float yVal;
+      int   evalIndex;
+      
+      int numPtsPlus1 = numPts+1;
+      int endDiff = getNumItems()-numPts-1;
+      
+      for (int i=offset+1; i<endDiff; i++)
+      {
+         evalIndex = i;
+         if (i <= numPts)
+            evalIndex = numPtsPlus1;
+         else if (i > endDiff)
+            evalIndex = endDiff;
+         
+         fillCubic(evalIndex, numPts, true, xCurve);
+         fillCubic(evalIndex, numPts, false, yCurve);
+         
+         curPt = getItemAt(i);
+         if (curPt != null)
+         {
+            xScale = curPt.getXScaleLevel();
+            yScale = curPt.getYScaleLevel();
+         }
+         else
+         {
+            xScale = this.xScaleLevel;
+            yScale = this.yScaleLevel;
+         }
+         
+         xVal = xCurve.eval(numPts+1);
+         yVal = yCurve.eval(numPts+1);
+         
+         newPts.add(new FloatPoint2D(xVal, 
+                                     yVal, 
+                                     xScale, 
+                                     yScale));
+      }
+      
+      for (int i=endDiff; i<getNumItems(); i++)
+         newPts.add(getItemAt(i).getCopy());
       
       clear();
       for (FloatPoint2D pt : newPts)
