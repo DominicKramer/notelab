@@ -24,9 +24,9 @@
 
 package noteLab.gui.control.drop;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.util.Vector;
 
 import javax.swing.JPanel;
@@ -59,11 +59,11 @@ public abstract class DualDropButton<V, S>
       
       this.listenerVec = new Vector<ValueChangeListener<V, S>>();
       
-      FlowLayout layout = new FlowLayout(FlowLayout.CENTER);
+      BorderLayout layout = new BorderLayout();
       layout.setHgap(2);
       setLayout(layout);
-      add(this.decorButton);
-      add(this.dropButton);
+      add(this.decorButton, BorderLayout.CENTER);
+      add(this.dropButton, BorderLayout.EAST);
    }
    
    public boolean isSelected()
