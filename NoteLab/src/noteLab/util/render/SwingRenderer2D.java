@@ -37,6 +37,7 @@ import java.awt.geom.Rectangle2D;
 import noteLab.model.Path;
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.util.geom.Bounded;
+import noteLab.util.settings.DebugSettings;
 
 public class SwingRenderer2D extends Renderer2D
 {
@@ -107,6 +108,20 @@ public class SwingRenderer2D extends Renderer2D
             g2d.drawPolyline(path.getXArray(), 
                                   path.getYArray(), 
                                   size);
+            
+            if (DebugSettings.getSharedInstance().displayKnots())
+            {
+               int width = (int)(4*getLineWidth());
+               int widthHalf = width/2;
+               
+               for (FloatPoint2D pt : path)
+               {
+                  g2d.fillOval((int)pt.getX()-widthHalf, 
+                               (int)pt.getY()-widthHalf, 
+                               width, 
+                               width);
+               }
+            }
          }
       });
    }
