@@ -59,4 +59,5 @@ public interface SettingsKeys
    public static final String NOTIFY_OF_REPAINTS = "notifyRepaints";
    public static final String USE_CACHING = "useCaching";
    public static final String FORCE_GLOBAL_REPAINTS = "forceGlobalRepaints";
+   public static final String DISPLAY_KNOTS = "displayKnots";
 }
