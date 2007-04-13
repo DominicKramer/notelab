@@ -46,7 +46,10 @@ public abstract class ToolBarButton
       this.toolBar = new JToolBar(JToolBar.HORIZONTAL);
       this.toolBar.setMargin(new Insets(0, 0, 0, 0));
       this.toolBar.setFloatable(false);
-      this.toolBar.setLayout(new FlowLayout(FlowLayout.LEFT));
+      FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
+      layout.setVgap(0);
+      layout.setHgap(2);
+      this.toolBar.setLayout(layout);
       this.toolBar.setBorderPainted(false);
    }
    
