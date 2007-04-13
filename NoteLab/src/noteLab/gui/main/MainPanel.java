@@ -24,6 +24,7 @@
 
 package noteLab.gui.main;
 
+import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
@@ -146,37 +147,17 @@ public class MainPanel extends JPanel implements RepaintListener
    {
    }
    
-   // actually coalescing events seems to be 
-   // make strokes look smoother
-   /*
+   /**
     * Overriden so that multiple mouse dragged events are not coalesced into 
     * one.  If this were done, drawing would look choppy.  By disabling 
     * coalescing, drawing looks smooth.
     * 
     * @return <code>null</code> to indicate that no coalescing has taken place
-    *
+    */
    @Override
    protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent)
    {
-      //Indicates no coalescing has done
+      //Indicates no coalescing has been done
       return null;
    }
-   */
 }
-
-
-
-
-
-
-
-
-
-
-
-/*
-Cursor cursor = Toolkit.getDefaultToolkit().
-createCustomCursor(this.tool.getToolImage(), 
-                   this.tool.getToolHotSpot(), 
-                   this.tool.getToolName());
-*/
