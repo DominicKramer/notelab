@@ -24,6 +24,7 @@
 
 package noteLab.gui.main;
 
+import java.awt.AWTEvent;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -127,20 +128,17 @@ public class SwingDrawingBoard extends JPanel implements Scrollable
       return SCROLL_STEP;
    }
    
-   // actually coalescing events seems to make 
-   // strokes smoother
-   /*
+   /**
     * Overriden so that multiple mouse dragged events are not coalesced into 
     * one.  If this were done, drawing would look choppy.  By disabling 
     * coalescing, drawing looks smooth.
     * 
     * @return <code>null</code> to indicate that no coalescing has taken place
-    *
+    */
    @Override
    protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent)
    {
       //Indicates no coalescing has done
       return null;
    }
-   */
 }
