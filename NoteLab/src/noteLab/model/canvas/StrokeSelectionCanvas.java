@@ -42,6 +42,7 @@ import javax.swing.JToolBar;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
+import noteLab.gui.SlidingPanel;
 import noteLab.gui.ToolBarButton;
 import noteLab.gui.DecoratedButton.Style;
 import noteLab.gui.control.drop.ColorControl;
@@ -523,20 +524,18 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          this.sizeControl = 
                         new SizeControl("Size", 1.2, 0, 20, 0.2, 
                                         Unit.PIXEL, Style.Circle, false, 
-                                        Color.BLACK, BUTTON_SIZE+8, 1);
+                                        Color.BLACK, BUTTON_SIZE+BUTTON_SIZE/4, 1);
          SizeListener sizeListener = new SizeListener();
          this.sizeControl.addValueChangeListener(sizeListener);
          this.sizeControl.getDecoratedButton().
                              addActionListener(sizeListener);
          
-         this.colorControl = new ColorControl(Color.BLACK, BUTTON_SIZE+8);
+         this.colorControl = new ColorControl(Color.BLACK, BUTTON_SIZE+BUTTON_SIZE/4);
+         
          ColorListener colorListener = new ColorListener();
          this.colorControl.addValueChangeListener(colorListener);
          this.colorControl.getDecoratedButton().
                               addActionListener(colorListener);
-         
-         CutCopyPasteToolBar<CopyVector<Stroke>> copyToolbar = 
-            new CutCopyPasteToolBar(this);
          
          ButtonGroup selUnselGroup = new ButtonGroup();
          selUnselGroup.add(this.selButton);
@@ -546,28 +545,38 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          selUnselGroup.add(this.moveButton);
          selUnselGroup.add(this.scaleButton);
          
+         JToolBar selToolBar = new JToolBar();
+         selToolBar.add(this.selButton);
+         selToolBar.add(this.selBoxButton);
+         selToolBar.add(this.selAllButton);
+         selToolBar.addSeparator();
+         
+         selToolBar.add(this.unselButton);
+         selToolBar.add(this.unselBoxButton);
+         selToolBar.add(this.unselAllButton);
+         
+         JToolBar editToolBar = new JToolBar();
+         editToolBar.add(this.removeButton);
+         editToolBar.add(this.combButton);
+         editToolBar.add(this.moveButton);
+         editToolBar.add(this.scaleButton);
+         editToolBar.addSeparator();
+         
+         editToolBar.add(this.colorControl);
+         editToolBar.addSeparator();
+         editToolBar.add(this.sizeControl);
+         
+         CutCopyPasteToolBar<CopyVector<Stroke>> copyToolbar = 
+                                                    new CutCopyPasteToolBar(this);
+         copyToolbar.setFloatable(true);
+         
+         SlidingPanel slidePanel = new SlidingPanel();
+         slidePanel.append(selToolBar);
+         slidePanel.append(editToolBar);
+         slidePanel.append(copyToolbar);
+         
          JToolBar toolBarPanel = getToolBar();
-         toolBarPanel.add(this.selButton);
-         toolBarPanel.add(this.selBoxButton);
-         toolBarPanel.add(this.selAllButton);
-         toolBarPanel.addSeparator();
-         
-         toolBarPanel.add(this.unselButton);
-         toolBarPanel.add(this.unselBoxButton);
-         toolBarPanel.add(this.unselAllButton);
-         toolBarPanel.addSeparator();
-         
-         toolBarPanel.add(this.removeButton);
-         toolBarPanel.add(this.combButton);
-         toolBarPanel.add(this.moveButton);
-         toolBarPanel.add(this.scaleButton);
-         toolBarPanel.addSeparator();
-         
-         toolBarPanel.add(this.colorControl);
-         toolBarPanel.add(this.sizeControl);
-         toolBarPanel.addSeparator();
-         
-         toolBarPanel.add(copyToolbar);
+         toolBarPanel.add(slidePanel);
          
          // set up the menus
          this.menuItemVec = new Vector<PathMenuItem>();
