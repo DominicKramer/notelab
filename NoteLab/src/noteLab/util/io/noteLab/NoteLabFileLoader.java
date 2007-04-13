@@ -53,8 +53,6 @@ import noteLab.util.settings.SettingsUtilities;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import sun.java2d.loops.FillSpans;
-
 public class NoteLabFileLoader 
                 extends ResolvableHandler  
                            implements FileLoader, 
