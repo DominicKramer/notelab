@@ -370,10 +370,9 @@ public class Path
    public void smooth(int numPts)
    {
       for (int i=0; i<=2; i++)
-         smoothImpl(numPts+i, i);
+         smoothImpl(numPts+i);
    }
    
-   /*
    private void smoothImpl(int numPts)
    {
       if (numPts <= 0)
@@ -398,6 +397,7 @@ public class Path
       
       int numPtsPlus1 = numPts+1;
       int endDiff = numItems-numPts-1;
+      float calcPt = 0;
       
       for (int i=1; i<numItems-1; i++)
       {
@@ -422,8 +422,14 @@ public class Path
             yScale = this.yScaleLevel;
          }
          
-         xVal = (calculateAverage(i, ZERO_DEGREE_KNOT_NUM, true)+xCurve.eval(numPts+1))/2f;
-         yVal = (calculateAverage(i, ZERO_DEGREE_KNOT_NUM, false)+yCurve.eval(numPts+1))/2f;
+         calcPt = numPtsPlus1;
+         if (i <= numPts)
+            calcPt = i;
+         else if (i > endDiff)
+            calcPt = numPtsPlus1+(i-endDiff);
+         
+         xVal = xCurve.eval(calcPt);
+         yVal = yCurve.eval(calcPt);
          
          newPts.add(new FloatPoint2D(xVal, 
                                      yVal, 
@@ -437,8 +443,8 @@ public class Path
       for (FloatPoint2D pt : newPts)
          addItem(pt);
    }
-   */
    
+   /*
    private void smoothImpl(int numPts, int offset)
    {
       if (numPts <= 0)
@@ -504,6 +510,7 @@ public class Path
       for (FloatPoint2D pt : newPts)
          addItem(pt);
    }
+   */
    
    private float calculateAverage(int index, int numPts, boolean calcX)
    {
