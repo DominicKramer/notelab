@@ -34,6 +34,7 @@ public class DebugSettings implements SettingsChangedListener, SettingsKeys
    private boolean notifyOfRepaints;
    private boolean useCache;
    private boolean forceGlobalRepaints;
+   private boolean displayKnots;
    
    private DebugSettings()
    {
@@ -43,6 +44,7 @@ public class DebugSettings implements SettingsChangedListener, SettingsKeys
       this.notifyOfRepaints = false;
       this.useCache = false;
       this.forceGlobalRepaints = false;
+      this.displayKnots = false;
    }
    
    public static DebugSettings getSharedInstance()
@@ -80,6 +82,11 @@ public class DebugSettings implements SettingsChangedListener, SettingsKeys
       return this.forceGlobalRepaints;
    }
    
+   public boolean displayKnots()
+   {
+      return this.displayKnots;
+   }
+   
    public void settingsChanged(SettingsChangedEvent event)
    {
       String key = event.getKey();
@@ -95,5 +102,7 @@ public class DebugSettings implements SettingsChangedListener, SettingsKeys
          this.useCache = true;
       else if (key.equals(FORCE_GLOBAL_REPAINTS))
          this.forceGlobalRepaints = true;
+      else if (key.equals(DISPLAY_KNOTS))
+         this.displayKnots = true;
    }
 }
