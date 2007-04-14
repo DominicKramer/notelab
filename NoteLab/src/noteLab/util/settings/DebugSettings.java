@@ -57,9 +57,19 @@ public class DebugSettings implements SettingsChangedListener, SettingsKeys
       return this.displayBoundingBox;
    }
    
+   public void flipDisplayBoundingBox()
+   {
+      this.displayBoundingBox = !this.displayBoundingBox;
+   }
+   
    public boolean displayUpdateBox()
    {
       return this.displayUpdateBox;
+   }
+   
+   public void flipDisplayUpdateBox()
+   {
+      this.displayUpdateBox = !this.displayUpdateBox;
    }
    
    public boolean disablePaper()
@@ -67,9 +77,19 @@ public class DebugSettings implements SettingsChangedListener, SettingsKeys
       return this.disablePaper;
    }
    
+   public void flipDisablePaper()
+   {
+      this.disablePaper = !this.disablePaper;
+   }
+   
    public boolean notifyOfRepaints()
    {
       return this.notifyOfRepaints;
+   }
+   
+   public void flipNotifyOfRepaints()
+   {
+      this.notifyOfRepaints = !this.notifyOfRepaints;
    }
    
    public boolean useCache()
@@ -77,9 +97,19 @@ public class DebugSettings implements SettingsChangedListener, SettingsKeys
       return this.useCache;
    }
    
+   public void flipUseCache()
+   {
+      this.useCache = !this.useCache;
+   }
+   
    public boolean forceGlobalRepaints()
    {
       return this.forceGlobalRepaints;
+   }
+   
+   public void flipForceGlobalRepaints()
+   {
+      this.forceGlobalRepaints = !this.forceGlobalRepaints;
    }
    
    public boolean displayKnots()
@@ -87,22 +117,27 @@ public class DebugSettings implements SettingsChangedListener, SettingsKeys
       return this.displayKnots;
    }
    
+   public void flipDisplayKnots()
+   {
+      this.displayKnots = !this.displayKnots;
+   }
+   
    public void settingsChanged(SettingsChangedEvent event)
    {
       String key = event.getKey();
       if (key.equals(DISPLAY_BOUNDING_BOX))
-         this.displayBoundingBox = true;
+         this.displayBoundingBox = !this.displayBoundingBox;
       else if (key.equals(DISPLAY_UPDATE_BOX))
-         this.displayUpdateBox = true;
+         this.displayUpdateBox = !this.displayUpdateBox;
       else if (key.equals(DISABLE_PAPER))
-         this.disablePaper = true;
+         this.disablePaper = !this.disablePaper;
       else if (key.equals(NOTIFY_OF_REPAINTS))
-         this.notifyOfRepaints = true;
+         this.notifyOfRepaints = !this.notifyOfRepaints;
       else if (key.equals(USE_CACHING))
-         this.useCache = true;
+         this.useCache = !this.useCache;
       else if (key.equals(FORCE_GLOBAL_REPAINTS))
-         this.forceGlobalRepaints = true;
+         this.forceGlobalRepaints = !this.forceGlobalRepaints;
       else if (key.equals(DISPLAY_KNOTS))
-         this.displayKnots = true;
+         this.displayKnots = !this.displayKnots;
    }
 }
