@@ -45,6 +45,8 @@ public interface SettingsKeys
    
    public static final String SMOOTH_FACTOR = "smoothFactor";
    
+   public static final String DEBUG_MENU_KEY = "debugMenu";
+   
    //The keys below are not implemented yet
    public static final String WINDOW_SIZE = "windowSize";
    public static final String WINDOW_LOCATION = "windowLocation";
