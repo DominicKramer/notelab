@@ -264,21 +264,32 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             float yScale = (this.initScale.height+this.deltaScale.height)/
                             this.initScale.height;
             
+            RectangleUnioner unioner = new RectangleUnioner();
+            
             Stroke stroke;
             Pen pen;
-            float lineWidth;
-            
+            float maxWidth = 0;
             for (int i=0; i<curPage.getNumSelectedStrokes(); i++)
             {
                stroke = curPage.getSelectedStrokeAt(i);
                
                pen = stroke.getPen();
-               lineWidth = pen.getWidth();
+               maxWidth = Math.max(maxWidth, pen.getWidth());
                
-               paintStroke(stroke);
+               unioner.union(stroke.getBounds2D());
                stroke.scaleTo(xScale, yScale);
-               pen.setWidth(lineWidth);
+               
+               unioner.union(stroke.getBounds2D());
+               maxWidth = Math.max(maxWidth, pen.getWidth());
             }
+            
+            Rectangle2D.Float union = unioner.getUnion();
+            Page page = binder.getCurrentPage();
+            doRepaint((float)union.getX()+page.getX(), 
+                      (float)union.getY()+page.getY(),
+                      (float)union.getWidth(), 
+                      (float)union.getHeight(), 
+                      maxWidth);
          }
       }
       
