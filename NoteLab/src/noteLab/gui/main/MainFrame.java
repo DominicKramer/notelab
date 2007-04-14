@@ -48,6 +48,7 @@ import javax.swing.WindowConstants;
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.ToolBarButton;
 import noteLab.gui.help.HelpMenu;
+import noteLab.gui.menu.DebugMenu;
 import noteLab.gui.menu.DynamicMenuBar;
 import noteLab.gui.menu.MenuConstants;
 import noteLab.gui.menu.Menued;
@@ -61,6 +62,7 @@ import noteLab.util.InfoCenter;
 import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
 import noteLab.util.settings.SettingsManager;
+import noteLab.util.settings.SettingsUtilities;
 import noteLab.util.undoRedo.UndoRedoManager;
 
 public class MainFrame extends JFrame implements Menued, 
@@ -150,6 +152,9 @@ public class MainFrame extends JFrame implements Menued,
          menuBar.addMenued(toolBar);
       
       menuBar.addMenued(new HelpMenu());
+      
+      if (SettingsUtilities.getShowDebugMenu())
+         menuBar.addMenued(new DebugMenu(this.canvas));
       
       setJMenuBar(menuBar);
       
