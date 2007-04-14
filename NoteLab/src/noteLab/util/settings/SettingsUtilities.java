@@ -34,6 +34,8 @@ import noteLab.util.geom.unit.Unit;
 
 public class SettingsUtilities implements SettingsKeys
 {
+   private static final boolean DEFAULT_SHOW_DEBUG_MENU = false;
+   
    private SettingsUtilities() {}
    
    public static float getUnitScaleFactor()
@@ -197,5 +199,19 @@ public class SettingsUtilities implements SettingsKeys
                                             " is not valid since it must be nonnegative");
       
       SettingsManager.getSharedInstance().setValue(SMOOTH_FACTOR, factor);
+   }
+   
+   public static boolean getShowDebugMenu()
+   {
+      Object val = SettingsManager.getSharedInstance().getValue(DEBUG_MENU_KEY);
+      if (val == null || !(val instanceof Boolean))
+         return DEFAULT_SHOW_DEBUG_MENU;
+      
+      return (Boolean)val;
+   }
+   
+   public static void setShowDebugMenu(boolean display)
+   {
+      SettingsManager.getSharedInstance().setValue(DEBUG_MENU_KEY, display);
    }
 }
