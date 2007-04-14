@@ -78,7 +78,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       Deletion, 
       Unselect_All, 
       Select_All, 
-      Comb
+      Smooth
    }
    
    private enum Mode
@@ -499,7 +499,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          this.combButton = 
             new JButton(DefinedIcon.paintbrush.getIcon(BUTTON_SIZE));
          this.combButton.addActionListener(this);
-         this.combButton.setActionCommand(Action.Comb.toString());
+         this.combButton.setActionCommand(Action.Smooth.toString());
          
          this.moveButton = 
             new JToggleButton(DefinedIcon.move_stroke.getIcon(BUTTON_SIZE));
@@ -676,7 +676,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             }
          }
          
-         if (cmmd.equals(Action.Comb.toString()))
+         if (cmmd.equals(Action.Smooth.toString()))
          {
             CompositeCanvas canvas = getCompositeCanvas();
             
@@ -840,7 +840,8 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             // because the strokes in that region have been resized
             RectangleUnioner dirtyUnioner = new RectangleUnioner();
             
-            for (Page page : getCompositeCanvas().getBinder())
+            Binder binder = getCompositeCanvas().getBinder();
+            for (Page page : binder)
             {
                Vector<Stroke> selStrokeVec = page.getSelectedStrokesCopy();
                Stroke selStroke;
@@ -856,8 +857,9 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             
             // repaint only the dirty region
             Rectangle2D dirtyRect = dirtyUnioner.getUnion();
-            doRepaint((float)dirtyRect.getX(), 
-                      (float)dirtyRect.getY(), 
+            Page page = binder.getCurrentPage();
+            doRepaint((float)dirtyRect.getX()+page.getX(), 
+                      (float)dirtyRect.getY()+page.getY(), 
                       (float)dirtyRect.getWidth(), 
                       (float)dirtyRect.getHeight(), 0);
          }
@@ -886,7 +888,8 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             // because the strokes in that region have been repainted
             RectangleUnioner dirtyUnioner = new RectangleUnioner();
             
-            for (Page page : getCompositeCanvas().getBinder())
+            Binder binder = getCompositeCanvas().getBinder();
+            for (Page page : binder)
             {
                Vector<Stroke> selStrokeVec = page.getSelectedStrokesCopy();
                Stroke selStroke;
@@ -902,8 +905,9 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             
             // repaint only the dirty region
             Rectangle2D dirtyRect = dirtyUnioner.getUnion();
-            doRepaint((float)dirtyRect.getX(), 
-                      (float)dirtyRect.getY(), 
+            Page page = binder.getCurrentPage();
+            doRepaint((float)dirtyRect.getX()+page.getX(), 
+                      (float)dirtyRect.getY()+page.getY(), 
                       (float)dirtyRect.getWidth(), 
                       (float)dirtyRect.getHeight(), 0);
          }
