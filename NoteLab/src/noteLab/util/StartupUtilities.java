@@ -40,6 +40,7 @@ import noteLab.util.arg.Argument;
 import noteLab.util.arg.CombFactorArg;
 import noteLab.util.arg.CommandInterpretor;
 import noteLab.util.arg.DebugArgGenerator;
+import noteLab.util.arg.DebugMenuArg;
 import noteLab.util.arg.HistorySizeArg;
 import noteLab.util.arg.LookAndFeelArg;
 import noteLab.util.arg.PaperColorArg;
@@ -105,6 +106,8 @@ public class StartupUtilities implements SettingsKeys
       interpretor.registerArgument(new SmoothFactorArg());
       
       interpretor.registerArgument(new UnitScaleArg());
+      
+      interpretor.registerArgument(new DebugMenuArg());
       
       Argument[] debugArgs = DebugArgGenerator.generateDebugArgs();
       for (Argument arg : debugArgs)
