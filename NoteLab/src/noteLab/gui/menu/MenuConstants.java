@@ -29,4 +29,5 @@ public interface MenuConstants
    public static final MenuPath FILE_MENU_PATH = new MenuPath("File");
    public static final MenuPath SELECT_MENU_PATH = new MenuPath("Select");
    public static final MenuPath HELP_MENU_PATH = new MenuPath("Help");
+   public static final MenuPath DEBUG_MENU_PATH = new MenuPath("Debug");
 }
