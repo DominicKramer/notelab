@@ -380,7 +380,7 @@ public class Path
       
       int numItems = getNumItems();
       
-      if (numItems < 2*numPts+1)
+      if (numItems <= 2*numPts+1)
          return;
       
       Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numItems);
