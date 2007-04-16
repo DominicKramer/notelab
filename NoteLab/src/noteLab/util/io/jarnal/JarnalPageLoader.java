@@ -274,7 +274,8 @@ public class JarnalPageLoader extends ResolvableHandler implements Runnable
       Page page = new Page(this.width, this.height, 
                            PaperType.CollegeRuled, 
                            this.scale, this.scale, 
-                           Unit.getScreenResolution());
+                           Unit.getScreenResolution(),
+                           1);
       
       Paper paper = page.getPaper();
       paper.setBackgroundColor(this.bgColor);
