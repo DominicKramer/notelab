@@ -50,6 +50,7 @@ import noteLab.util.mod.ModType;
 import noteLab.util.render.PrinterRenderer2D;
 import noteLab.util.render.Renderable;
 import noteLab.util.render.Renderer2D;
+import noteLab.util.settings.SettingsUtilities;
 
 /**
  * A binder represents a collection of <code>Pages</code>.  This class stores the information 
@@ -113,7 +114,8 @@ public abstract class Binder implements Renderable, Bounded,
       if (pages.length == 0)
          pages = new Page[] {new Page(PaperType.CollegeRuled, 
                                       xScaleLevel, yScaleLevel, 
-                                      Unit.getScreenResolution())};
+                                      Unit.getScreenResolution(), 
+                                      SettingsUtilities.getUnitScaleFactor())};
       
       this.modListenerVec = new Vector<ModListener>();
       
