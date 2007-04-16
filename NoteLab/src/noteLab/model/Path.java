@@ -369,12 +369,17 @@ public class Path
    
    public void smooth(int numPts)
    {
-      for (int i=0; i<=2; i++)
-         smoothImpl(numPts+i);
+      smoothImpl(numPts,   3);
+      smoothImpl(numPts-1, 2);
+      smoothImpl(numPts-2, 0);
    }
    
-   private void smoothImpl(int numPts)
+   private void smoothImpl(int numPts, int degree)
    {
+      if (degree < 0 || degree > 3)
+         throw new IllegalArgumentException("Cannot smooth the curve using "+degree+
+                                            " degree polynomials.");
+      
       if (numPts <= 0)
          return;
       
@@ -386,8 +391,8 @@ public class Path
       Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numItems);
       newPts.add(getFirst().getCopy());
       
-      Polynomial xCurve = new Polynomial(3);
-      Polynomial yCurve = new Polynomial(3);
+      Polynomial xCurve = new Polynomial(degree);
+      Polynomial yCurve = new Polynomial(degree);
       FloatPoint2D curPt;
       float xScale = 1;
       float yScale = 1;
@@ -407,8 +412,26 @@ public class Path
          else if (i > endDiff)
             evalIndex = endDiff;
          
-         fillCubic(evalIndex, numPts, true, xCurve);
-         fillCubic(evalIndex, numPts, false, yCurve);
+         if (degree == 0)
+         {
+            fillConst(evalIndex, numPts, true, xCurve);
+            fillConst(evalIndex, numPts, false, yCurve);
+         }
+         else if (degree == 1)
+         {
+            fillLinear(evalIndex, numPts, true, xCurve);
+            fillLinear(evalIndex, numPts, false, yCurve);
+         }
+         else if (degree == 2)
+         {
+            fillQuadratic(evalIndex, numPts, true, xCurve);
+            fillQuadratic(evalIndex, numPts, false, yCurve);
+         }
+         else if (degree == 3)
+         {
+            fillCubic(evalIndex, numPts, true, xCurve);
+            fillCubic(evalIndex, numPts, false, yCurve);
+         }
          
          curPt = getItemAt(i);
          if (curPt != null)
@@ -444,76 +467,11 @@ public class Path
          addItem(pt);
    }
    
-   /*
-   private void smoothImpl(int numPts, int offset)
+   private void fillConst(int index, int numPts, boolean useX, Polynomial curve)
    {
-      if (numPts <= 0)
-         return;
+      if (curve == null)
+         throw new NullPointerException();
       
-      int numItems = getNumItems()-offset;
-      
-      if (numItems < 2*numPts+1)
-         return;
-      
-      Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numItems);
-      for (int i=0; i<=offset; i++)
-         newPts.add(getItemAt(i).getCopy());
-      
-      Polynomial xCurve = new Polynomial(3);
-      Polynomial yCurve = new Polynomial(3);
-      FloatPoint2D curPt;
-      float xScale = 1;
-      float yScale = 1;
-      float xVal;
-      float yVal;
-      int   evalIndex;
-      
-      int numPtsPlus1 = numPts+1;
-      int endDiff = getNumItems()-numPts-1;
-      
-      for (int i=offset+1; i<endDiff; i++)
-      {
-         evalIndex = i;
-         if (i <= numPts)
-            evalIndex = numPtsPlus1;
-         else if (i > endDiff)
-            evalIndex = endDiff;
-         
-         fillCubic(evalIndex, numPts, true, xCurve);
-         fillCubic(evalIndex, numPts, false, yCurve);
-         
-         curPt = getItemAt(i);
-         if (curPt != null)
-         {
-            xScale = curPt.getXScaleLevel();
-            yScale = curPt.getYScaleLevel();
-         }
-         else
-         {
-            xScale = this.xScaleLevel;
-            yScale = this.yScaleLevel;
-         }
-         
-         xVal = xCurve.eval(numPts+1);
-         yVal = yCurve.eval(numPts+1);
-         
-         newPts.add(new FloatPoint2D(xVal, 
-                                     yVal, 
-                                     xScale, 
-                                     yScale));
-      }
-      
-      for (int i=endDiff; i<getNumItems(); i++)
-         newPts.add(getItemAt(i).getCopy());
-      
-      clear();
-      for (FloatPoint2D pt : newPts)
-         addItem(pt);
-   }
-   */
-   
-   private float calculateAverage(int index, int numPts, boolean calcX)
-   {
       int numTotal = getNumItems();
 
       if (index < 0 || index >= numTotal)
@@ -521,17 +479,79 @@ public class Path
 
       if (numPts < 0)
          throw new IllegalArgumentException();
-
+      
       if ( (index-numPts < 0) || (index+numPts >= numTotal) )
-         return (calcX)?(getItemAt(index).getX()):(getItemAt(index).getY());
+      {
+         float val = (useX)?(getItemAt(index).getX()):(getItemAt(index).getY());
+         curve.setCoefficient(0, val);
+         return;
+      }
       
       float sum = 0;
       for (int i=index-numPts; i<=index+numPts; i++)
-         sum += (calcX)?(getItemAt(i).getX()):(getItemAt(i).getY());
+         sum += (useX)?(getItemAt(i).getX()):(getItemAt(i).getY());
 
       sum /= (2*numPts+1f);
 
-      return sum;
+      curve.setCoefficient(0, sum);
+   }
+   
+   private void fillLinear(int index, int numPts, boolean useX, Polynomial curve)
+   {
+      if (curve == null)
+         throw new NullPointerException();
+      
+      if (curve.getDegree() < 1)
+         throw new IllegalArgumentException("A polynomial of at least degree 1 is needed " +
+                                            "to smooth the points.  However a " +
+                                            "polynomial of degree "+curve.getDegree()+
+                                            " was given.");
+      
+      if (index < 0 || index >= getNumItems())
+         throw new ArrayIndexOutOfBoundsException("index="+index+
+                                                  " is not in the range [0,"+
+                                                  getNumItems()+")");
+      
+      if (numPts < 0)
+         throw new IllegalArgumentException("The number of points to interpolate the points " +
+                                            "cannot be negative.  " +
+                                            "The value "+numPts+" was given");
+      
+      if (index - numPts < 0)
+         throw new IllegalArgumentException("Smoothing cannot continue because there is not " +
+                                             "enough points to the left " +
+                                            "of the current point to use to construct the " +
+                                            "smoothing polynomial.");
+      
+      if (index + numPts >= getNumItems())
+         throw new IllegalArgumentException("Smoothing cannot continue because there is not " +
+                                            "enough points to the right " +
+                                            "of the current point to use to construct the " +
+                                            "smoothing polynomial.");
+      
+      final int n = 2*numPts+1;
+      final float sumX  = n*(n+1)/2f;
+      final float sumX2 = n*(n+1)*(2*n+1)/6f;
+      float sumXY = 0;
+      float sumY  = 0;
+      
+      float curVal  = 0;
+      int   counter = 1;
+      for (int i=index-numPts; i<=index+numPts; i++)
+      {
+         curVal = (useX)?(getItemAt(i).getX()):(getItemAt(i).getY());
+         
+         sumXY += counter*curVal;
+         sumY  += curVal;
+         
+         counter++;
+      }
+      
+      float a = (n*sumXY - sumX*sumY)/(n*sumX2 - sumX*sumX);
+      float b = 1f/((float)n)*(sumY - a*sumX);
+      
+      curve.setCoefficient(0, b);
+      curve.setCoefficient(1, a);
    }
    
    private void fillCubic(int index, int numPts, boolean useX, Polynomial curve)
