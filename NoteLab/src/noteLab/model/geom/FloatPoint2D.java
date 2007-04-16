@@ -250,6 +250,9 @@ public class FloatPoint2D implements Transformable,
       if (pt1 == null || pt2 == null || curPt == null)
          throw new NullPointerException();
       
+      if (pt1.equals(pt2))
+         return pt1.equals(curPt);
+      
       // these are labeled x1 and x2 because when proving this method 
       // mathematically, I used vectors in R^2 which are typically 
       // denoted X = x1*e1 + x2*e2 where e1 and e2 are basis elements
@@ -359,6 +362,21 @@ public class FloatPoint2D implements Transformable,
    {
       return ""+FloatPoint2D.class.getSimpleName()+
              ": ("+getX()+", "+getY()+")";
+   }
+   
+   @Override
+   public boolean equals(Object ob)
+   {
+      if (ob == null)
+         throw new NullPointerException();
+      
+      if ( !(ob instanceof FloatPoint2D) )
+         return false;
+      
+      FloatPoint2D pt2 = (FloatPoint2D)ob;
+      
+      return (this.srcPoint.x == pt2.srcPoint.x) && 
+             (this.srcPoint.y == pt2.srcPoint.y);
    }
    
    /**
