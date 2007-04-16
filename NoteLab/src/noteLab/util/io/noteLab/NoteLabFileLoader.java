@@ -59,6 +59,7 @@ public class NoteLabFileLoader
                                       NoteLabFileConstants
 {
    private static final float SCALE_LEVEL = 1;
+   private static final float UNIT_SCALE_LEVEL = 1;
    
    private File file;
    private NoteLabFileLoadedListener listener;
@@ -176,7 +177,8 @@ public class NoteLabFileLoader
             this.curPage = new Page(getPaperType(attributes), 
                                     SCALE_LEVEL, 
                                     SCALE_LEVEL, 
-                                    this.screenRes);
+                                    this.screenRes, 
+                                    UNIT_SCALE_LEVEL);
             
             if (this.curBinder == null)
                this.curBinder = new FlowBinder(SCALE_LEVEL, 
@@ -203,7 +205,8 @@ public class NoteLabFileLoader
             this.curPage = new Page(PaperType.Plain, 
                                     SCALE_LEVEL, 
                                     SCALE_LEVEL, 
-                                    this.screenRes);
+                                    this.screenRes, 
+                                    UNIT_SCALE_LEVEL);
          }
          
          Rectangle2D.Float rect = constructRectangle(attributes);
