@@ -57,7 +57,8 @@ public class Page extends TransformRectangle2D
       this( (float)page.getWidth(), (float)page.getHeight(), 
              page.getPaper().getPaperType(), 
              page.getXScaleLevel(), page.getYScaleLevel(), 
-             page.getPaper().getScreenResolution());
+             page.getPaper().getScreenResolution(), 
+             page.getPaper().getUnitScaleFactor());
       
       Color color = page.getPaper().getBackgroundColor();
       this.paper.setBackgroundColor(new Color(color.getRed(), 
@@ -67,22 +68,22 @@ public class Page extends TransformRectangle2D
    
    public Page(PaperType paperType, 
                float xScaleLevel, float yScaleLevel, 
-               int screenRes)
+               int screenRes, float unitScaleLevel)
    {
-      this( Unit.getValue(8.5f, Unit.INCH, Unit.PIXEL, screenRes), 
-            Unit.getValue(11f, Unit.INCH, Unit.PIXEL, screenRes), 
-            paperType, xScaleLevel, yScaleLevel, screenRes);
+      this( Unit.getValue(8.5f, Unit.INCH, Unit.PIXEL, screenRes, unitScaleLevel), 
+            Unit.getValue(11f, Unit.INCH, Unit.PIXEL, screenRes, unitScaleLevel), 
+            paperType, xScaleLevel, yScaleLevel, screenRes, unitScaleLevel);
    }
    
    public Page(float width, float height, PaperType paperType, 
                float xScaleLevel, float yScaleLevel, 
-               int screenRes)
+               int screenRes, float unitScaleLevel)
    {
       super(0, 0, width, height, xScaleLevel, yScaleLevel);
       
       this.paper = new Paper(paperType, width, height, 
                              xScaleLevel, yScaleLevel, 
-                             screenRes);
+                             screenRes, unitScaleLevel);
       
       this.strokeList = new LinkedList<Stroke>();
       this.selStrokeVec = new Vector<Stroke>();
@@ -223,7 +224,8 @@ public class Page extends TransformRectangle2D
                            this.paper.getPaperType(), 
                            getXScaleLevel(), 
                            getYScaleLevel(), 
-                           this.paper.getScreenResolution());
+                           this.paper.getScreenResolution(), 
+                           this.paper.getUnitScaleFactor());
       Color bgColor = this.paper.getBackgroundColor();
       copy.paper.setBackgroundColor(new Color(bgColor.getRed(), 
                                               bgColor.getGreen(), 
