@@ -41,7 +41,6 @@ import noteLab.util.render.Renderer2D;
 import noteLab.util.render.SVGRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.settings.DebugSettings;
-import noteLab.util.settings.SettingsUtilities;
 
 /**
  * This class represents a piece of paper.
@@ -151,6 +150,8 @@ public class Paper extends TransformRectangle2D
    
    private boolean selectionEnabled;
    
+   private float unitScaleFactor;
+   
    /**
     * Constructs a paper with the given parameters.
     * 
@@ -164,7 +165,7 @@ public class Paper extends TransformRectangle2D
     */
    public Paper(PaperType paperType, float width, float height, 
                 float xScaleLevel, float yScaleLevel, 
-                int screenRes)
+                int screenRes, float unitScaleLevel)
    {
       super(0, 0, width, height, xScaleLevel, yScaleLevel);
       
@@ -173,7 +174,7 @@ public class Paper extends TransformRectangle2D
       
       this.screenRes = screenRes;
       
-      float unitScaleLevel = SettingsUtilities.getUnitScaleFactor();
+      this.unitScaleFactor = unitScaleLevel;
       
       this.rawGridWidth = calcGridWidth(screenRes, unitScaleLevel);
       this.rawColledgeWidth = calcCollegeWidth(screenRes, unitScaleLevel);
@@ -195,6 +196,11 @@ public class Paper extends TransformRectangle2D
       setBackgroundColor(Color.WHITE);
       setPaperType(paperType);
       setSelected(false);
+   }
+   
+   public float getUnitScaleFactor()
+   {
+      return this.unitScaleFactor;
    }
    
    public boolean getSelectionEnabled()
@@ -322,7 +328,7 @@ public class Paper extends TransformRectangle2D
    {
       Paper copy = new Paper(this.type, this.getWidth(), this.getHeight(), 
                              getXScaleLevel(), getYScaleLevel(), 
-                             this.screenRes);
+                             this.screenRes, this.unitScaleFactor);
       copy.setBackgroundColor(new Color(this.bgColor.getRed(), 
                                         this.bgColor.getGreen(), 
                                         this.bgColor.getBlue()));
@@ -611,6 +617,8 @@ public class Paper extends TransformRectangle2D
       float xScale = getXScaleLevel();
       float yScale = getYScaleLevel();
       scaleTo(1, 1);
+      
+      this.unitScaleFactor = unitScaleFactor;
       
       this.rawGridWidth = calcGridWidth(this.screenRes, unitScaleFactor);
       this.rawColledgeWidth = calcCollegeWidth(this.screenRes, unitScaleFactor);
