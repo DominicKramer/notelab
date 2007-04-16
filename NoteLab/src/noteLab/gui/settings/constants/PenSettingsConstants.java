@@ -34,9 +34,9 @@ public interface PenSettingsConstants extends GuiSettingsConstants
    public static final double MAX_SIZE_PX = BUTTON_SIZE;
    public static final double STEP_SIZE_PX = 0.1;
    
-   public static final double FINE_SIZE_PX = 1.4;
-   public static final double MEDIUM_SIZE_PX = 4;
-   public static final double THICK_SIZE_PX = 8;
+   public static final double FINE_SIZE_PX = 1.2;
+   public static final double MEDIUM_SIZE_PX = 2.05;
+   public static final double THICK_SIZE_PX = 3.05;
    
    public static final Color PEN_1_COLOR = Color.BLACK;
    public static final Color PEN_2_COLOR = Color.BLUE;
