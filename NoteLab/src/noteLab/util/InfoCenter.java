@@ -60,7 +60,7 @@ public class InfoCenter
    private static final String NAME = "NoteLab";
    
    /** The application's version. */
-   private static final String VERSION = "0.1.3rc3";
+   private static final String VERSION = "0.1.3";
    
    /** The file extension for this application's native file. */
    private static final String NATIVE_EXT = ".ntlb";
