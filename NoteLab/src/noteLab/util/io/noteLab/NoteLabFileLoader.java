@@ -36,6 +36,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import noteLab.model.Page;
+import noteLab.model.Paper;
 import noteLab.model.Path;
 import noteLab.model.Stroke;
 import noteLab.model.Paper.PaperType;
@@ -326,6 +327,12 @@ public class NoteLabFileLoader
       
       float unitScaleFactor = SettingsUtilities.getUnitScaleFactor();
       canvas.getBinder().resizeTo(unitScaleFactor, unitScaleFactor);
+      
+      this.curBinder.setCurrentPage(this.curBinder.getNumberOfPages()-1);
+      Paper paper = this.curBinder.getCurrentPage().getPaper();
+      
+      SettingsUtilities.setPaperType(paper.getPaperType());
+      SettingsUtilities.setPaperColor(paper.getBackgroundColor());
       
       this.listener.noteLabFileLoaded(canvas, getMessageBuffer().toString());
    }
