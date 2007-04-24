@@ -74,6 +74,9 @@ public class InfoCenter
    /** This application's homepage. */
    private static final String HOMEPAGE = "java-notelab.sourceforge.net";
    
+   /** The application's copyright statement. */
+   private static final String COPYRIGHT = "Copyright (C) 2006-2007 "+AUTHOR;
+   
    /** A description of this application. */
    private static final String DESCRIPTION;
    static
@@ -81,23 +84,37 @@ public class InfoCenter
       StringBuffer buffer = new StringBuffer(getAppName());
       buffer.append(" version ");
       buffer.append(getAppVersion());
-      buffer.append("\nby ");
-      buffer.append(getAuthor());
+      buffer.append("\n");
+      buffer.append(getCopyright());
       buffer.append("\n\n");
+      buffer.append("This application is open source software proudly licensed under the ");
+      buffer.append("GNU GPL (www.gnu.org).\n\n");
       buffer.append(getAppName());
-      buffer.append(" is a note taking application designed to be used ");
-      buffer.append("with tablet PCs.  I used a lot of paper when ");
-      buffer.append("researching and learning advanced mathematics ");
-      buffer.append("in college.  In graduate school I expect to use just ");
-      buffer.append("as much paper.  Much of the paper I used was just ");
-      buffer.append("for scratch work.  Thus, being a software developter, ");
-      buffer.append("I decided to make an application that can be ");
-      buffer.append("used to write much of my scratch work on my tablet ");
-      buffer.append("PC.  Although, ");
+      buffer.append(" is an advanced \"digital notebook\" specifically designed for tablet ");
+      buffer.append("computers.  With its stroke smoothing, antialiasing, \"smart rendering\" ");
+      buffer.append("(for increased performance), and document storage in the industry ");
+      buffer.append("standard SVG format, ");
       buffer.append(getAppName());
-      buffer.append(" was designed to be used with mathematical note ");
-      buffer.append("taking, it can be used to use \"digital paper\" in ");
-      buffer.append("the same was real paper is used.");
+      buffer.append(" provides a beautiful and powerful note taking environment ");
+      buffer.append("on any operating system.\n\n");
+      
+      buffer.append("Webpage:   ");
+      buffer.append(getHomepage());
+      buffer.append("\n");
+      
+      buffer.append("Author:    ");
+      buffer.append(getAuthor());
+      buffer.append("\n");
+      
+      buffer.append("Email:     ");
+      buffer.append(getAuthorEmail());
+      buffer.append("\n");
+      
+      buffer.append("License:   GNU GPL\n");
+      
+      buffer.append("Filetype:  ");
+      buffer.append(getFileExtension());
+      buffer.append("\n");
       
       DESCRIPTION = buffer.toString();
    }
@@ -216,6 +233,17 @@ public class InfoCenter
    public static final String getAuthorEmail()
    {
       return AUTHOR_EMAIL;
+   }
+   
+   /**
+    * Used to retrieve this application's copyright 
+    * description.
+    * 
+    * @return The application's copyright description.
+    */
+   public static final String getCopyright()
+   {
+      return COPYRIGHT;
    }
    
    /**
