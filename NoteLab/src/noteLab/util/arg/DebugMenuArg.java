@@ -24,6 +24,7 @@
 
 package noteLab.util.arg;
 
+import noteLab.util.InfoCenter;
 import noteLab.util.settings.SettingsKeys;
 import noteLab.util.settings.SettingsUtilities;
 
@@ -33,7 +34,10 @@ public class DebugMenuArg extends Argument
    {
       super(SettingsKeys.DEBUG_MENU_KEY, 
             0, new ParamInfo[0], 
-            "Activates the debug menu.", 
+            "Activates the debug menu.  This argument is intended to be used " +
+            "by software developers to locate and fix problems in the "+InfoCenter.getAppName()+
+            " application itself and should NOT be used in a production setting " +
+            "since it may reduce "+InfoCenter.getAppName()+"'s stability and performance.", 
             false);
    }
 
