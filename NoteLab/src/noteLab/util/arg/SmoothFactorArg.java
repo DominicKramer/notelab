@@ -56,7 +56,7 @@ public class SmoothFactorArg extends Argument
    }
    
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       String strVal = args[0];
       Integer size = null;
@@ -73,7 +73,7 @@ public class SmoothFactorArg extends Argument
       {
          System.out.println("Error:  The string '"+strVal+"' does not " +
                             "correspond to an integer.");
-         return false;
+         return ArgResult.ERROR;
       }
       
       try
@@ -84,9 +84,9 @@ public class SmoothFactorArg extends Argument
       {
          System.out.println(e.getMessage());
          
-         return false;
+         return ArgResult.ERROR;
       }
       
-      return true;
+      return ArgResult.SHOW_GUI;
    }
 }

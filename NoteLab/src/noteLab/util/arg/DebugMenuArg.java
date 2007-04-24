@@ -38,10 +38,10 @@ public class DebugMenuArg extends Argument
    }
 
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       SettingsUtilities.setShowDebugMenu(true);
       
-      return true;
+      return ArgResult.SHOW_GUI;
    }
 }

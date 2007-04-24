@@ -50,7 +50,7 @@ public class CombFactorArg extends Argument
    }
    
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       String strVal = args[0];
       Float size = null;
@@ -67,11 +67,11 @@ public class CombFactorArg extends Argument
       {
          System.out.println("Error:  The string '"+strVal+"' does not " +
                             "correspond to a floating point number.");
-         return false;
+         return ArgResult.ERROR;
       }
       
       SettingsManager.getSharedInstance().setValue(getIdentifier(), size);
       
-      return true;
+      return ArgResult.SHOW_GUI;
    }
 }

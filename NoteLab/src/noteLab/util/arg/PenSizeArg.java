@@ -56,7 +56,7 @@ public class PenSizeArg extends Argument
    }
    
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       String strVal = args[0];
       Float size = null;
@@ -73,7 +73,7 @@ public class PenSizeArg extends Argument
       {
          System.out.println("Error:  The string '"+strVal+"' does not " +
                             "correspond to a floating point number.");
-         return false;
+         return ArgResult.ERROR;
       }
       
       String unitStr = args[1];
@@ -93,12 +93,12 @@ public class PenSizeArg extends Argument
             System.out.print("'"+unit.toString()+"' ");
          
          System.out.println();
-         return false;
+         return ArgResult.ERROR;
       }
       
       MValue value = new MValue(size.floatValue(), units[unitIndex]);
       SettingsManager.getSharedInstance().setValue(getIdentifier(), value);
       
-      return true;
+      return ArgResult.SHOW_GUI;
    }
 }

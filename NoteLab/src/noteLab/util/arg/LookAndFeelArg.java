@@ -102,7 +102,7 @@ public class LookAndFeelArg extends Argument
    }
    
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       if (args.length < 1)
       {
@@ -111,7 +111,7 @@ public class LookAndFeelArg extends Argument
                             " was not properly given the look and feel to " +
                             "load");
          
-         return true;
+         return ArgResult.SHOW_GUI;
       }
       
       String lookAndFeel = args[0];
@@ -145,7 +145,7 @@ public class LookAndFeelArg extends Argument
                             "\" was not loaded because it was not " +
                             "recognized as a look and feel.");
       
-      return true;
+      return ArgResult.SHOW_GUI;
    }
    
    public static void main(String[] args)
