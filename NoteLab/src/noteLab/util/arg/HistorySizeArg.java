@@ -52,7 +52,7 @@ public class HistorySizeArg extends Argument implements UndoRedoConstants
    }
    
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       int size = DEFAULT_HISTORY_SIZE;
       try
@@ -65,7 +65,7 @@ public class HistorySizeArg extends Argument implements UndoRedoConstants
                                "negative.  The size specified was '" + 
                                size+"'");
             
-            return false;
+            return ArgResult.ERROR;
          }
       }
       catch (NumberFormatException e)
@@ -75,12 +75,12 @@ public class HistorySizeArg extends Argument implements UndoRedoConstants
                             "it does not represent an integer between " +
                             "0 and "+Integer.MAX_VALUE+".");
          
-         return false;
+         return ArgResult.ERROR;
       }
       
       SettingsManager.getSharedInstance().
                          setValue(SettingsKeys.HISTORY_SIZE_KEY, size);
       
-      return true;
+      return ArgResult.SHOW_GUI;
    }
 }

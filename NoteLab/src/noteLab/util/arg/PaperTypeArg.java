@@ -64,7 +64,7 @@ public class PaperTypeArg extends Argument
    }
    
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       PaperType setType = null;
       PaperType[] types = PaperType.values();
@@ -85,11 +85,11 @@ public class PaperTypeArg extends Argument
             System.out.print("'"+type.toString()+"' ");
          System.out.println();
          
-         return false;
+         return ArgResult.ERROR;
       }
       
       SettingsManager.getSharedInstance().
                          setValue(SettingsKeys.PAPER_TYPE_KEY, setType);
-      return true;
+      return ArgResult.SHOW_GUI;
    }
 }

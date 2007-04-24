@@ -37,11 +37,11 @@ public class VersionArg extends Argument
    }
    
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       System.out.println(InfoCenter.getAppName()+" version "+
                          InfoCenter.getAppVersion());
       
-      return false;
+      return ArgResult.NO_SHOW_GUI;
    }
 }

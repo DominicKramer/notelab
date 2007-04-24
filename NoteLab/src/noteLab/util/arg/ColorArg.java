@@ -61,19 +61,19 @@ public class ColorArg extends Argument
    }
    
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       Integer num0 = getInt(args[0]);
       if (num0 == null)
-         return false;
+         return ArgResult.ERROR;
       
       Integer num1 = getInt(args[1]);
       if (num1 == null)
-         return false;
+         return ArgResult.ERROR;
       
       Integer num2 = getInt(args[2]);
       if (num2 == null)
-         return false;
+         return ArgResult.ERROR;
       
       Color col = new Color(num0.intValue(), 
                             num1.intValue(), 
@@ -81,7 +81,7 @@ public class ColorArg extends Argument
       
       SettingsManager.getSharedInstance().setValue(getIdentifier(), col);
       
-      return true;
+      return ArgResult.SHOW_GUI;
    }
    
    private Integer getInt(String valueStr)

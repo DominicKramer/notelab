@@ -57,7 +57,7 @@ public class UnitScaleArg extends Argument
    }
    
    @Override
-   public boolean decode(String[] args)
+   public ArgResult decode(String[] args)
    {
       Float size = null;
       try
@@ -74,10 +74,10 @@ public class UnitScaleArg extends Argument
          System.out.println("Error:  The string '"+args[0]+"' does not " +
                             "correspond to a floating point number.");
          
-         return false;
+         return ArgResult.ERROR;
       }
       
       SettingsManager.getSharedInstance().setValue(getIdentifier(), size);
-      return true;
+      return ArgResult.SHOW_GUI;
    }
 }

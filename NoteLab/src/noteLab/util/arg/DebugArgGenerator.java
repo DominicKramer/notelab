@@ -71,11 +71,11 @@ public class DebugArgGenerator implements SettingsKeys
       }
       
       @Override
-      public boolean decode(String[] args)
+      public ArgResult decode(String[] args)
       {
          SettingsManager.getSharedInstance().
                             setValue(getIdentifier(), true);
-         return true;
+         return ArgResult.SHOW_GUI;
       }
       
    }

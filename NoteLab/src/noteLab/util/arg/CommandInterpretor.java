@@ -160,6 +160,7 @@ public class CommandInterpretor
          return 0;
       }
       
+      ArgResult result;
       String[] paramArr = new String[numArgs];
       for (int i=0; i<numArgs; i++)
       {
@@ -185,7 +186,9 @@ public class CommandInterpretor
          return index+1;
       }
       
-      if (!arg.decode(paramArr))
+      result = arg.decode(paramArr);
+      
+      if (result == null || result == ArgResult.ERROR)
       {
          System.out.println(InfoCenter.getAppName()+" could not be started because " +
                             "the argument "+Argument.PREFIX+arg.getIdentifier()+
@@ -193,6 +196,8 @@ public class CommandInterpretor
          
          return 0;
       }
+      else if (result == ArgResult.NO_SHOW_GUI)
+         return 0;
       
       return index+1;
    }
@@ -205,7 +210,7 @@ public class CommandInterpretor
       }
 
       @Override
-      public boolean decode(String[] args)
+      public ArgResult decode(String[] args)
       {
          StringBuffer buffer = new StringBuffer("Usage:  ");
          buffer.append(InfoCenter.getAppName());
@@ -277,7 +282,7 @@ public class CommandInterpretor
          
          System.out.println(buffer.toString());
          
-         return false;
+         return ArgResult.NO_SHOW_GUI;
       }
    }
 }
