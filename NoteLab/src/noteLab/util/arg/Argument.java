@@ -77,5 +77,5 @@ public abstract class Argument
       return this.desc;
    }
    
-   public abstract boolean decode(String[] args);
+   public abstract ArgResult decode(String[] args);
 }
