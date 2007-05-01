@@ -563,6 +563,9 @@ public class CompositeCanvas
             
             resizeTo(newFactor/oldFactor);
             
+            for (Page page : this.binder)
+               page.getPaper().setUnitScaleFactor(newFactor);
+            
             // NOTE:  The entire canvas needs to be repainted here
             doRepaint();
          }
