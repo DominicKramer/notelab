@@ -203,6 +203,11 @@ public class Paper extends TransformRectangle2D
       return this.unitScaleFactor;
    }
    
+   public void setUnitScaleFactor(float unitScaleFactor)
+   {
+      this.unitScaleFactor = unitScaleFactor;
+   }
+   
    public boolean getSelectionEnabled()
    {
       return this.selectionEnabled;
