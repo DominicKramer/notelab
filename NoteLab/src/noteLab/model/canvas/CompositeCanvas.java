@@ -24,6 +24,7 @@
 
 package noteLab.model.canvas;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -45,6 +46,7 @@ import noteLab.gui.listener.RepaintBroadcaster;
 import noteLab.gui.listener.RepaintListener;
 import noteLab.model.Page;
 import noteLab.model.Path;
+import noteLab.model.Paper.PaperType;
 import noteLab.model.binder.Binder;
 import noteLab.model.binder.FlowBinder;
 import noteLab.model.geom.FloatPoint2D;
@@ -59,6 +61,7 @@ import noteLab.util.settings.SettingsChangedEvent;
 import noteLab.util.settings.SettingsChangedListener;
 import noteLab.util.settings.SettingsKeys;
 import noteLab.util.settings.SettingsManager;
+import noteLab.util.settings.SettingsUtilities;
 import noteLab.util.undoRedo.UndoRedoListener;
 import noteLab.util.undoRedo.UndoRedoManager;
 
@@ -551,7 +554,10 @@ public class CompositeCanvas
          throw new NullPointerException();
 
       String key = event.getKey();
-      if (key != null && key.equals(SettingsKeys.UNIT_SCALE_FACTOR))
+      if (key == null)
+         return;
+      
+      if (key.equals(SettingsKeys.UNIT_SCALE_FACTOR))
       {
          Object newOb = event.getNewValue();
          Object oldOb = event.getOldValue();
@@ -569,6 +575,24 @@ public class CompositeCanvas
             // NOTE:  The entire canvas needs to be repainted here
             doRepaint();
          }
+      }
+      else if (key.equals(SettingsKeys.PAPER_TYPE_KEY))
+      {
+         PaperType type = SettingsUtilities.getPaperType();
+         for (Page page : this.binder)
+            page.getPaper().setPaperType(type);
+         
+         // NOTE:  The entire canvas needs to be repainted here
+         doRepaint();
+      }
+      else if (key.equals(SettingsKeys.PAPER_COLOR_KEY))
+      {
+         Color color = SettingsUtilities.getPaperColor();
+         for (Page page : this.binder)
+            page.getPaper().setBackgroundColor(color);
+         
+         // NOTE:  The entire canvas needs to be repainted here
+         doRepaint();
       }
    }
 }
