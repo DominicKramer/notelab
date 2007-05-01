@@ -62,7 +62,7 @@ public class FlowBinder extends Binder
       this.width = Float.NaN;
       this.height = Float.NaN;
       
-      float gap = getPageGap();
+      float gap = this.xScaleLevel*getPageGap();
       float sumHeight = 0;
       for (Page p : this)
       {
@@ -105,7 +105,8 @@ public class FlowBinder extends Binder
          for (Page p : this)
             this.width = Math.max(p.getWidth(), this.width);
          
-         this.width += 2*this.pageGap;
+         float realGap = this.xScaleLevel*this.pageGap;
+         this.width += 2*realGap;
       }
       
       return this.width;
@@ -116,11 +117,13 @@ public class FlowBinder extends Binder
    {
       if (Float.isNaN(this.height))
       {
-         this.height = getPageGap();
+         float realGap = this.yScaleLevel*getPageGap();
+         
+         this.height = realGap;
          for (Page p : this)
          {
             this.height += p.getHeight();
-            this.height += this.pageGap;
+            this.height += realGap;
          }
       }
       
