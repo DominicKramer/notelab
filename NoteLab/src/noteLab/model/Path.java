@@ -369,9 +369,8 @@ public class Path
    
    public void smooth(int numPts)
    {
-      smoothImpl(numPts,   3);
-      smoothImpl(numPts-1, 2);
-      smoothImpl(numPts-2, 0);
+      for (int i=1; i<=5; i++)
+         smoothImpl(numPts, 3);
    }
    
    private void smoothImpl(int numPts, int degree)
