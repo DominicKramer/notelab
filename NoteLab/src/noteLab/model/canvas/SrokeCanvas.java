@@ -122,7 +122,7 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       final Stroke rawCurStroke = this.curStroke;
       this.curStroke = null;
       
-      SwingUtilities.invokeLater(new Runnable()
+      new Thread(new Runnable()
       {
          public void run()
          {
@@ -144,7 +144,7 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
             
             doRepaint(x, y, width, height, delta);
          }
-      });
+      }).start();
    }
    
    public void pathChangedImpl(Path path)
