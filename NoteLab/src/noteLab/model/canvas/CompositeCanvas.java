@@ -515,7 +515,15 @@ public class CompositeCanvas
                if (curPath == null)
                   return;
                
-               curPath.addItem(getClippedPoint(e.getPoint()));
+               FloatPoint2D point = null;
+               if (getCurrentCanvas().clipPoints())
+                  point = getClippedPoint(e.getPoint());
+               else
+                  point = new FloatPoint2D(e.getPoint(), 
+                                           getZoomLevel(), 
+                                           getZoomLevel());
+               
+               curPath.addItem(point);
                getCurrentCanvas().pathChanged(curPath);
             }
          });
