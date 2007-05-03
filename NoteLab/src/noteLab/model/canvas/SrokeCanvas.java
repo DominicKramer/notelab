@@ -80,7 +80,7 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
    
    public SrokeCanvas(CompositeCanvas canvas)
    {
-      super(canvas);
+      super(canvas, true);
       
       this.pen = new Pen(canvas.getZoomLevel());
       
