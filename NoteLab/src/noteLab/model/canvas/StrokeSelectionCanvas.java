@@ -108,7 +108,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
    
    public StrokeSelectionCanvas(CompositeCanvas canvas)
    {
-      super(canvas);
+      super(canvas, true);
       
       this.copyListenerVec = new Vector<CopyStateListener>();
       
