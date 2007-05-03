@@ -60,13 +60,30 @@ import noteLab.util.settings.SettingsManager;
 
 public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
 {
+   private enum Mode
+   {
+      Selection, 
+      Unselection
+   };
+   
+   private enum Action
+   {
+      CopyPage, 
+      DeletePage, 
+      ClearPage, 
+      ChangeBGColor
+   }
+   
    private PageSelector pageSelector;
    private PageSelectionToolBar toolBar;
+   
+   private Vector<Page> selPageVec;
    
    public PageSelectionCanvas(CompositeCanvas canvas)
    {
       super(canvas);
       
+      this.selPageVec = new Vector<Page>();
       this.pageSelector = new PageSelector();
       this.toolBar = new PageSelectionToolBar();
    }
@@ -104,7 +121,9 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
    public void pathStartedImpl(Path path, boolean newPage)
    {
       if (newPage)
+      {
          doRepaint();
+      }
    }
    
    @Override
@@ -146,16 +165,6 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
                                              <Color, ColorControl>, 
                                           GuiSettingsConstants
    {
-      private static final String PLAIN_PAPER = "Plain";
-      private static final String GRAPH_PAPER = "Graph";
-      private static final String WIDE_RULED_PAPER = "WideRuled";
-      private static final String COLLEGE_RULED_PAPER = "CollegeRuled";
-      
-      private static final String BG_COLOR = "background color";
-      private static final String COPY_PAGE = "CopyPage";
-      private static final String DELETE_PAGE = "DeletePage";
-      private static final String CLEAR_PAGE = "ClearPage";
-      
       private JToggleButton plainButton;
       private JToggleButton graphButton;
       private JToggleButton collegeButton;
@@ -177,37 +186,37 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          //construct the buttons that control the page type
          this.plainButton = 
             new JToggleButton(DefinedIcon.page.getIcon(BUTTON_SIZE));
-         this.plainButton.setActionCommand(PLAIN_PAPER);
+         this.plainButton.setActionCommand(PaperType.Plain.toString());
          this.plainButton.addActionListener(this);
          pageTypeGroup.add(this.plainButton);
          
          this.graphButton = 
             new JToggleButton(DefinedIcon.graph.getIcon(BUTTON_SIZE));
-         this.graphButton.setActionCommand(GRAPH_PAPER);
+         this.graphButton.setActionCommand(PaperType.Graph.toString());
          this.graphButton.addActionListener(this);
          pageTypeGroup.add(this.graphButton);
          
          this.collegeButton = 
             new JToggleButton(DefinedIcon.college_rule.getIcon(BUTTON_SIZE));
-         this.collegeButton.setActionCommand(COLLEGE_RULED_PAPER);
+         this.collegeButton.setActionCommand(PaperType.CollegeRuled.toString());
          this.collegeButton.addActionListener(this);
          pageTypeGroup.add(this.collegeButton);
          
          this.wideButton = 
             new JToggleButton(DefinedIcon.wide_rule.getIcon(BUTTON_SIZE));
-         this.wideButton.setActionCommand(WIDE_RULED_PAPER);
+         this.wideButton.setActionCommand(PaperType.WideRuled.toString());
          this.wideButton.addActionListener(this);
          pageTypeGroup.add(this.wideButton);
          
          //construct the cut/copy/paste buttons
          this.copyPageButton = 
             new JButton(DefinedIcon.copy_page.getIcon(BUTTON_SIZE));
-         this.copyPageButton.setActionCommand(COPY_PAGE);
+         this.copyPageButton.setActionCommand(Action.CopyPage.toString());
          this.copyPageButton.addActionListener(this);
          
          this.delPageButton = 
             new JButton(DefinedIcon.delete_page.getIcon(BUTTON_SIZE));
-         this.delPageButton.setActionCommand(DELETE_PAGE);
+         this.delPageButton.setActionCommand(Action.DeletePage.toString());
          this.delPageButton.addActionListener(this);
          
          Page curPage = getCompositeCanvas().getBinder().getCurrentPage();
@@ -215,13 +224,13 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
             new ColorControl(curPage.getPaper().getBackgroundColor(), 
                              BUTTON_SIZE+8);
          JButton colorButton = this.bgColorButton.getDecoratedButton();
-         colorButton.setActionCommand(BG_COLOR);
+         colorButton.setActionCommand(Action.ChangeBGColor.toString());
          colorButton.addActionListener(this);
          this.bgColorButton.addValueChangeListener(this);
          
          this.clearPageButton = 
             new JButton(DefinedIcon.delete_stroke.getIcon(BUTTON_SIZE));
-         this.clearPageButton.setActionCommand(CLEAR_PAGE);
+         this.clearPageButton.setActionCommand(Action.ClearPage.toString());
          this.clearPageButton.addActionListener(this);
          
          //add the components to the toolbar
@@ -253,27 +262,27 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          
          JCheckBoxMenuItem plainItem = 
                new JCheckBoxMenuItem("Plain", DefinedIcon.page.getIcon(16));
-         plainItem.setActionCommand(PLAIN_PAPER);
+         plainItem.setActionCommand(PaperType.Plain.toString());
          plainItem.addActionListener(menuListener);
          typeGroup.add(plainItem);
          
          JCheckBoxMenuItem graphItem = 
                new JCheckBoxMenuItem("Graph", DefinedIcon.graph.getIcon(16));
-         graphItem.setActionCommand(GRAPH_PAPER);
+         graphItem.setActionCommand(PaperType.Graph.toString());
          graphItem.addActionListener(menuListener);
          typeGroup.add(graphItem);
          
          JCheckBoxMenuItem collegeItem = 
                new JCheckBoxMenuItem("College", 
                                      DefinedIcon.college_rule.getIcon(16));
-         collegeItem.setActionCommand(COLLEGE_RULED_PAPER);
+         collegeItem.setActionCommand(PaperType.CollegeRuled.toString());
          collegeItem.addActionListener(menuListener);
          typeGroup.add(collegeItem);
          
          JCheckBoxMenuItem wideItem = 
                new JCheckBoxMenuItem("Wide", 
                                      DefinedIcon.wide_rule.getIcon(16));
-         wideItem.setActionCommand(WIDE_RULED_PAPER);
+         wideItem.setActionCommand(PaperType.WideRuled.toString());
          wideItem.addActionListener(menuListener);
          typeGroup.add(wideItem);
          
@@ -349,22 +358,22 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
             return;
          
          String cmmd = e.getActionCommand();
-         if (cmmd.equals(BG_COLOR))
+         if (cmmd.equals(Action.ChangeBGColor.toString()))
             setColor();
-         else if (cmmd.equals(COPY_PAGE))
+         else if (cmmd.equals(Action.CopyPage.toString()))
             binder.copyPage();
-         else if (cmmd.equals(DELETE_PAGE))
+         else if (cmmd.equals(Action.DeletePage.toString()))
             binder.removeCurrentPage();
-         else if (cmmd.equals(PLAIN_PAPER))
-            selPage.setPaperType(PaperType.Plain);
-         else if (cmmd.equals(GRAPH_PAPER))
-            selPage.setPaperType(PaperType.Graph);
-         else if (cmmd.equals(COLLEGE_RULED_PAPER))
-            selPage.setPaperType(PaperType.CollegeRuled);
-         else if (cmmd.equals(WIDE_RULED_PAPER))
-            selPage.setPaperType(PaperType.WideRuled);
-         else if (cmmd.equals(CLEAR_PAGE))
+         else if (cmmd.equals(Action.ClearPage.toString()))
             selPage.clear();
+         else if (cmmd.equals(PaperType.Plain.toString()))
+            selPage.setPaperType(PaperType.Plain);
+         else if (cmmd.equals(PaperType.Graph.toString()))
+            selPage.setPaperType(PaperType.Graph);
+         else if (cmmd.equals(PaperType.CollegeRuled.toString()))
+            selPage.setPaperType(PaperType.CollegeRuled);
+         else if (cmmd.equals(PaperType.WideRuled.toString()))
+            selPage.setPaperType(PaperType.WideRuled);
             
          doRepaint();
       }
@@ -388,15 +397,15 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          {
             doClick();
             String cmmd = event.getActionCommand();
-            if (cmmd.equals(COPY_PAGE))
+            if (cmmd.equals(Action.CopyPage.toString()))
                copyPageButton.doClick();
-            else if (cmmd.equals(PLAIN_PAPER))
+            else if (cmmd.equals(PaperType.Plain.toString()))
                plainButton.doClick();
-            else if (cmmd.equals(GRAPH_PAPER))
+            else if (cmmd.equals(PaperType.Graph.toString()))
                graphButton.doClick();
-            else if (cmmd.equals(COLLEGE_RULED_PAPER))
+            else if (cmmd.equals(PaperType.CollegeRuled.toString()))
                collegeButton.doClick();
-            else if (cmmd.equals(WIDE_RULED_PAPER))
+            else if (cmmd.equals(PaperType.WideRuled.toString()))
                wideButton.doClick();
          }
       }
