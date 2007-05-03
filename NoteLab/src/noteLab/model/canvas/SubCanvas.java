@@ -44,8 +44,9 @@ public abstract class SubCanvas<T extends Tool, S>
    private CompositeCanvas canvas;
    private Vector<ModListener> modListenerVec;
    private boolean isPathInProgress;
+   private boolean clipPoints;
    
-   public SubCanvas(CompositeCanvas canvas)
+   public SubCanvas(CompositeCanvas canvas, boolean clipPoints)
    {
       if (canvas == null)
          throw new NullPointerException();
@@ -53,6 +54,17 @@ public abstract class SubCanvas<T extends Tool, S>
       this.canvas = canvas;
       this.modListenerVec = new Vector<ModListener>();
       this.isPathInProgress = false;
+      this.clipPoints = clipPoints;
+   }
+   
+   protected void setClipPoints(boolean clipPoints)
+   {
+      this.clipPoints = clipPoints;
+   }
+   
+   public boolean clipPoints()
+   {
+      return this.clipPoints;
    }
    
    public CompositeCanvas getCompositeCanvas()
