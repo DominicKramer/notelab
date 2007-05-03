@@ -52,6 +52,7 @@ import noteLab.model.Page;
 import noteLab.model.Path;
 import noteLab.model.Paper.PaperType;
 import noteLab.model.binder.Binder;
+import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.tool.PageSelector;
 import noteLab.util.geom.RectangleUnioner;
 import noteLab.util.render.Renderer2D;
@@ -83,7 +84,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
    
    public PageSelectionCanvas(CompositeCanvas canvas)
    {
-      super(canvas);
+      super(canvas, false);
       
       this.selPageVec = new Vector<Page>();
       this.pageSelector = new PageSelector();
@@ -164,17 +165,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
    @Override
    public void pathStartedImpl(Path path, boolean newPage)
    {
-      Page page = getCompositeCanvas().getBinder().getCurrentPage();
-      if (this.toolBar.getCurrentMode().equals(Mode.Selection))
-         selectPage(page);
-      else if (this.toolBar.getCurrentMode().equals(Mode.Unselection))
-         unselectPage(page);
-      
-      float x = page.getX();
-      float y = page.getY();
-      float w = page.getWidth();
-      float h = page.getHeight();
-      doRepaint(x, y, w, h, 1);
+      pathChangedImpl(path);
    }
    
    @Override
@@ -186,6 +177,21 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
    @Override
    public void pathChangedImpl(Path path)
    {
+      FloatPoint2D lastPt = path.getLast();
+      Page page = getCompositeCanvas().getBinder().getPageAt(lastPt);
+      if (page == null)
+         return;
+      
+      if (this.toolBar.getCurrentMode().equals(Mode.Selection))
+         selectPage(page);
+      else if (this.toolBar.getCurrentMode().equals(Mode.Unselection))
+         unselectPage(page);
+      
+      float x = page.getX();
+      float y = page.getY();
+      float w = page.getWidth();
+      float h = page.getHeight();
+      doRepaint(x, y, w, h, 1);
    }
    
    public void renderInto(Renderer2D mG2d)
