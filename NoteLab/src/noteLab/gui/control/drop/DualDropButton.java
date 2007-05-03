@@ -66,6 +66,14 @@ public abstract class DualDropButton<V, S>
       add(this.dropButton, BorderLayout.EAST);
    }
    
+   @Override
+   public void setEnabled(boolean enabled)
+   {
+      super.setEnabled(enabled);
+      this.decorButton.setEnabled(enabled);
+      this.dropButton.setEnabled(enabled);
+   }
+   
    public boolean isSelected()
    {
       return this.decorButton.isSelected();
