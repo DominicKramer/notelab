@@ -260,28 +260,12 @@ public abstract class Binder implements Renderable, Bounded,
    public void setCurrentPage(final int index)
    {
       if (index < 0 || index >= getNumberOfPages())
-         throw new NullPointerException();
+         throw new ArrayIndexOutOfBoundsException();
       
       if (this.curPage == index)
          return;
       
-      if (this.curPage == -1)
-         this.curPage = 0;
-      
-      Page oldCurPage = getCurrentPage();
-      boolean selEnabled = false;
-      if (oldCurPage != null)
-      {
-         oldCurPage.setSelected(false);
-         selEnabled = oldCurPage.getSelectionEnabled();
-         oldCurPage.setSelectionEnabled(false);
-      }
-      
       this.curPage = index;
-      
-      Page curPage = getCurrentPage();
-      curPage.setSelected(true);
-      curPage.setSelectionEnabled(selEnabled);
       
       notifyModListeners(ModType.Other);
       
