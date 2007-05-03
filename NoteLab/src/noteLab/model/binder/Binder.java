@@ -241,6 +241,20 @@ public abstract class Binder implements Renderable, Bounded,
       return this.pageList.get(index);
    }
    
+   public Page getPageAt(FloatPoint2D point)
+   {
+      if (point == null)
+         throw new NullPointerException();
+      
+      for (Page page : this)
+      {
+         if (page.contains(point))
+            return page;
+      }
+      
+      return null;
+   }
+   
    /**
     * Used to get the binder's current page.
     * 
