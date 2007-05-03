@@ -27,6 +27,7 @@ package noteLab.model.canvas;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Vector;
 
@@ -52,6 +53,7 @@ import noteLab.model.Path;
 import noteLab.model.Paper.PaperType;
 import noteLab.model.binder.Binder;
 import noteLab.model.tool.PageSelector;
+import noteLab.util.geom.RectangleUnioner;
 import noteLab.util.render.Renderer2D;
 import noteLab.util.settings.SettingsChangedEvent;
 import noteLab.util.settings.SettingsChangedListener;
@@ -102,28 +104,77 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
    @Override
    public void start()
    {
-      getCompositeCanvas().
-         getBinder().
-            getCurrentPage().
-               setSelectionEnabled(true);
+      for (Page page : this.selPageVec)
+         page.setSelectionEnabled(true);
+      
+      doPaintDirtyRectangle();
    }
    
    @Override
    public void finish()
    {
-      getCompositeCanvas().
-         getBinder().
-            getCurrentPage().
-               setSelectionEnabled(false);
+      for (Page page : this.selPageVec)
+         page.setSelectionEnabled(false);
+      
+      doPaintDirtyRectangle();
+   }
+   
+   private void selectPage(Page page)
+   {
+      if (page == null)
+         throw new NullPointerException();
+      
+      if (this.selPageVec.contains(page))
+         return;
+      
+      page.setSelectionEnabled(true);
+      page.setSelected(true);
+      this.selPageVec.add(page);
+      
+      this.toolBar.syncActionButtons();
+   }
+   
+   private void unselectPage(Page page)
+   {
+      if (page == null)
+         throw new NullPointerException();
+      
+      page.setSelectionEnabled(false);
+      page.setSelected(false);
+      
+      this.selPageVec.remove(page);
+      
+      this.toolBar.syncActionButtons();
+   }
+   
+   private void doPaintDirtyRectangle()
+   {
+      RectangleUnioner unioner = new RectangleUnioner();
+      for (Page page : this.selPageVec)
+         unioner.union(page.getBounds2D());
+      
+      Rectangle2D.Float union = unioner.getUnion();
+      
+      doRepaint((float)union.getX(), 
+                (float)union.getY(), 
+                (float)union.getWidth(), 
+                (float)union.getHeight(), 1);
    }
    
    @Override
    public void pathStartedImpl(Path path, boolean newPage)
    {
-      if (newPage)
-      {
-         doRepaint();
-      }
+      Page page = getCompositeCanvas().getBinder().getCurrentPage();
+      if (this.toolBar.getCurrentMode().equals(Mode.Selection))
+         selectPage(page);
+      else if (this.toolBar.getCurrentMode().equals(Mode.Unselection))
+         unselectPage(page);
+      
+      float x = page.getX();
+      float y = page.getY();
+      float w = page.getWidth();
+      float h = page.getHeight();
+      doRepaint(x, y, w, h, 1);
    }
    
    @Override
@@ -170,6 +221,9 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       private JToggleButton collegeButton;
       private JToggleButton wideButton;
       
+      private JToggleButton selButton;
+      private JToggleButton unSelButton;
+      
       private ColorControl bgColorButton;
       private JButton copyPageButton;
       private JButton delPageButton;
@@ -177,9 +231,25 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       
       private Vector<PathMenuItem> menuItemVec;
       
+      private Mode curMode;
+      
       public PageSelectionToolBar()
       {
          super(DefinedIcon.select_page);
+         
+         int size = BUTTON_SIZE;
+         
+         ButtonGroup selGroup = new ButtonGroup();
+         
+         this.selButton = new JToggleButton(DefinedIcon.select.getIcon(size));
+         this.selButton.setActionCommand(Mode.Selection.toString());
+         this.selButton.addActionListener(this);
+         selGroup.add(this.selButton);
+         
+         this.unSelButton = new JToggleButton(DefinedIcon.unselect.getIcon(size));
+         this.unSelButton.setActionCommand(Mode.Unselection.toString());
+         this.unSelButton.addActionListener(this);
+         selGroup.add(this.unSelButton);
          
          ButtonGroup pageTypeGroup = new ButtonGroup();
          
@@ -235,6 +305,9 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          
          //add the components to the toolbar
          JToolBar panel = getToolBar();
+         panel.add(this.selButton);
+         panel.add(this.unSelButton);
+         panel.addSeparator();
          panel.add(this.plainButton);
          panel.add(this.graphButton);
          panel.add(this.collegeButton);
@@ -323,6 +396,9 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
             wideItem.setSelected(true);
          }
          
+         this.selButton.doClick();
+         syncActionButtons();
+         
          SettingsManager.getSharedInstance().addSettingsListener(this);
       }
       
@@ -349,46 +425,100 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          return this.menuItemVec;
       }
       
+      public Mode getCurrentMode()
+      {
+         return this.curMode;
+      }
+      
+      private void syncActionButtons()
+      {
+         boolean canEdit = !selPageVec.isEmpty();
+         
+         this.plainButton.setEnabled(canEdit);
+         this.graphButton.setEnabled(canEdit);
+         this.collegeButton.setEnabled(canEdit);
+         this.wideButton.setEnabled(canEdit);
+         
+         this.bgColorButton.setEnabled(canEdit);
+         this.copyPageButton.setEnabled(canEdit);
+         this.delPageButton.setEnabled(canEdit);
+         this.clearPageButton.setEnabled(canEdit);
+         
+         this.bgColorButton.setEnabled(canEdit);
+      }
+      
       public void actionPerformed(ActionEvent e)
       {
-         CompositeCanvas canvas = getCompositeCanvas();
-         Binder binder = canvas.getBinder();
-         Page selPage = binder.getCurrentPage();
-         if (selPage == null)
+         String cmmd = e.getActionCommand();
+         Mode[] modes = Mode.values();
+         for (Mode m : modes)
+         {
+            if (cmmd.equals(m.toString()))
+            {
+               this.curMode = m;
+               break;
+            }
+         }
+         
+         if (cmmd.equals(Mode.Selection.toString()) || 
+             cmmd.equals(Mode.Unselection.toString()))
             return;
          
-         String cmmd = e.getActionCommand();
          if (cmmd.equals(Action.ChangeBGColor.toString()))
             setColor();
          else if (cmmd.equals(Action.CopyPage.toString()))
-            binder.copyPage();
+         {
+            Binder binder = getCompositeCanvas().getBinder();
+            for (Page page : selPageVec)
+               binder.addPage(page.getCopy());
+         }
          else if (cmmd.equals(Action.DeletePage.toString()))
-            binder.removeCurrentPage();
-         else if (cmmd.equals(Action.ClearPage.toString()))
-            selPage.clear();
-         else if (cmmd.equals(PaperType.Plain.toString()))
-            selPage.setPaperType(PaperType.Plain);
-         else if (cmmd.equals(PaperType.Graph.toString()))
-            selPage.setPaperType(PaperType.Graph);
-         else if (cmmd.equals(PaperType.CollegeRuled.toString()))
-            selPage.setPaperType(PaperType.CollegeRuled);
-         else if (cmmd.equals(PaperType.WideRuled.toString()))
-            selPage.setPaperType(PaperType.WideRuled);
+         {
+            Binder binder = getCompositeCanvas().getBinder();
+            for (Page page : selPageVec)
+            {
+               binder.removePage(page);
+               page.setSelected(false);
+            }
             
-         doRepaint();
+            doPaintDirtyRectangle();
+            selPageVec.clear();
+            syncActionButtons();
+         }
+         else if (cmmd.equals(Action.ClearPage.toString()))
+         {
+            for (Page page : selPageVec)
+               page.clear();
+         }
+         else if (cmmd.equals(PaperType.Plain.toString()))
+         {
+            for (Page page : selPageVec)
+               page.setPaperType(PaperType.Plain);
+         }
+         else if (cmmd.equals(PaperType.Graph.toString()))
+         {
+            for (Page page : selPageVec)
+               page.setPaperType(PaperType.Graph);
+         }
+         else if (cmmd.equals(PaperType.CollegeRuled.toString()))
+         {
+            for (Page page : selPageVec)
+               page.setPaperType(PaperType.CollegeRuled);
+         }
+         else if (cmmd.equals(PaperType.WideRuled.toString()))
+         {
+            for (Page page : selPageVec)
+               page.setPaperType(PaperType.WideRuled);
+         }
+         
+         doPaintDirtyRectangle();
       }
       
       private void setColor()
       {
-         CompositeCanvas canvas = getCompositeCanvas();
-         Binder binder = canvas.getBinder();
-         Page selPage = binder.getCurrentPage();
-         if (selPage == null)
-            return;
-         
          Color color = this.bgColorButton.getControlValue();
-         selPage.getPaper().setBackgroundColor(color);
-         canvas.doRepaint();
+            for (Page page : selPageVec)
+               page.getPaper().setBackgroundColor(color);
       }
       
       private class MenuListener implements ActionListener
@@ -439,6 +569,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       public void valueChanged(ValueChangeEvent<Color, ColorControl> event)
       {
          setColor();
+         doPaintDirtyRectangle();
       }
    }
 }
