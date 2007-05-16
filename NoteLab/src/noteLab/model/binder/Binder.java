@@ -178,6 +178,55 @@ public abstract class Binder implements Renderable, Bounded,
          listener.pageAdded(this, page);
    }
    
+   private void addPage(Page page, int index)
+   {
+      if (page == null)
+         throw new NullPointerException();
+      
+      this.pageList.add(index, page);
+      
+      page.addModListener(this);
+      
+      setCurrentPage(this.pageList.indexOf(page));
+      doLayout();
+      
+      notifyModListeners(ModType.Other);
+      
+      for (BinderListener listener : this.binderListeners)
+         listener.pageAdded(this, page);
+   }
+   
+   public void addPageBefore(Page basePage, Page newPage)
+   {
+      int index = this.pageList.indexOf(basePage);
+      if (index == -1)
+      {
+         addPage(newPage);
+         return;
+      }
+      
+      addPage(newPage, index);
+   }
+   
+   public void addPageAfter(Page basePage, Page newPage)
+   {
+      int index = this.pageList.indexOf(basePage);
+      if (index == -1)
+      {
+         addPage(newPage);
+         return;
+      }
+      
+      index++;
+      if (index >= this.pageList.size())
+      {
+         addPage(newPage);
+         return;
+      }
+      
+      addPage(newPage, index);
+   }
+   
    /**
     * Removes the current page from the binder.  If the page is the last page in the binder 
     * a new page is added to the binder so that the binder is not empty.
