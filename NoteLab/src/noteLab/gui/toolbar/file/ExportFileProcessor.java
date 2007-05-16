@@ -44,7 +44,7 @@ public class ExportFileProcessor extends CanvasFileProcessor
       super(frame);
    }
    
-   public void processFile(File file)
+   public void processFileImpl(File file)
    {
       if (file == null)
          throw new NullPointerException();
