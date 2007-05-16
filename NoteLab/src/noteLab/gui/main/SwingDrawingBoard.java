@@ -55,6 +55,7 @@ public class SwingDrawingBoard extends JPanel implements Scrollable
          throw new NullPointerException();
       
       this.canvas = canvas;
+      this.canvas.setDisplayPanel(this);
       this.mainPanel = mainPanel;
       this.renderer = new SwingRenderer2D();
       
