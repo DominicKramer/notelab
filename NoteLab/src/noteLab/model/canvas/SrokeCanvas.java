@@ -36,7 +36,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 
 import noteLab.gui.DecoratedButton;
 import noteLab.gui.DefinedIcon;
