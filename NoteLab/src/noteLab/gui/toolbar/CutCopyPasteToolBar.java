@@ -38,12 +38,12 @@ import noteLab.util.copy.CutCopyPasteReady;
 
 public class CutCopyPasteToolBar<E extends Object & CopyReady<E>> 
                 extends JToolBar implements ActionListener, 
-                                           GuiSettingsConstants, 
-                                           CopyStateListener
+                                            GuiSettingsConstants, 
+                                            CopyStateListener
 {
    private static final String CUT_CMMD = "Cut";
    private static final String COPY_CMMD = "Copy";
-   private static final String PASTE_CMMD = "Pasge";
+   private static final String PASTE_CMMD = "Paste";
    
    private CutCopyPasteReady<E> handler;
    private E copiedItem;
@@ -98,7 +98,34 @@ public class CutCopyPasteToolBar<E extends Object & CopyReady<E>>
       
       this.pasteButton.setEnabled(this.copiedItem != null);
    }
-
+   
+   public void setCutIcon(DefinedIcon icon)
+   {
+      if (icon == null)
+         icon = DefinedIcon.cut;
+      
+      int size = GuiSettingsConstants.BUTTON_SIZE;
+      this.cutButton.setIcon(icon.getIcon(size));
+   }
+   
+   public void setCopyIcon(DefinedIcon icon)
+   {
+      if (icon == null)
+         icon = DefinedIcon.copy_stroke;
+      
+      int size = GuiSettingsConstants.BUTTON_SIZE;
+      this.copyButton.setIcon(icon.getIcon(size));
+   }
+   
+   public void setPasteIcon(DefinedIcon icon)
+   {
+      if (icon == null)
+         icon = DefinedIcon.paste;
+      
+      int size = GuiSettingsConstants.BUTTON_SIZE;
+      this.pasteButton.setIcon(icon.getIcon(size));
+   }
+   
    public void copyStateChanged(boolean canCopy)
    {
       this.cutButton.setEnabled(canCopy);
