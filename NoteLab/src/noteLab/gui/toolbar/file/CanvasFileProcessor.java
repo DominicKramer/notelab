@@ -46,6 +46,7 @@ import noteLab.util.settings.SettingsUtilities;
 public abstract class CanvasFileProcessor implements FileProcessor
 {
    private MainFrame mainFrame;
+   private File file;
    
    public CanvasFileProcessor(MainFrame frame)
    {
@@ -53,11 +54,23 @@ public abstract class CanvasFileProcessor implements FileProcessor
          throw new NullPointerException();
       
       this.mainFrame = frame;
+      this.file = null;
    }
    
    public MainFrame getMainFrame()
    {
       return this.mainFrame;
+   }
+   
+   public File getLastFileProcessed()
+   {
+      return this.file;
+   }
+   
+   public void processFile(File file)
+   {
+      this.file = file;
+      processFileImpl(file);
    }
    
    protected void saveAsSVG(File file, String ext, boolean zip)
@@ -166,4 +179,6 @@ public abstract class CanvasFileProcessor implements FileProcessor
                                     JOptionPane.ERROR_MESSAGE, 
                                     icon);
    }
+   
+   public abstract void processFileImpl(File file);
 }
