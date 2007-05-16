@@ -35,6 +35,7 @@ import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
@@ -101,6 +102,8 @@ public class CompositeCanvas
    
    private boolean isEnabled;
    
+   private JPanel displayPanel;
+   
    public CompositeCanvas(float scaleLevel)
    {
       this(new FlowBinder(scaleLevel, scaleLevel), scaleLevel);
@@ -110,6 +113,8 @@ public class CompositeCanvas
    {
       if (binder == null)
          throw new NullPointerException();
+      
+      this.displayPanel = null;
       
       this.modListenerVec = new Vector<ModListener>();
       this.undoRedoManager = new UndoRedoManager(this);
@@ -155,6 +160,31 @@ public class CompositeCanvas
       this.isEnabled = true;
       
       SettingsManager.getSharedInstance().addSettingsListener(this);
+   }
+   
+   public StrokeSelectionCanvas getStrokeSelectionCanvas()
+   {
+      return this.selCanvas;
+   }
+   
+   public PageSelectionCanvas getPageCanvas()
+   {
+      return this.pageSelCanvas;
+   }
+   
+   public SrokeCanvas getStrokeCanvas()
+   {
+      return this.printCanvas;
+   }
+   
+   public JPanel getDisplayPanel()
+   {
+      return this.displayPanel;
+   }
+   
+   public void setDisplayPanel(JPanel displayPanel)
+   {
+      this.displayPanel = displayPanel;
    }
    
    public boolean isEnabled()
@@ -322,6 +352,8 @@ public class CompositeCanvas
       this.curCanvas = canvas;
       this.curCanvas.start();
       
+      this.curCanvas.getToolBarButton().doClick();
+      
       syncCursor();
    }
    
@@ -437,7 +469,15 @@ public class CompositeCanvas
             throw new NullPointerException();
          
          Page curPage = binder.getCurrentPage();
-         return binder.clipPoint(point.x-curPage.getX(), point.y-curPage.getY());
+         FloatPoint2D newPt = null;
+         if (getCurrentCanvas().clipPoints())
+            newPt = binder.clipPoint(point.x-curPage.getX(), point.y-curPage.getY());
+         else
+            newPt = new FloatPoint2D(point, 
+                                     getZoomLevel(), 
+                                     getZoomLevel());
+         
+         return newPt;
       }
       
       public void mouseClicked(MouseEvent e)
@@ -515,14 +555,7 @@ public class CompositeCanvas
                if (curPath == null)
                   return;
                
-               FloatPoint2D point = null;
-               if (getCurrentCanvas().clipPoints())
-                  point = getClippedPoint(e.getPoint());
-               else
-                  point = new FloatPoint2D(e.getPoint(), 
-                                           getZoomLevel(), 
-                                           getZoomLevel());
-               
+               FloatPoint2D point = getClippedPoint(e.getPoint());
                curPath.addItem(point);
                getCurrentCanvas().pathChanged(curPath);
             }
