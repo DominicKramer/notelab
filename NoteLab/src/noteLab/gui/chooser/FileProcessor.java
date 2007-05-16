@@ -30,4 +30,5 @@ public interface FileProcessor
 {
    public void processFile(File file);
    public File getFormattedName(File file);
+   public File getLastFileProcessed();
 }
