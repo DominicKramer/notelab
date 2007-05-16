@@ -192,7 +192,7 @@ public class FileToolBar
       }
       else if (cmmd.equals(OPEN))
       {
-         OpenFileProcessor processor = new OpenFileProcessor(this.mainFrame);
+         OpenFileProcessor processor = new OpenFileProcessor();
          NoteLabFileChooser openChooser = 
                            new NoteLabFileChooser("Open", true, false, processor);
          openChooser.setAcceptAllFileFilterUsed(false);
