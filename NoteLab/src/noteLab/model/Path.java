@@ -45,8 +45,6 @@ public class Path
                 extends ItemContainer<FloatPoint2D> 
                            implements CopyReady<Path>, Bounded
 {
-   private static final int ZERO_DEGREE_KNOT_NUM = 0;
-   
    private static final Polynomial POLY_3_1  = new Polynomial(0, 
                                                               0, 
                                                               0,
