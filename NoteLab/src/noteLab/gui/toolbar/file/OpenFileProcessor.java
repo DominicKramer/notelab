@@ -33,6 +33,7 @@ import javax.swing.JOptionPane;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
+import noteLab.gui.chooser.FileProcessor;
 import noteLab.gui.main.MainFrame;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.InfoCenter;
@@ -41,13 +42,18 @@ import noteLab.util.io.jarnal.JarnalFileLoader;
 import noteLab.util.io.noteLab.NoteLabFileLoadedListener;
 import noteLab.util.io.noteLab.NoteLabFileLoader;
 
-public class OpenFileProcessor 
-                extends CanvasFileProcessor 
-                           implements NoteLabFileLoadedListener
+public class OpenFileProcessor implements FileProcessor, NoteLabFileLoadedListener
 {
-   public OpenFileProcessor(MainFrame frame)
+   private File file;
+   
+   public OpenFileProcessor()
    {
-      super(frame);
+      this.file = null;;
+   }
+   
+   public File getLastFileProcessed()
+   {
+      return this.file;
    }
    
    public void processFile(File file)
@@ -56,6 +62,8 @@ public class OpenFileProcessor
       {
          if (file == null)
             throw new IOException("No file was selected.");
+         
+         this.file = file;
          
          String nativeExt = InfoCenter.getFileExtension().toLowerCase();
          String jarnalExt = InfoCenter.getJarnalExtension().toLowerCase();
@@ -76,7 +84,7 @@ public class OpenFileProcessor
       }
       catch (Throwable throwable)
       {
-         notifyOfThrowable(throwable);
+         CanvasFileProcessor.notifyOfThrowable(throwable);
       }
    }
    
@@ -94,6 +102,11 @@ public class OpenFileProcessor
                                        icon);
       }
       
+      processCanvasLoaded(canvas);
+   }
+   
+   protected void processCanvasLoaded(CompositeCanvas canvas)
+   {
       new MainFrame(canvas).setVisible(true);
    }
 
