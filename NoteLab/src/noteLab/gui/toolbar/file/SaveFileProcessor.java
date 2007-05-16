@@ -36,7 +36,7 @@ public class SaveFileProcessor extends CanvasFileProcessor
       super(main);
    }
    
-   public void processFile(File file)
+   public void processFileImpl(File file)
    {
       if (file == null)
             throw new NullPointerException();
