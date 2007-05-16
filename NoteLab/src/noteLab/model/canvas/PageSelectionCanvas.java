@@ -28,57 +28,82 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.util.List;
+import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
+import noteLab.gui.SlidingPanel;
 import noteLab.gui.ToolBarButton;
+import noteLab.gui.chooser.NoteLabFileChooser;
+import noteLab.gui.chooser.filter.JarnalFileFilter;
+import noteLab.gui.chooser.filter.NoteLabFileFilter;
+import noteLab.gui.chooser.filter.SupportedFileFilter;
 import noteLab.gui.control.drop.ColorControl;
 import noteLab.gui.listener.ValueChangeEvent;
 import noteLab.gui.listener.ValueChangeListener;
 import noteLab.gui.menu.MenuConstants;
 import noteLab.gui.menu.MenuPath;
 import noteLab.gui.menu.PathMenuItem;
+import noteLab.gui.toolbar.CutCopyPasteToolBar;
+import noteLab.gui.toolbar.file.OpenFileProcessor;
 import noteLab.model.Page;
 import noteLab.model.Path;
 import noteLab.model.Paper.PaperType;
 import noteLab.model.binder.Binder;
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.tool.PageSelector;
+import noteLab.util.copy.CopyStateListener;
+import noteLab.util.copy.CutCopyPasteReady;
 import noteLab.util.geom.RectangleUnioner;
+import noteLab.util.geom.Transformable;
 import noteLab.util.render.Renderer2D;
 import noteLab.util.settings.SettingsChangedEvent;
 import noteLab.util.settings.SettingsChangedListener;
 import noteLab.util.settings.SettingsKeys;
 import noteLab.util.settings.SettingsManager;
+import noteLab.util.structure.CopyVector;
 
 public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
 {
    private enum Mode
    {
       Selection, 
-      Unselection
+      Unselection, 
+      SelectDropLocation, 
+      SelectImportLocation
    };
    
    private enum Action
    {
-      CopyPage, 
+      Paste, 
+      Open, 
+      Drop, 
       DeletePage, 
       ClearPage, 
       ChangeBGColor
    }
    
+   private static final float DEFAULT_DROP_LINE_DELTA = 3;
+   
    private PageSelector pageSelector;
    private PageSelectionToolBar toolBar;
+   
+   private DropLine dropLine;
    
    private Vector<Page> selPageVec;
    
@@ -86,6 +111,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
    {
       super(canvas, false);
       
+      this.dropLine = new DropLine(2);
       this.selPageVec = new Vector<Page>();
       this.pageSelector = new PageSelector();
       this.toolBar = new PageSelectionToolBar();
@@ -133,6 +159,13 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       this.selPageVec.add(page);
       
       this.toolBar.syncActionButtons();
+      this.toolBar.notifyOfCopyState();
+   }
+   
+   private void selectAllPages()
+   {
+      for (Page page : getCompositeCanvas().getBinder())
+         selectPage(page);
    }
    
    private void unselectPage(Page page)
@@ -146,10 +179,27 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       this.selPageVec.remove(page);
       
       this.toolBar.syncActionButtons();
+      this.toolBar.notifyOfCopyState();
+   }
+   
+   private void unselectAllPages()
+   {
+      for (Page page : this.selPageVec)
+      {
+         page.setSelectionEnabled(false);
+         page.setSelected(false);
+      }
+      this.selPageVec.clear();
+      
+      this.toolBar.syncActionButtons();
+      this.toolBar.notifyOfCopyState();
    }
    
    private void doPaintDirtyRectangle()
    {
+      if (this.selPageVec.isEmpty())
+         return;
+      
       RectangleUnioner unioner = new RectangleUnioner();
       for (Page page : this.selPageVec)
          unioner.union(page.getBounds2D());
@@ -177,40 +227,190 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
    @Override
    public void pathChangedImpl(Path path)
    {
-      FloatPoint2D lastPt = path.getLast();
-      Page page = getCompositeCanvas().getBinder().getPageAt(lastPt);
-      if (page == null)
-         return;
+      Mode mode = this.toolBar.getCurrentMode();
       
-      if (this.toolBar.getCurrentMode().equals(Mode.Selection))
-         selectPage(page);
-      else if (this.toolBar.getCurrentMode().equals(Mode.Unselection))
-         unselectPage(page);
-      
-      float x = page.getX();
-      float y = page.getY();
-      float w = page.getWidth();
-      float h = page.getHeight();
-      doRepaint(x, y, w, h, 1);
+      if (mode.equals(Mode.SelectDropLocation) || 
+          mode.equals(Mode.SelectImportLocation))
+      {
+         FloatPoint2D lastPt = path.getLast();
+         CompositeCanvas canvas = getCompositeCanvas();
+         Page page = canvas.getBinder().getPageAt(lastPt);
+         if (page == null)
+            return;
+         
+         Rectangle2D.Float bounds = page.getBounds2D();
+         float averageH = (float)(bounds.getY()+bounds.getHeight()/2.0);
+         
+         float y = lastPt.getY();
+         
+         boolean isAbove = y <= averageH;
+         float newY = (isAbove)?(page.getMinY()):(page.getMaxY());
+         float newX = page.getX();
+         float delta = (isAbove)?
+                          (-DEFAULT_DROP_LINE_DELTA):
+                             (DEFAULT_DROP_LINE_DELTA+1);
+         delta *= canvas.getZoomLevel();
+         this.dropLine.setLocation(newX, newX+page.getWidth(), newY+delta, 
+                                   page, isAbove);
+         if (mode.equals(Mode.SelectDropLocation))
+            this.toolBar.showPasteMenu();
+         else
+            this.toolBar.showImportMenu();
+      }
+      else
+      {
+         FloatPoint2D lastPt = path.getLast();
+         Page page = getCompositeCanvas().getBinder().getPageAt(lastPt);
+         if (page == null)
+            return;
+         
+         if (this.toolBar.getCurrentMode().equals(Mode.Selection))
+            selectPage(page);
+         else if (this.toolBar.getCurrentMode().equals(Mode.Unselection))
+            unselectPage(page);
+         
+         float x = page.getX();
+         float y = page.getY();
+         float w = page.getWidth();
+         float h = page.getHeight();
+         doRepaint(x, y, w, h, 1);
+      }
    }
    
    public void renderInto(Renderer2D mG2d)
    {
+      Mode curMode = this.toolBar.getCurrentMode();
+      if (curMode.equals(Mode.SelectDropLocation) || 
+          curMode.equals(Mode.SelectImportLocation))
+      {
+         mG2d.setColor(Color.RED);
+         mG2d.setLineWidth(this.dropLine.getWidth());
+         mG2d.drawLine(this.dropLine.getLeftPoint(), this.dropLine.getRightPoint());
+      }
    }
    
    @Override
    public void zoomBy(float val)
    {
+      this.dropLine.scaleBy(val, val);
    }
 
    @Override
    public void zoomTo(float val)
    {
+      this.dropLine.scaleTo(val, val);
    }
    
    @Override
    public void resizeTo(float val)
    {
+      this.dropLine.resizeTo(val, val);
+   }
+   
+   private class DropLine implements Transformable
+   {
+      private FloatPoint2D leftPt;
+      private FloatPoint2D rightPt;
+      private float width;
+      private boolean dropAbove;
+      private Page page;
+      
+      private DropLine(float width)
+      {
+         this.width = width;
+         this.dropAbove = true;
+         this.page = null;
+         
+         float scaleLevel = getCompositeCanvas().getZoomLevel();
+         this.leftPt = new FloatPoint2D(0, 0, scaleLevel, scaleLevel);
+         this.rightPt = new FloatPoint2D(0, 0, scaleLevel, scaleLevel);
+      }
+      
+      public float getWidth()
+      {
+         return this.width;
+      }
+      
+      public FloatPoint2D getLeftPoint()
+      {
+         return this.leftPt;
+      }
+      
+      public FloatPoint2D getRightPoint()
+      {
+         return this.rightPt;
+      }
+      
+      public boolean dropAbove()
+      {
+         return this.dropAbove;
+      }
+      
+      public Page getDropPage()
+      {
+         return this.page;
+      }
+      
+      public void setLocation(float leftX, float rightX, float y, 
+                              Page dropPage, boolean dropAbove)
+      {
+         float oldLeft = this.leftPt.getX();
+         float oldRight = this.rightPt.getX();
+         float oldY = this.leftPt.getY();
+         
+         this.leftPt.translateTo(leftX, y);
+         this.rightPt.translateTo(rightX, y);
+         
+         this.page = dropPage;
+         this.dropAbove = dropAbove;
+         
+         doPaint(oldLeft, oldRight, oldY);
+         doPaint(leftX, rightX, y);
+      }
+      
+      private void doPaint()
+      {
+         float leftX = this.leftPt.getX();
+         float rightX = this.rightPt.getX();
+         float y = this.leftPt.getY();
+         
+         doRepaint(leftX, y-this.width, rightX-leftX, 2*this.width, this.width);
+      }
+      
+      private void doPaint(float leftX, float rightX, float y)
+      {
+         doRepaint(leftX, y-this.width, rightX-leftX, 2*this.width, this.width);
+      }
+
+      public void resizeTo(float x, float y)
+      {
+         this.leftPt.resizeTo(x, y);
+         this.rightPt.resizeTo(x, y);
+      }
+
+      public void scaleBy(float x, float y)
+      {
+         this.leftPt.scaleBy(x, y);
+         this.rightPt.scaleBy(x, y);
+      }
+
+      public void scaleTo(float x, float y)
+      {
+         this.leftPt.scaleTo(x, y);
+         this.rightPt.scaleTo(x, y);
+      }
+
+      public void translateBy(float x, float y)
+      {
+         this.leftPt.translateBy(x, y);
+         this.rightPt.translateBy(x, y);
+      }
+
+      public void translateTo(float x, float y)
+      {
+         this.leftPt.translateTo(x, y);
+         this.rightPt.translateTo(x, y);
+      }
    }
    
    private class PageSelectionToolBar 
@@ -220,28 +420,79 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
                                           SettingsKeys, 
                                           ValueChangeListener
                                              <Color, ColorControl>, 
-                                          GuiSettingsConstants
+                                          GuiSettingsConstants, 
+                                          CutCopyPasteReady<CopyVector<Page>>
    {
+      private final String CANCEL_PASTE = "CANCEL_PASTE";
+      private final String CANCEL_IMPORT = "CANCEL_IMPORT";
+      
       private JToggleButton plainButton;
       private JToggleButton graphButton;
       private JToggleButton collegeButton;
       private JToggleButton wideButton;
       
       private JToggleButton selButton;
+      private JButton selAllButton;
+      
       private JToggleButton unSelButton;
+      private JButton unSelAllButton;
       
       private ColorControl bgColorButton;
-      private JButton copyPageButton;
       private JButton delPageButton;
       private JButton clearPageButton;
+      
+      private JButton openButton;
+      private JButton dropButton;
+      private JTextField fileField;
       
       private Vector<PathMenuItem> menuItemVec;
       
       private Mode curMode;
       
+      private Vector<CopyStateListener> copyListenerVec;
+      
+      private JPopupMenu pasteMenu;
+      private CopyVector<Page> pasteVec;
+      
+      private JPopupMenu importMenu;
+      private CompositeCanvas importCanvas;
+      
+      private CutCopyPasteToolBar<CopyVector<Page>> cutToolbar;
+      
       public PageSelectionToolBar()
       {
          super(DefinedIcon.select_page);
+         
+         int smallSize = GuiSettingsConstants.SMALL_BUTTON_SIZE;
+         
+         JMenuItem pasteItem = new JMenuItem("Paste", DefinedIcon.paste.getIcon(smallSize));
+         pasteItem.setActionCommand(Action.Paste.toString());
+         pasteItem.addActionListener(this);
+         
+         JMenuItem cancelPaste = new JMenuItem("Cancel", DefinedIcon.close.getIcon(smallSize));
+         cancelPaste.setActionCommand(CANCEL_PASTE);
+         cancelPaste.addActionListener(this);
+         
+         this.pasteMenu = new JPopupMenu();
+         this.pasteMenu.add(pasteItem);
+         this.pasteMenu.add(cancelPaste);
+         
+         JMenuItem importItem = new JMenuItem("Import", DefinedIcon.jump.getIcon(smallSize));
+         importItem.setActionCommand(Action.Drop.toString());
+         importItem.addActionListener(this);
+         
+         JMenuItem cancelImport = new JMenuItem("Cancel", DefinedIcon.close.getIcon(smallSize));
+         cancelImport.setActionCommand(CANCEL_IMPORT);
+         cancelImport.addActionListener(this);
+         
+         this.importMenu = new JPopupMenu();
+         this.importMenu.add(importItem);
+         this.importMenu.add(cancelImport);
+         
+         this.importCanvas = null;
+         
+         this.copyListenerVec = new Vector<CopyStateListener>();
+         this.pasteVec = new CopyVector<Page>(0);
          
          int size = BUTTON_SIZE;
          
@@ -256,6 +507,14 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.unSelButton.setActionCommand(Mode.Unselection.toString());
          this.unSelButton.addActionListener(this);
          selGroup.add(this.unSelButton);
+         
+         this.selAllButton = new JButton(DefinedIcon.select_all.getIcon(size));
+         this.selAllButton.setActionCommand(DefinedIcon.select_all.toString());
+         this.selAllButton.addActionListener(this);
+         
+         this.unSelAllButton = new JButton(DefinedIcon.unselect_all.getIcon(size));
+         this.unSelAllButton.setActionCommand(DefinedIcon.unselect_all.toString());
+         this.unSelAllButton.addActionListener(this);
          
          ButtonGroup pageTypeGroup = new ButtonGroup();
          
@@ -284,12 +543,6 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.wideButton.addActionListener(this);
          pageTypeGroup.add(this.wideButton);
          
-         //construct the cut/copy/paste buttons
-         this.copyPageButton = 
-            new JButton(DefinedIcon.copy_page.getIcon(BUTTON_SIZE));
-         this.copyPageButton.setActionCommand(Action.CopyPage.toString());
-         this.copyPageButton.addActionListener(this);
-         
          this.delPageButton = 
             new JButton(DefinedIcon.delete_page.getIcon(BUTTON_SIZE));
          this.delPageButton.setActionCommand(Action.DeletePage.toString());
@@ -309,21 +562,55 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.clearPageButton.setActionCommand(Action.ClearPage.toString());
          this.clearPageButton.addActionListener(this);
          
+         JToolBar selBar = new JToolBar();
+         selBar.add(this.selButton);
+         selBar.add(this.selAllButton);
+         selBar.addSeparator();
+         selBar.add(this.unSelButton);
+         selBar.add(this.unSelAllButton);
+         selBar.addSeparator();
+         selBar.add(this.plainButton);
+         selBar.add(this.graphButton);
+         selBar.add(this.collegeButton);
+         selBar.add(this.wideButton);
+         selBar.addSeparator();
+         selBar.add(this.bgColorButton);
+         
+         this.cutToolbar = 
+                  new CutCopyPasteToolBar<CopyVector<Page>>(this);
+         this.cutToolbar.setCopyIcon(DefinedIcon.copy_page);
+         
+         this.openButton = new JButton(DefinedIcon.directory.getIcon(SMALL_BUTTON_SIZE));
+         this.openButton.setActionCommand(Action.Open.toString());
+         this.openButton.addActionListener(this);
+         
+         this.fileField = new JTextField(10);
+         this.fileField.setEditable(false);
+         
+         this.dropButton = new JButton(DefinedIcon.jump.getIcon(SMALL_BUTTON_SIZE));
+         this.dropButton.setActionCommand(Mode.SelectImportLocation.toString());
+         this.dropButton.addActionListener(this);
+         this.dropButton.setEnabled(false);
+         
+         JToolBar editBar = new JToolBar();
+         editBar.add(this.delPageButton);
+         editBar.add(this.clearPageButton);
+         editBar.addSeparator();
+         editBar.add(this.cutToolbar);
+         
+         JToolBar importBar = new JToolBar();
+         importBar.add(this.openButton);
+         importBar.add(this.fileField);
+         importBar.add(this.dropButton);
+         
+         SlidingPanel slidePanel = new SlidingPanel();
+         slidePanel.append(selBar);
+         slidePanel.append(editBar);
+         slidePanel.append(importBar);
+         
          //add the components to the toolbar
          JToolBar panel = getToolBar();
-         panel.add(this.selButton);
-         panel.add(this.unSelButton);
-         panel.addSeparator();
-         panel.add(this.plainButton);
-         panel.add(this.graphButton);
-         panel.add(this.collegeButton);
-         panel.add(this.wideButton);
-         panel.addSeparator();
-         panel.add(this.bgColorButton);
-         panel.addSeparator();
-         panel.add(this.copyPageButton);
-         panel.add(this.delPageButton);
-         panel.add(this.clearPageButton);
+         panel.add(slidePanel);
          
          //set up the menu items
          this.menuItemVec = new Vector<PathMenuItem>();
@@ -364,10 +651,6 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          wideItem.setActionCommand(PaperType.WideRuled.toString());
          wideItem.addActionListener(menuListener);
          typeGroup.add(wideItem);
-         
-         //JMenuItem copyItem = new JMenuItem("Copy");
-         //copyItem.setActionCommand(COPY_PAGE);
-         //copyItem.addActionListener(menuListener);
          
          //add the menu items to the Vector
          this.menuItemVec.add(new PathMenuItem(new JLabel(" Type"), 
@@ -446,7 +729,6 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.wideButton.setEnabled(canEdit);
          
          this.bgColorButton.setEnabled(canEdit);
-         this.copyPageButton.setEnabled(canEdit);
          this.delPageButton.setEnabled(canEdit);
          this.clearPageButton.setEnabled(canEdit);
          
@@ -456,6 +738,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       public void actionPerformed(ActionEvent e)
       {
          String cmmd = e.getActionCommand();
+         
          Mode[] modes = Mode.values();
          for (Mode m : modes)
          {
@@ -470,26 +753,62 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
              cmmd.equals(Mode.Unselection.toString()))
             return;
          
-         if (cmmd.equals(Action.ChangeBGColor.toString()))
-            setColor();
-         else if (cmmd.equals(Action.CopyPage.toString()))
+         if (cmmd.equals(DefinedIcon.select_all.toString()))
          {
-            Binder binder = getCompositeCanvas().getBinder();
-            for (Page page : selPageVec)
-               binder.addPage(page.getCopy());
+            selectAllPages();
+         }
+         else if (cmmd.equals(DefinedIcon.unselect_all.toString()))
+         {
+            unselectAllPages();
+            doRepaint();
+         }
+         else if (cmmd.equals(Action.ChangeBGColor.toString()))
+         {
+            setColor();
+         }
+         else if (cmmd.equals(CANCEL_PASTE))
+         {
+            this.curMode = Mode.Selection;
+            this.cutToolbar.setPasteIcon(DefinedIcon.paste);
+            dropLine.doPaint();
+         }
+         else if (cmmd.equals(Action.Paste.toString()))
+         {
+            if (this.pasteVec == null)
+               return;
+            
+            dropPages(this.pasteVec);
+         }
+         else if (cmmd.equals(CANCEL_IMPORT))
+         {
+            this.curMode = Mode.Selection;
+            dropLine.doPaint();
+         }
+         else if (cmmd.equals(Action.Drop.toString()))
+         {
+            if (this.importCanvas == null)
+               return;
+            
+            dropPages(this.importCanvas.getBinder());
+         }
+         else if (cmmd.equals(Action.Open.toString()))
+         {
+            ImportProcessor processor = new ImportProcessor();
+            NoteLabFileChooser openChooser = 
+                                  new NoteLabFileChooser("Open", true, false, processor);
+            openChooser.setAcceptAllFileFilterUsed(false);
+            openChooser.addChoosableFileFilter(new JarnalFileFilter());
+            openChooser.addChoosableFileFilter(new NoteLabFileFilter());
+            openChooser.addChoosableFileFilter(new SupportedFileFilter());
+            openChooser.showFileChooser();
+         }
+         else if (cmmd.equals(Mode.SelectImportLocation.toString()))
+         {
+            curMode = Mode.SelectImportLocation;
          }
          else if (cmmd.equals(Action.DeletePage.toString()))
          {
-            Binder binder = getCompositeCanvas().getBinder();
-            for (Page page : selPageVec)
-            {
-               binder.removePage(page);
-               page.setSelected(false);
-            }
-            
-            doPaintDirtyRectangle();
-            selPageVec.clear();
-            syncActionButtons();
+            deleteSelectedPages();
          }
          else if (cmmd.equals(Action.ClearPage.toString()))
          {
@@ -520,6 +839,85 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          doPaintDirtyRectangle();
       }
       
+      private void dropPages(Iterable<Page> pageVec)
+      {
+         Page dropPage = dropLine.getDropPage();
+         CompositeCanvas canvas = getCompositeCanvas();
+         Binder binder = canvas.getBinder();
+         float zoomLevel = canvas.getZoomLevel();
+         
+         if (dropLine.dropAbove())
+         {
+            Page basePage = dropPage;
+            Stack<Page> pageStack = new Stack<Page>();
+            for (Page page : pageVec)
+               pageStack.push(page);
+            
+            for (Page curPage : pageStack)
+            {
+               curPage = curPage.getCopy();
+               curPage.scaleTo(zoomLevel, zoomLevel);
+               binder.addPageBefore(basePage, curPage);
+               basePage = curPage;
+            }
+         }
+         else
+         {
+            Page basePage = dropPage;
+            for (Page curPage : pageVec)
+            {
+               curPage = curPage.getCopy();
+               curPage.scaleTo(zoomLevel, zoomLevel);
+               binder.addPageAfter(basePage, curPage);
+               basePage = curPage;
+            }
+         }
+         
+         this.curMode = Mode.Selection;
+         this.cutToolbar.setPasteIcon(DefinedIcon.paste);
+         doRepaint();
+      }
+      
+      private void showPasteMenu()
+      {
+         FloatPoint2D rightPoint = dropLine.getRightPoint();
+         float x = rightPoint.getX();
+         float y = rightPoint.getY();
+         
+         JPanel panel = getCompositeCanvas().getDisplayPanel();
+         if (panel == null)
+            return;
+         
+         this.pasteMenu.show(panel, (int)x, (int)y);
+      }
+      
+      private void showImportMenu()
+      {
+         FloatPoint2D rightPoint = dropLine.getRightPoint();
+         float x = rightPoint.getX();
+         float y = rightPoint.getY();
+         
+         JPanel panel = getCompositeCanvas().getDisplayPanel();
+         if (panel == null)
+            return;
+         
+         this.importMenu.show(panel, (int)x, (int)y);
+      }
+      
+      private void deleteSelectedPages()
+      {
+         Binder binder = getCompositeCanvas().getBinder();
+         for (Page page : selPageVec)
+         {
+            binder.removePage(page);
+            page.setSelected(false);
+         }
+         
+         doPaintDirtyRectangle();
+         selPageVec.clear();
+         syncActionButtons();
+      }
+      
       private void setColor()
       {
          Color color = this.bgColorButton.getControlValue();
@@ -533,9 +931,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          {
             doClick();
             String cmmd = event.getActionCommand();
-            if (cmmd.equals(Action.CopyPage.toString()))
-               copyPageButton.doClick();
-            else if (cmmd.equals(PaperType.Plain.toString()))
+            if (cmmd.equals(PaperType.Plain.toString()))
                plainButton.doClick();
             else if (cmmd.equals(PaperType.Graph.toString()))
                graphButton.doClick();
@@ -576,6 +972,74 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       {
          setColor();
          doPaintDirtyRectangle();
+      }
+
+      public CopyVector<Page> copy()
+      {
+         CopyVector<Page> selPages = new CopyVector<Page>(selPageVec.size());
+         for (Page page : selPageVec)
+            selPages.add(page.getCopy());
+         
+         return selPages;
+      }
+
+      public CopyVector<Page> cut()
+      {
+         CopyVector<Page> copy = copy();
+         deleteSelectedPages();
+         return copy;
+      }
+
+      public void paste(CopyVector<Page> item)
+      {
+         this.curMode = Mode.SelectDropLocation;
+         this.pasteVec = item;
+         this.cutToolbar.setPasteIcon(DefinedIcon.paste_down);
+      }
+
+      public void addCopyStateListener(CopyStateListener listener)
+      {
+         if (listener == null)
+            throw new NullPointerException();
+         
+         if (!this.copyListenerVec.contains(listener))
+            this.copyListenerVec.add(listener);
+      }
+
+      public void removeCopyStateListener(CopyStateListener listener)
+      {
+         if (listener == null)
+            throw new NullPointerException();
+         
+         this.copyListenerVec.remove(listener);
+      }
+      
+      private void notifyOfCopyState()
+      {
+         boolean canCopy = !selPageVec.isEmpty();
+         for (CopyStateListener listener : this.copyListenerVec)
+            listener.copyStateChanged(canCopy);
+      }
+      
+      private class ImportProcessor extends OpenFileProcessor
+      {
+         @Override
+         protected void processCanvasLoaded(CompositeCanvas canvas)
+         {
+            curMode = Mode.SelectImportLocation;
+            importCanvas = canvas;
+            
+            CompositeCanvas realCanvas = getCompositeCanvas();
+            realCanvas.setCurrentCanvas(realCanvas.getPageCanvas());
+            
+            File file = getLastFileProcessed();
+            String name = "";
+            if (file != null)
+               name = file.getAbsolutePath();
+            
+            fileField.setText("Loaded:  \""+name+"\"");
+            dropButton.setEnabled(true);
+         }
       }
    }
 }
