@@ -105,10 +105,19 @@ public class InstallDirTile extends SequenceTile implements ActionListener
       
       FileProcessor processor = new FileProcessor()
       {
+         private File file;
+         
+         public File getLastFileProcessed()
+         {
+            return this.file;
+         }
+         
          public void processFile(File file)
          {
             if (file == null)
                return;
+            
+            this.file = file;
             
             String errorText = null;
             if (!file.canWrite())
