@@ -107,7 +107,10 @@ public enum DefinedIcon
    jump, 
    server, 
    select_all, 
-   unselect_all;
+   unselect_all, 
+   paste_down, 
+   feather_invert, 
+   feather_down;
    
    private static final ImageIcon EMPTY_ICON = 
                                     new ImageIcon(
