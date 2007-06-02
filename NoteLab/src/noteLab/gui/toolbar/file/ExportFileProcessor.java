@@ -77,12 +77,18 @@ public class ExportFileProcessor extends CanvasFileProcessor
       
       if (ext.equalsIgnoreCase(svgExt))
       {
-         saveAsSVG(file, "."+svgExt, false);
+         saveAsSVG(file, "."+svgExt, 
+                   false, // Don't zip the file 
+                   true,  // Report progress to the user 
+                   "Exporting the session");
          return;
       }
       else if (ext.equalsIgnoreCase(svgzExt))
       {
-         saveAsSVG(file, "."+svgzExt, true);
+         saveAsSVG(file, "."+svgzExt, 
+                   true, // Zip the file 
+                   true, // Report progress to the user
+                   "Exporting the session");
          return;
       }
       

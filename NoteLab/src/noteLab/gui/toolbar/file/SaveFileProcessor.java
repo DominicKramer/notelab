@@ -40,8 +40,11 @@ public class SaveFileProcessor extends CanvasFileProcessor
    {
       if (file == null)
             throw new NullPointerException();
-         
-      saveAsSVG(file, InfoCenter.getFileExtension(), true);
+      
+      saveAsSVG(file, InfoCenter.getFileExtension(), 
+                true, // zip the file
+                true, // report progress to the user
+                "Saving the session");
    }
 
    public File getFormattedName(File file)
