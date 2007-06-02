@@ -27,6 +27,7 @@ package noteLab.util.render;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.util.Stack;
+import java.util.Vector;
 
 import noteLab.model.Path;
 import noteLab.model.geom.FloatPoint2D;
@@ -47,9 +48,12 @@ public abstract class Renderer2D implements Selectable
    private Stack<String> groupIDStack;
    private boolean selected;
    
+   private Vector<RenderListener> listenerVec;
+   
    public Renderer2D()
    {
       this.groupIDStack = new Stack<String>();
+      this.listenerVec = new Vector<RenderListener>();
       setSelected(false);
    }
    
@@ -61,6 +65,23 @@ public abstract class Renderer2D implements Selectable
    public void setSelected(boolean selected)
    {
       this.selected = selected;
+   }
+   
+   public void addRenderListener(RenderListener listener)
+   {
+      if (listener == null)
+         throw new NullPointerException();
+      
+      if (!this.listenerVec.contains(listener))
+         this.listenerVec.add(listener);
+   }
+   
+   public void removeRenderListener(RenderListener listener)
+   {
+      if (listener == null)
+         throw new NullPointerException();
+      
+      this.listenerVec.remove(listener);
    }
    
    public void tryRenderBoundingBox(Bounded bounded)
@@ -107,6 +128,10 @@ public abstract class Renderer2D implements Selectable
                             "begun was "+grpOnStack);
       
       endGroupImpl(renderable);
+      
+      if (this.listenerVec.size() > 0)
+         for (RenderListener listener : this.listenerVec)
+            listener.objectRendered(renderable);
    }
    
    public static float getStrokeWidth(float width, boolean isSelected)
