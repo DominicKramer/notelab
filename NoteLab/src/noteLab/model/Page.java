@@ -415,6 +415,11 @@ public class Page extends TransformRectangle2D
       return copy;
    }
    
+   public int getNumStrokes()
+   {
+      return this.strokeList.size();
+   }
+   
    public int getNumUnselectedStrokes()
    {
       return this.unSelStrokeVec.size();
