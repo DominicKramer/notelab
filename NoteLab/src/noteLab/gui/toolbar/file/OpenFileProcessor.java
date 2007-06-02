@@ -26,6 +26,7 @@ package noteLab.gui.toolbar.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Vector;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -33,6 +34,7 @@ import javax.swing.JOptionPane;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
+import noteLab.gui.ProgressFrame;
 import noteLab.gui.chooser.FileProcessor;
 import noteLab.gui.main.MainFrame;
 import noteLab.model.canvas.CompositeCanvas;
@@ -41,14 +43,22 @@ import noteLab.util.io.FileLoader;
 import noteLab.util.io.jarnal.JarnalFileLoader;
 import noteLab.util.io.noteLab.NoteLabFileLoadedListener;
 import noteLab.util.io.noteLab.NoteLabFileLoader;
+import noteLab.util.progress.ProgressEvent;
+import noteLab.util.progress.ProgressListener;
+import noteLab.util.progress.Progressive;
 
-public class OpenFileProcessor implements FileProcessor, NoteLabFileLoadedListener
+public class OpenFileProcessor 
+                implements FileProcessor, 
+                           NoteLabFileLoadedListener, 
+                           Progressive
 {
    private File file;
+   private Vector<ProgressListener> listenerVec;
    
    public OpenFileProcessor()
    {
       this.file = null;;
+      this.listenerVec = new Vector<ProgressListener>();
    }
    
    public File getLastFileProcessed()
@@ -80,6 +90,13 @@ public class OpenFileProcessor implements FileProcessor, NoteLabFileLoadedListen
                                   "' is of a type not supported by "+
                                   InfoCenter.getAppName());
          
+         ProgressEvent event = 
+                          new ProgressEvent("Opening file "+file.getName(),
+                                            null, null, true, 0, false);
+         ProgressFrame frame = new ProgressFrame("", true);
+         frame.progressOccured(event);
+         addProgressListener(frame);
+         
          loader.loadFile();
       }
       catch (Throwable throwable)
@@ -102,6 +119,15 @@ public class OpenFileProcessor implements FileProcessor, NoteLabFileLoadedListen
                                        icon);
       }
       
+      for (ProgressListener listener : this.listenerVec)
+            listener.progressOccured(new ProgressEvent(null,
+                                                       "Complete", 
+                                                       null, 
+                                                       true,
+                                                       0,
+                                                       true));
+      this.listenerVec.clear();
+      
       processCanvasLoaded(canvas);
    }
    
@@ -113,5 +139,22 @@ public class OpenFileProcessor implements FileProcessor, NoteLabFileLoadedListen
    public File getFormattedName(File file)
    {
       return file;
+   }
+
+   public void addProgressListener(ProgressListener listener)
+   {
+      if (listener == null)
+         throw new NullPointerException();
+      
+      if (!this.listenerVec.contains(listener))
+         this.listenerVec.add(listener);
+   }
+
+   public void removeProgressListener(ProgressListener listener)
+   {
+      if (listener == null)
+         throw new NullPointerException();
+      
+      this.listenerVec.remove(listener);
    }
 }
