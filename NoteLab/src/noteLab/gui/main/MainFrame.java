@@ -43,6 +43,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
 
 import noteLab.gui.DefinedIcon;
@@ -61,13 +62,16 @@ import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.InfoCenter;
 import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
+import noteLab.util.progress.ProgressEvent;
+import noteLab.util.progress.ProgressListener;
 import noteLab.util.settings.SettingsManager;
 import noteLab.util.settings.SettingsUtilities;
 import noteLab.util.undoRedo.UndoRedoManager;
 
 public class MainFrame extends JFrame implements Menued, 
                                                  ActionListener, 
-                                                 ModListener
+                                                 ModListener, 
+                                                 ProgressListener
 {
    private static final String TITLE_PREFIX = "  -  ";
    private static final String UNTITLED_NAME = "untitled";
@@ -84,6 +88,7 @@ public class MainFrame extends JFrame implements Menued,
    private FileToolBar fileToolBar;
    private Vector<PathMenuItem> menuItemVec;
    private MainFrameCloseListener closeListener;
+   private JProgressBar progressBar;
    private JLabel messageLabel;
    
    public MainFrame()
@@ -132,8 +137,12 @@ public class MainFrame extends JFrame implements Menued,
       this.toolbarPanel.add(topPanel);
       this.toolbarPanel.add(bottomPanel);
       
+      this.progressBar = new JProgressBar(0,100);
+      this.progressBar.setStringPainted(false);
+      
       this.messageLabel = new JLabel("  ");
       JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+      messagePanel.add(this.progressBar);
       messagePanel.add(this.messageLabel);
       
       setLayout(new BorderLayout());
@@ -282,5 +291,19 @@ public class MainFrame extends JFrame implements Menued,
          curTitle += MODIFIED_TEXT;
       
       setTitle(curTitle);
+   }
+   
+   public void progressOccured(ProgressEvent event)
+   {
+      if (event == null)
+         throw new NullPointerException();
+      
+      if (event.isIndeterminate())
+         this.progressBar.setIndeterminate(true);
+      else
+      {
+         this.progressBar.setIndeterminate(false);
+         this.progressBar.setValue(event.getPercent());
+      }
    }
 }
