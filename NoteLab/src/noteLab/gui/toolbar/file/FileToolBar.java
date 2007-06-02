@@ -53,6 +53,7 @@ import noteLab.gui.menu.PathMenuItem;
 import noteLab.gui.settings.SettingsFrame;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.InfoCenter;
+import noteLab.util.progress.ProgressEvent;
 
 public class FileToolBar 
                 extends JToolBar 
@@ -264,7 +265,11 @@ public class FileToolBar
                         mainFrame.setMessage("Printing the session requires momentarily " +
                                              "disabling the canvas.", Color.BLACK);
                         canvas.setEnabled(false);
+                        mainFrame.progressOccured(new ProgressEvent(null, null, null, 
+                                                                    true, 0, false));
                         printerJob.print();
+                        mainFrame.progressOccured(new ProgressEvent(null, null, null, 
+                                                                    true, 0, true));
                         canvas.setEnabled(true);
                         mainFrame.setMessage("Printing completed sucessfully.", Color.BLACK);
                      }
@@ -296,7 +301,9 @@ public class FileToolBar
                CanvasFileProcessor.saveAsSVG(mainFrame, 
                                              file, 
                                              InfoCenter.getFileExtension(), 
-                                             true);
+                                             true, // Zip the file 
+                                             true, // Report progress to the user 
+                                             "Saving the session");
             }
          }).start();
          
