@@ -40,6 +40,7 @@ import noteLab.gui.chooser.FileProcessor;
 import noteLab.gui.main.MainFrame;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.InfoCenter;
+import noteLab.util.render.RenderProgressManager;
 import noteLab.util.render.SVGRenderer2D;
 import noteLab.util.settings.SettingsUtilities;
 
@@ -73,9 +74,9 @@ public abstract class CanvasFileProcessor implements FileProcessor
       processFileImpl(file);
    }
    
-   protected void saveAsSVG(File file, String ext, boolean zip)
+   protected void saveAsSVG(File file, String ext, boolean zip, boolean listen, String desc)
    {
-      saveAsSVG(getMainFrame(), file, ext, zip);
+      saveAsSVG(getMainFrame(), file, ext, zip, listen, desc);
    }
    
    public static void saveAsSVG(MainFrame mainFrame, 
@@ -83,7 +84,20 @@ public abstract class CanvasFileProcessor implements FileProcessor
                                 String ext, 
                                 boolean zip)
    {
+      saveAsSVG(mainFrame, file, ext, zip, false, null);
+   }
+   
+   public static void saveAsSVG(MainFrame mainFrame, 
+                                File file, 
+                                String ext, 
+                                boolean zip, 
+                                boolean listen, 
+                                String desc)
+   {
       if (mainFrame == null || file == null || ext == null)
+         throw new NullPointerException();
+      
+      if (listen && desc == null)
          throw new NullPointerException();
       
       String fullPath = file.getAbsolutePath();
@@ -118,6 +132,17 @@ public abstract class CanvasFileProcessor implements FileProcessor
                outStream = new GZIPOutputStream(outStream);
             
             SVGRenderer2D msvg2D = new SVGRenderer2D(canvas, outStream);
+            if (listen)
+            {
+               RenderProgressManager manager = new RenderProgressManager(msvg2D, canvas, desc);
+               
+               // Uncomment this to show a ProgressFrame
+               //ProgressFrame frame = new ProgressFrame(desc, false);
+               //manager.addProgressListener(frame);
+               //frame.setVisible(true);
+               
+               manager.addProgressListener(mainFrame);
+            }
             canvas.renderInto(msvg2D);
             
             Exception error = msvg2D.getError();
