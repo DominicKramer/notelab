@@ -367,13 +367,6 @@ public class Path
    
    public void smooth(int numSteps)
    {
-      //numPts = 2;
-      //for (int i=1; i<=5; i++)
-      //   smoothImpl(numPts, 3);
-      
-      //for (int i=1; i<=2; i++)
-      //   smoothImpl(1, 0);
-      
       for (int i=1; i<=numSteps; i++)
          smoothWithAverages();
    }
