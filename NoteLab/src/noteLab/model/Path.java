@@ -365,10 +365,59 @@ public class Path
          addItem(pt); 
    }
    
-   public void smooth(int numPts)
+   public void smooth(int numSteps)
    {
-      for (int i=1; i<=5; i++)
-         smoothImpl(numPts, 3);
+      //numPts = 2;
+      //for (int i=1; i<=5; i++)
+      //   smoothImpl(numPts, 3);
+      
+      //for (int i=1; i<=2; i++)
+      //   smoothImpl(1, 0);
+      
+      for (int i=1; i<=numSteps; i++)
+         smoothWithAverages();
+   }
+   
+   private void smoothWithAverages()
+   {
+      int size = getNumItems();
+      // Return if there are not enough points to smooth.  
+      // We need at least three points for smoothing.
+      if (size < 3)
+         return;
+      
+      FloatPoint2D firstPt = getFirst();
+      float prevX = firstPt.getX();
+      float prevY = firstPt.getY();
+      
+      FloatPoint2D curPt;
+      FloatPoint2D nextPt;
+      
+      float curPtX = 0;
+      float curPtY = 0;
+      
+      float newX = 0;
+      float newY = 0;
+      
+      for (int i=1; i<size-1; i++)
+      {
+         curPt = getItemAt(i);
+         nextPt = getItemAt(i+1);
+         if (curPt == null || nextPt == null)
+            continue;
+         
+         curPtX = curPt.getX();
+         curPtY = curPt.getY();
+         
+         newX = (prevX + curPtX + nextPt.getX())/3f;
+         newY = (prevY + curPtY + nextPt.getY())/3f;
+         
+         prevX = curPtX;
+         prevY = curPtY;
+         
+         curPt.setX(newX);
+         curPt.setY(newY);
+      }
    }
    
    private void smoothImpl(int numPts, int degree)
