@@ -337,20 +337,26 @@ public class FloatPoint2D implements Transformable,
          listener.modOccured(this, type);
    }
    
+   /*
    public void setX(float x)
    {
       this.srcPoint.x = x;
+      this.initPoint.x = x;
    }
+   */
    
    public float getX()
    {
       return this.srcPoint.x;
    }
    
+   /*
    public void setY(float y)
    {
       this.srcPoint.y = y;
+      this.initPoint.y = y;
    }
+   */
    
    public float getY()
    {
