@@ -27,17 +27,22 @@ package noteLab.gui.toolbar.file;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.event.IIOWriteProgressListener;
+import javax.imageio.stream.ImageOutputStream;
 
 import noteLab.gui.chooser.filter.ImageFileFilter;
 import noteLab.gui.main.MainFrame;
 import noteLab.model.binder.Binder;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.InfoCenter;
+import noteLab.util.progress.ProgressEvent;
 import noteLab.util.render.ImageRenderer2D;
 
-public class ExportFileProcessor extends CanvasFileProcessor
+public class ExportFileProcessor extends CanvasFileProcessor implements IIOWriteProgressListener
 {
    public ExportFileProcessor(MainFrame frame)
    {
@@ -97,7 +102,23 @@ public class ExportFileProcessor extends CanvasFileProcessor
       
       try
       {
-         ImageIO.write(image, ext, formatFile);
+         String errorText = "There are no writers available to write images with " +
+                            "the extension '"+ext+"'";
+         
+         Iterator<ImageWriter> writers = ImageIO.getImageWritersBySuffix(ext);
+         if (!writers.hasNext())
+            throw new Exception(errorText);
+         
+         ImageWriter writer = writers.next();
+         if (writer == null)
+            throw new NullPointerException(errorText);
+         
+         ImageOutputStream output = ImageIO.createImageOutputStream(formatFile);
+         writer.setOutput(output);
+         writer.addIIOWriteProgressListener(this);
+         writer.write(image);
+         writer.removeIIOWriteProgressListener(this);
+         writer.dispose();
          
          messageBuffer.append("' completed successfully.");
          mainFrame.setMessage(messageBuffer.toString(), Color.BLACK);
@@ -146,5 +167,38 @@ public class ExportFileProcessor extends CanvasFileProcessor
       }
       
       return ext;
+   }
+
+   public void imageComplete(ImageWriter source)
+   {
+      MainFrame frame = getMainFrame();
+      frame.progressOccured(new ProgressEvent(null, null, null, false, 100, true));
+   }
+   
+   public void imageProgress(ImageWriter source, float percentageDone)
+   {
+      MainFrame frame = getMainFrame();
+      frame.progressOccured(new ProgressEvent(null, null, null, false, 
+                                              (int)(percentageDone), false));
+   }
+   
+   public void imageStarted(ImageWriter source, int imageIndex)
+   {
+   }
+   
+   public void thumbnailComplete(ImageWriter source)
+   {
+   }
+   
+   public void thumbnailProgress(ImageWriter source, float percentageDone)
+   {
+   }
+   
+   public void thumbnailStarted(ImageWriter source, int imageIndex, int thumbnailIndex)
+   {
+   }
+   
+   public void writeAborted(ImageWriter source)
+   {
    }
 }
