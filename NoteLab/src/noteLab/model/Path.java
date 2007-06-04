@@ -408,8 +408,7 @@ public class Path
          prevX = curPtX;
          prevY = curPtY;
          
-         curPt.setX(newX);
-         curPt.setY(newY);
+         curPt.translateTo(newX, newY);
       }
    }
    
