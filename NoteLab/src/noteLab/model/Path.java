@@ -367,8 +367,15 @@ public class Path
    
    public void smooth(int numSteps)
    {
+      float xScale = getXScaleLevel();
+      float yScale = getYScaleLevel();
+      
+      scaleTo(1, 1);
+      
       for (int i=1; i<=numSteps; i++)
          smoothWithAverages();
+      
+      scaleTo(xScale, yScale);
    }
    
    private void smoothWithAverages()
