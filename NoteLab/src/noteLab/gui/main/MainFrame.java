@@ -305,5 +305,11 @@ public class MainFrame extends JFrame implements Menued,
          this.progressBar.setIndeterminate(false);
          this.progressBar.setValue(event.getPercent());
       }
+      
+      if (event.isComplete())
+      {
+         this.progressBar.setIndeterminate(false);
+         this.progressBar.setValue(100);
+      }
    }
 }
