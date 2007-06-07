@@ -53,6 +53,7 @@ import noteLab.model.binder.FlowBinder;
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.tool.Tool;
 import noteLab.util.CopyReady;
+import noteLab.util.UnitScaleDependent;
 import noteLab.util.geom.Bounded;
 import noteLab.util.mod.ModBroadcaster;
 import noteLab.util.mod.ModListener;
@@ -75,7 +76,8 @@ public class CompositeCanvas
                                       Bounded, 
                                       CopyReady<CompositeCanvas>, 
                                       UndoRedoListener, 
-                                      SettingsChangedListener
+                                      SettingsChangedListener, 
+                                      UnitScaleDependent
 {
    private Binder binder;
    private SubCanvas curCanvas;
@@ -313,6 +315,16 @@ public class CompositeCanvas
    public float getZoomLevel()
    {
       return this.scaleLevel;
+   }
+   
+   public float getUnitScaleFactor()
+   {
+      return this.binder.getUnitScaleFactor();
+   }
+   
+   public void setUnitScaleFactor(float unitScaleFactor)
+   {
+      this.binder.setUnitScaleFactor(unitScaleFactor);
    }
    
    public Rectangle2D.Float getBounds2D()
