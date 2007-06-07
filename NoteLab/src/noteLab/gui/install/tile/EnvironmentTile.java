@@ -37,6 +37,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
@@ -50,7 +51,6 @@ public class EnvironmentTile extends SequenceTile
    private ExtractTile extractTile;
    
    private JLabel homeDirLabel;
-   private JLabel storeInstallLabel;
    private JLabel execScriptLabel;
    
    private ImageIcon checkIcon;
@@ -70,10 +70,6 @@ public class EnvironmentTile extends SequenceTile
       this.homeDirLabel.setIcon(blankIcon);
       this.homeDirLabel.setForeground(Color.GRAY);
       
-      this.storeInstallLabel = new JLabel("Storing the install environment.");
-      this.storeInstallLabel.setIcon(blankIcon);
-      this.storeInstallLabel.setForeground(Color.GRAY);
-      
       this.execScriptLabel = new JLabel("Making the startup scripts executable.");
       this.execScriptLabel.setIcon(blankIcon);
       this.execScriptLabel.setForeground(Color.GRAY);
@@ -84,11 +80,9 @@ public class EnvironmentTile extends SequenceTile
       mainPanel.add(new JLabel("     "));
       mainPanel.add(new JLabel("     "));
       mainPanel.add(new JLabel("     "));
-      mainPanel.add(new JLabel("Finializing the installation"));
+      mainPanel.add(new JLabel("Finalizing the installation"));
       mainPanel.add(new JLabel("  "));
       mainPanel.add(this.homeDirLabel);
-      mainPanel.add(new JLabel("  "));
-      mainPanel.add(this.storeInstallLabel);
       mainPanel.add(new JLabel("  "));
       mainPanel.add(this.execScriptLabel);
       mainPanel.add(new JLabel("  "));
@@ -156,35 +150,44 @@ public class EnvironmentTile extends SequenceTile
       return false;
    }
    
-   private boolean storeInstallEnvironment()
+   private boolean makeScriptsExecutable()
    {
+      OSType os = InfoCenter.getOperatingSystem();
+      if (os.equals(OSType.Unix))
+      {
+         File installDir = this.extractTile.getInstallDirectory();
+         
+         String runName = "notelab";
+         String uninstallName = "uninstall";
+         String ext = InfoCenter.getScriptExtension();
+         
+         File runFile = new File(installDir, runName+ext);
+         File uninstallFile = new File(installDir, uninstallName+ext);
+         
+         boolean success =  makeFileExecutable(runFile) && 
+                            makeFileExecutable(uninstallFile);
+         if (!success)
+            return false;
+      }
+      
+      this.execScriptLabel.setForeground(Color.BLACK);
+      this.execScriptLabel.setIcon(this.checkIcon);
+      return true;
+   }
+   
+   private boolean makeFileExecutable(File file)
+   {
+      if (file == null)
+         throw new NullPointerException();
+      
       try
       {
-         File installEnvFile = InfoCenter.getInstallDirEnvFile();
-         PrintWriter writer = new PrintWriter(new FileOutputStream(installEnvFile));
-         
-         OSType os = InfoCenter.getOperatingSystem();
-         if (os == OSType.Unix)
-         {
-            writer.println("#!/bin/sh");
-            writer.println();
-            writer.print("export ");
-         }
-         else
-         {
-            writer.println("@echo off");
-            writer.println();
-            writer.print("set ");
-         }
-         
-         writer.print(InfoCenter.getInstallDirVarName());
-         writer.print("=\"");
-         writer.print(this.extractTile.getInstallDirectory());
-         writer.println("\"");
-         writer.close();
-         
-         this.storeInstallLabel.setForeground(Color.BLACK);
-         this.storeInstallLabel.setIcon(this.checkIcon);
+         Runtime.getRuntime().exec(new String[]
+                                       {
+                                          "chmod", 
+                                          "+x", 
+                                          file.getAbsolutePath()
+                                       });
          
          return true;
       }
@@ -192,8 +195,9 @@ public class EnvironmentTile extends SequenceTile
       {
          int size = GuiSettingsConstants.BUTTON_SIZE;
          ImageIcon errorIcon = DefinedIcon.dialog_error.getIcon(size);
-         String message = "The installation directory could not be stored.  The message " +
-                          "returned was "+e.getMessage();
+         String message = "The startup script "+file.getAbsolutePath()+
+                          " could not be made executable.  The error returned was "+
+                          e.getMessage();
          
          JOptionPane.showMessageDialog(new JFrame(), 
                                        message, 
@@ -206,64 +210,13 @@ public class EnvironmentTile extends SequenceTile
       }
    }
    
-   private boolean makeScriptsExecutable()
-   {
-      OSType os = InfoCenter.getOperatingSystem();
-      if (os == OSType.Unix)
-      {
-         File installDir = this.extractTile.getInstallDirectory();
-         
-         File shFile = new File(installDir, "notelab.sh");
-         File uninstallFile = new File(installDir, "uninstall.sh");
-         
-         try
-         {
-            Runtime.getRuntime().exec(new String[]
-                                          {
-                                             "chmod", 
-                                             "+x", 
-                                             shFile.getAbsolutePath()
-                                          });
-            
-            Runtime.getRuntime().exec(new String[]
-                                          {
-                                             "chmod", 
-                                             "+x", 
-                                             uninstallFile.getAbsolutePath()
-                                          });
-         }
-         catch (IOException e)
-         {
-            int size = GuiSettingsConstants.BUTTON_SIZE;
-            ImageIcon errorIcon = DefinedIcon.dialog_error.getIcon(size);
-            String message = "The startup script "+shFile.getAbsolutePath()+
-                             " could not be made executable.  The error returned was "+
-                             e.getMessage();
-            
-            JOptionPane.showMessageDialog(new JFrame(), 
-                                          message, 
-                                          "Error", 
-                                          JOptionPane.ERROR_MESSAGE, 
-                                          errorIcon);
-            
-            notifyTileProceedChanged(ProceedType.failed);
-            return false;
-         }
-      }
-      
-      this.execScriptLabel.setForeground(Color.BLACK);
-      this.execScriptLabel.setIcon(this.checkIcon);
-      return true;
-   }
-   
    private class ScriptGenThread extends Thread
    {
       public void run()
       {
          if (builHomeDir())
-            if (storeInstallEnvironment())
-               if (makeScriptsExecutable())
-                  notifyTileProceedChanged(ProceedType.can_proceed);
+            if (makeScriptsExecutable())
+               notifyTileProceedChanged(ProceedType.can_proceed);
       }
    }
 }
