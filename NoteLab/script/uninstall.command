@@ -18,7 +18,7 @@ INSTALL_DIR_ENV=${NOTELAB_HOME}/init_install_env.sh
 INSTALL_DIR=`dirname $0`
 
 # Start the Java virtual machine and have it load the uninstaller
-java -cp ${INSTALL_DIR}:${INSTALL_DIR}/info noteLab.gui.uninstall.UninstallFrame
+java -cp ${INSTALL_DIR}:${INSTALL_DIR}/info noteLab.gui.uninstall.UninstallFrame ${INSTALL_DIR}
 
 # Finish up by removing the installation directory
 rmdir ${INSTALL_DIR}
