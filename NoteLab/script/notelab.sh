@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-# This is the NoteLab startup script for Unix based systems (Linux, Solaris, and MacOS X).  It is used to start 
+# This is the NoteLab startup script for Unix based systems (Linux and Solaris).  It is used to start 
 # NoteLab with specific virtual machine arguments as well as NoteLab specific arguments.  These arguments are those 
 # that are specified by the user using NoteLab's settings control.
 
@@ -8,28 +8,20 @@
 # may not start.  If you want to edit this file, it is advised that you first make a backup.
 
 # NoteLab's home directory
-NOTELAB_HOME=$HOME/.NoteLab
+NOTELAB_HOME=${HOME}/.NoteLab
 
 # Determine the shell script that serves to initialize the environment for the Java virtual machine and NoteLab.
-INIT_FILE=$NOTELAB_HOME/initenv.sh
+INIT_FILE=${NOTELAB_HOME}/initenv.sh
 
 # If the file above exists source it so that the environment is initialized.
-if [ -e $INIT_FILE ]; then 
-  source $INIT_FILE; 
+if [ -e ${INIT_FILE} ]; then 
+  source ${INIT_FILE}; 
 fi
 
-# Determine the file that contains information about the installation directory
-INSTALL_DIR_ENV=$NOTELAB_HOME/init_install_env.sh
-
-# Store the current directory
-CUR_DIR=.
-
-# If the file exists source it so that the variable 'NOTELAB_INSTALL_DIR' contains the installation directory.
-if [ -e $INSTALL_DIR_ENV ]; then 
-  source $INSTALL_DIR_ENV;
-  # Change the current directory to the install directory
-  CUR_DIR=$NOTELAB_INSTALL_DIR;
-fi
+# Determine the installation directory, i.e. the directory that contains this script.  
+# '$0' stores the absolute path to this script and the 'dirname' command returns the 
+# absolute path of the parent directory of '$0'.
+INSTALL_DIR=`dirname $0`
 
 # Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
-java $NOTELAB_VM_ARGS -DNOTELAB_SETTINGS_FILENAME=$INIT_FILE -cp $CUR_DIR:info noteLab.util.StartupUtilities $NOTELAB_ARGS $*
+java ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME=${INIT_FILE} -cp ${INSTALL_DIR}:${INSTALL_DIR}/info noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
