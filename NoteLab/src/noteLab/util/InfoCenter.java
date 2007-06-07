@@ -53,7 +53,16 @@ public class InfoCenter
       Windows, 
       
       /** Represents a UNIX-based operating system. */
-      Unix
+      Unix;
+      
+      public boolean isMacOSX()
+      {
+         String name = System.getProperty("os.name");
+         if (name == null)
+            return false;
+         
+         return name.toLowerCase().contains("mac");
+      }
    }
    
    /** The application's name. */
@@ -155,6 +164,12 @@ public class InfoCenter
    
    /** The file extension of executable scripts on UNIX-based systems. */
    private static final String UNIX_SCRIPT_EXT = ".sh";
+   
+   /**
+    * The file extension of scripts that can be executed through the 
+    * Mac OS X's Finder application.
+    */
+   private static final String MAC_SCRIPT_EXT = ".command";
    
    /**
     * The file, written in the native scripting language, in which the 
@@ -458,6 +473,10 @@ public class InfoCenter
       OSType os = getOperatingSystem();
       if (os.equals(OSType.Windows))
          return WINDOWS_SCRIPT_EXT;
+      
+      // the operating system is a UNIX system
+      if (os.isMacOSX())
+         return MAC_SCRIPT_EXT;
       
       return UNIX_SCRIPT_EXT;
    }
