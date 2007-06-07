@@ -24,10 +24,7 @@
 
 package noteLab.util;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
@@ -69,7 +66,7 @@ public class InfoCenter
    private static final String NAME = "NoteLab";
    
    /** The application's version. */
-   private static final String VERSION = "0.1.4rc1";
+   private static final String VERSION = "0.1.4rc2";
    
    /** The file extension for this application's native file. */
    private static final String NATIVE_EXT = ".ntlb";
@@ -170,24 +167,6 @@ public class InfoCenter
     * Mac OS X's Finder application.
     */
    private static final String MAC_SCRIPT_EXT = ".command";
-   
-   /**
-    * The file, written in the native scripting language, in which the 
-    * current install directory is referenced by the variable with the 
-    * name <code>INSTALL_DIR_VAR_NAME</code>;
-    */
-   private static final File INSTALL_DIR_ENV_FILE = 
-                                new File(getAppHome(), 
-                                         "init_install_env"+getScriptExtension());
-   
-   /**
-    * The name of the variable in the file <code>INSTALL_DIR_ENV_FILE</code> 
-    * that stores the directory in which this application was installed.
-    */
-   private static final String INSTALL_DIR_VAR_NAME = "NOTELAB_INSTALL_DIR";
-   
-   /** The directory where this application is installed. */
-   private static final File INSTALL_DIR = findInstallDir();
    
    /** The file extension of Jarnal files. */
    private static final String JARNAL_EXT = ".jaj";
@@ -567,43 +546,6 @@ public class InfoCenter
       return SUPPORTED_EXT_ARR;
    }
    
-   /**
-    * Used to get the file that contains the application's install directory.  
-    * The file returned is a script that sets the value of the variable 
-    * returned by <code>getInstallDirVarName()</code> to the value of the 
-    * installation directory.
-    * 
-    * @return The file that contains the application's install directory.
-    */
-   public static File getInstallDirEnvFile()
-   {
-      return INSTALL_DIR_ENV_FILE;
-   }
-   
-   /**
-    * Used to get the name of the variable in the file  
-    * <code>getInstallDirEnvFile()</code> whose value is set to the 
-    * application's installation directory.
-    * 
-    * @return The name of the variable that stores the application's 
-    *         install directory.
-    */
-   public static String getInstallDirVarName()
-   {
-      return INSTALL_DIR_VAR_NAME;
-   }
-   
-   /**
-    * Used to get the directory to which this application was installed.
-    * 
-    * @return The directory to which this application was installed or 
-    *         <code>null</code> if this directory could not be determined.
-    */
-   public static File getInstallDir()
-   {
-      return INSTALL_DIR;
-   }
-   
    public static String getSVGExt()
    {
       return SVG_EXT;
@@ -612,51 +554,6 @@ public class InfoCenter
    public static String getZippedSVGExt()
    {
       return SVGZ_EXT;
-   }
-   
-   /**
-    * Finds the directory to which this application was installed.
-    * 
-    * @return The directory to which this application was installed or 
-    *         <code>null</code> if this directory could not be determined.
-    */
-   private static File findInstallDir()
-   {
-      File installDirFile = InfoCenter.getInstallDirEnvFile();
-      
-      if (!installDirFile.exists())
-         return null;
-      
-      try
-      {
-         BufferedReader reader = 
-                           new BufferedReader(
-                                  new FileReader(installDirFile));
-      
-         StringBuffer buffer = new StringBuffer();
-         String line;
-         while ( (line = reader.readLine()) != null )
-         {
-            buffer.append(line);
-            buffer.append(" ");
-         }
-         
-         String text = buffer.toString();
-         int index = text.indexOf('=');
-         if (index < 0)
-            return null;
-         
-         // start at 'index+2' because the character at index 'index' 
-         // is '=' and the index at 'index+1' is '"'.  Thus we'll 
-         // skip these two characters.  We'll also skip the end '"'.
-         String filename = text.substring(index+2, text.length()-2);
-         
-         return new File(filename);
-      }
-      catch (IOException e)
-      {
-         return null;
-      }
    }
    
    /**
