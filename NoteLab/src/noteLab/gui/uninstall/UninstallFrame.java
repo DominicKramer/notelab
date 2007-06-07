@@ -25,6 +25,7 @@
 package noteLab.gui.uninstall;
 
 import java.awt.GridLayout;
+import java.io.File;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -36,9 +37,9 @@ import noteLab.util.InfoCenter;
 
 public class UninstallFrame extends SequenceFrame
 {
-   public UninstallFrame()
+   public UninstallFrame(File installDir)
    {
-      super(new WelcomeUninstallTile(), 
+      super(new WelcomeUninstallTile(installDir), 
             
             new Runnable()
             {
@@ -68,7 +69,11 @@ public class UninstallFrame extends SequenceFrame
    
    public static void main(String[] args)
    {
-      UninstallFrame frame = new UninstallFrame();
+      File installDir = null;
+      if (args.length > 0)
+         installDir = new File(args[0]);
+      
+      UninstallFrame frame = new UninstallFrame(installDir);
       frame.pack();
       frame.setVisible(true);
    }
