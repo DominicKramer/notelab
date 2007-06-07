@@ -62,8 +62,9 @@ public class WelcomeUninstallTile
    private JCheckBox savePrefsBox;
    private JButton uninstallButton;
    private ProgressPanel progressPanel;
+   private File installDir;
    
-   public WelcomeUninstallTile()
+   public WelcomeUninstallTile(File installDir)
    {
       super(null, false, false);
       
@@ -90,8 +91,8 @@ public class WelcomeUninstallTile
       buffer.append(InfoCenter.getAuthorEmail());
       buffer.append(".<br><br>");
       
-      File installDir = InfoCenter.getInstallDir();
-      if (installDir == null)
+      this.installDir = installDir;
+      if (this.installDir == null)
       {
          buffer.append("<b>Unfortunately ");
          buffer.append(appName);
@@ -181,7 +182,8 @@ public class WelcomeUninstallTile
          {
             try
             {
-               Uninstaller.uninstall(WelcomeUninstallTile.this, 
+               Uninstaller.uninstall(WelcomeUninstallTile.this,
+                                     installDir, 
                                      savePrefsBox.isSelected());
                notifyTileProceedChanged(ProceedType.can_proceed);
             }
@@ -239,9 +241,13 @@ public class WelcomeUninstallTile
    
    public static void main(String[] args)
    {
+      File installDir = null;
+      if (args.length > 0)
+         installDir = new File(args[0]);
+      
       JFrame frame = new JFrame();
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-      frame.add(new WelcomeUninstallTile());
+      frame.add(new WelcomeUninstallTile(installDir));
       frame.pack();
       frame.setVisible(true);
    }
