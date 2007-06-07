@@ -31,6 +31,7 @@ import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.geom.TransformRectangle2D;
 import noteLab.util.CopyReady;
 import noteLab.util.Selectable;
+import noteLab.util.UnitScaleDependent;
 import noteLab.util.geom.Bounded;
 import noteLab.util.geom.unit.Unit;
 import noteLab.util.mod.ModType;
@@ -49,7 +50,7 @@ import noteLab.util.settings.DebugSettings;
  */
 public class Paper extends TransformRectangle2D 
                       implements Renderable, CopyReady<Paper>, Bounded, 
-                                 Selectable
+                                 Selectable, UnitScaleDependent
 {
    /**
     * The color that a paper will be outlined with if it is currently 
