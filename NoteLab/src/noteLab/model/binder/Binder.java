@@ -40,6 +40,7 @@ import noteLab.model.Page;
 import noteLab.model.Paper.PaperType;
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.util.CopyReady;
+import noteLab.util.UnitScaleDependent;
 import noteLab.util.geom.Bounded;
 import noteLab.util.geom.RectangleUnioner;
 import noteLab.util.geom.Transformable;
@@ -70,7 +71,8 @@ public abstract class Binder implements Renderable, Bounded,
                                         Transformable, 
                                         Printable, 
                                         Pageable, 
-                                        CopyReady<Binder>
+                                        CopyReady<Binder>, 
+                                        UnitScaleDependent
 {
    /**
     * The format in which this binder's pages are in.  This field 
@@ -670,5 +672,19 @@ public abstract class Binder implements Renderable, Bounded,
    {
       for (Page p : this)
          p.setAllStrokeSelected(isSelected);
+   }
+   
+   public float getUnitScaleFactor()
+   {
+      if (this.pageList.isEmpty())
+         return SettingsUtilities.getUnitScaleFactor();
+      
+      return this.pageList.getFirst().getUnitScaleFactor();
+   }
+   
+   public void setUnitScaleFactor(float unitScaleFactor)
+   {
+      for (Page page : this)
+         page.setUnitScaleFactor(unitScaleFactor);
    }
 }
