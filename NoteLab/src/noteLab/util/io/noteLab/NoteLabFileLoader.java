@@ -327,6 +327,7 @@ public class NoteLabFileLoader
       
       float unitScaleFactor = SettingsUtilities.getUnitScaleFactor();
       canvas.getBinder().resizeTo(unitScaleFactor, unitScaleFactor);
+      canvas.setUnitScaleFactor(unitScaleFactor);
       
       this.curBinder.setCurrentPage(this.curBinder.getNumberOfPages()-1);
       Paper paper = this.curBinder.getCurrentPage().getPaper();
