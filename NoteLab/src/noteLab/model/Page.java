@@ -34,6 +34,7 @@ import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.geom.TransformRectangle2D;
 import noteLab.util.CopyReady;
 import noteLab.util.Selectable;
+import noteLab.util.UnitScaleDependent;
 import noteLab.util.geom.Bounded;
 import noteLab.util.geom.unit.Unit;
 import noteLab.util.mod.ModListener;
@@ -44,7 +45,8 @@ import noteLab.util.render.Renderer2D;
 public class Page extends TransformRectangle2D 
                      implements Renderable, CopyReady<Page>, 
                                 Selectable, Bounded, 
-                                ModListener, Iterable<Stroke>
+                                ModListener, Iterable<Stroke>, 
+                                UnitScaleDependent
 {
    private Paper paper;
    private LinkedList<Stroke> strokeList;
@@ -438,5 +440,15 @@ public class Page extends TransformRectangle2D
    public Stroke getUnSelectedStrokeAt(int index)
    {
       return this.unSelStrokeVec.elementAt(index);
+   }
+
+   public float getUnitScaleFactor()
+   {
+      return this.paper.getUnitScaleFactor();
+   }
+
+   public void setUnitScaleFactor(float unitScaleFactor)
+   {
+      this.paper.setUnitScaleFactor(unitScaleFactor);
    }
 }
