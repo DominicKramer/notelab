@@ -149,7 +149,7 @@ public class SettingsFrame extends JFrame
                
                OSType os = InfoCenter.getOperatingSystem();
                
-               if (os == OSType.Unix)
+               if (os.equals(OSType.Unix))
                   writer.println("#!/bin/sh");
                else
                   writer.println("@echo off");
