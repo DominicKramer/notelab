@@ -409,8 +409,8 @@ public class Path
          curPtX = curPt.getX();
          curPtY = curPt.getY();
          
-         newX = (prevX + curPtX + nextPt.getX())/3f;
-         newY = (prevY + curPtY + nextPt.getY())/3f;
+         newX = 0.25f*prevX + 0.5f*curPtX + 0.25f*nextPt.getX();
+         newY = 0.25f*prevY + 0.5f*curPtY + 0.25f*nextPt.getY();
          
          prevX = curPtX;
          prevY = curPtY;
