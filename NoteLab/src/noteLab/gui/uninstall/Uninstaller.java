@@ -39,13 +39,12 @@ public class Uninstaller
    private Uninstaller() {}
    
    public static void uninstall(PercentChangedListener listener, 
+                                File installDir, 
                                 boolean savePrefs) 
                                    throws IOException
    {
       if (listener == null)
          throw new NullPointerException();
-      
-      File installDir = InfoCenter.getInstallDir();
       
       if (installDir == null)
          throw new IOException(InfoCenter.getAppName()+" could not be " +
@@ -137,20 +136,6 @@ public class Uninstaller
       // scan through each child
       for (File child : children)
          countNumFiles(child, mInt);
-   }
-   
-   public static void main(String[] args) throws Exception
-   {
-      boolean savePrefs = true;
-      uninstall(new PercentChangedListener()
-                {
-                   public void percentChanged(int percent, String message)
-                   {
-                      System.err.println(message);
-                      System.err.println(""+percent+"%");
-                      System.err.println();
-                   }
-                }, savePrefs);
    }
    
    private static class MutableInt
