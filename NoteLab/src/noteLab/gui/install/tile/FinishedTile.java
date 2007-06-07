@@ -135,5 +135,8 @@ public class FinishedTile extends SequenceTile
          
          System.exit(1);
       }
+      
+      // Exit the virtual machine because the installation is complete
+      System.exit(0);
    }
 }
