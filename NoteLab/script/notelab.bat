@@ -13,25 +13,10 @@ set INIT_FILE="%HOMEDRIVE%%HOMEPATH%\.NoteLab\initenv.bat"
 REM If the file above exists invoke it so that the environment is initialized.
 IF EXIST %INIT_FILE% CALL %INIT_FILE%
 
-REM Determine the file that contains information about the installation directory
-set INSTALL_DIR_ENV="%HOMEDRIVE%%HOMEPATH%\.NoteLab\init_install_env.bat"
-
-REM If the file above exists invoke it so that the variable 'NOTELAB_INSTALL_DIR' contains the installation directory.
-IF EXIST %INSTALL_DIR_ENV% CALL %INSTALL_DIR_ENV%
-
-REM Store the current directory
-set CUR_DIR=.
-
-REM If the install directory has been stored, set it as the current directory
-IF EXIST %INSTALL_DIR_ENV% set CUR_DIR=%NOTELAB_INSTALL_DIR%
-
 REM Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
-java %NOTELAB_VM_ARGS% -DNOTELAB_SETTINGS_FILENAME=%INIT_FILE% -cp %CUR_DIR%;info noteLab.util.StartupUtilities %NOTELAB_ARGS% %*
+java %NOTELAB_VM_ARGS% -DNOTELAB_SETTINGS_FILENAME=%INIT_FILE% -cp .;info noteLab.util.StartupUtilities %NOTELAB_ARGS% %*
 
 REM Reset all of the constructed variables
 set INIT_FILE=
 set NOTELAB_VM_ARGS=
 set NOTELAB_ARGS=
-set INSTALL_DIR_ENV=
-set NOTELAB_INSTALL_DIR=
-set CUR_DIR=
