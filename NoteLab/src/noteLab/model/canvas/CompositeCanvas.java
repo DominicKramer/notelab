@@ -615,15 +615,14 @@ public class CompositeCanvas
          Object newOb = event.getNewValue();
          Object oldOb = event.getOldValue();
          if (newOb != null && oldOb != null && 
-             newOb instanceof Number && oldOb != null)
+             newOb instanceof Number && oldOb instanceof Number)
          {
             float newFactor = ((Number)newOb).floatValue();
             float oldFactor = ((Number)oldOb).floatValue();
             
             resizeTo(newFactor/oldFactor);
             
-            for (Page page : this.binder)
-               page.getPaper().setUnitScaleFactor(newFactor);
+            setUnitScaleFactor(newFactor);
             
             // NOTE:  The entire canvas needs to be repainted here
             doRepaint();
