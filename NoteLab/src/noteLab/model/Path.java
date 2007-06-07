@@ -373,84 +373,9 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothLinearly();
+         smoothWithAverages();
       
       scaleTo(xScale, yScale);
-   }
-   
-   private void smoothLinearly()
-   {
-      int size = getNumItems();
-      // Return if there are not enough points to smooth.  
-      // We need at least three points for smoothing.
-      if (size < 3)
-         return;
-      
-      FloatPoint2D firstPt = getFirst();
-      float prevX = firstPt.getX();
-      float prevY = firstPt.getY();
-      
-      FloatPoint2D curPt;
-      FloatPoint2D nextPt;
-      
-      float curPtX = 0;
-      float curPtY = 0;
-      
-      float nextPtX = 0;
-      float nextPtY = 0;
-      
-      float newX = 0;
-      float newY = 0;
-      
-      float sumTX = 0;
-      float sumX = 0;
-      
-      float sumTY = 0;
-      float sumY = 0;
-      
-      float sumT = 6; // = 1 + 2 + 3
-      float sumT2 = 14; // = 1^2 + 2^2 + 3^2
-      float sumT_square = 36; // = (1+2+3)^2
-      
-      float ax = 0;
-      float bx = 0;
-      
-      float ay = 0;
-      float by = 0;
-      
-      for (int i=1; i<size-1; i++)
-      {
-         curPt = getItemAt(i);
-         nextPt = getItemAt(i+1);
-         if (curPt == null || nextPt == null)
-            continue;
-         
-         curPtX = curPt.getX();
-         curPtY = curPt.getY();
-         
-         nextPtX = nextPt.getX();
-         nextPtY = nextPt.getY();
-         
-         sumX = prevX + curPtX + nextPtX;
-         sumY = prevY + curPtY + nextPtY;
-         
-         sumTX = prevX + 2*curPtX + 3*nextPtX;
-         sumTY = prevY + 2*curPtY + 3*nextPtY;
-         
-         ax = (3*sumTX - sumT*sumX)/(3*sumT2 - sumT_square);
-         bx = 1f/3f*(sumX - ax*sumT);
-         
-         ay = (3*sumTY - sumT*sumY)/(3*sumT2 - sumT_square);
-         by = 1f/3f*(sumY - ay*sumT);
-         
-         newX = 2*ax + bx;
-         newY = 2*ay + by;
-         
-         prevX = curPtX;
-         prevY = curPtY;
-         
-         curPt.translateTo(newX, newY);
-      }
    }
    
    private void smoothWithAverages()
