@@ -72,9 +72,9 @@ public class WelcomeUninstallTile
       String appVers = InfoCenter.getAppVersion();
       
       StringBuffer buffer = new StringBuffer();
-      buffer.append("<font color=\"blue\"><center>Thank you for your interest in ");
+      buffer.append("<b><font color=\"blue\"><center>Thank you for your interest in ");
       buffer.append(appName);
-      buffer.append("</center></font><br><br>This uninstaller will guide you ");
+      buffer.append("</center></font></b><br><br>This uninstaller will guide you ");
       buffer.append("through the uninstallation of ");
       buffer.append(appName);
       buffer.append(" version ");
