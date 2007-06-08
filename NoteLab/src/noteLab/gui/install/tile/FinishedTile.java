@@ -65,7 +65,7 @@ public class FinishedTile extends SequenceTile
       this.execFile = new File(installDir, "notelab"+InfoCenter.getScriptExtension());
       
       StringBuffer buffer = new StringBuffer();
-      buffer.append("<center><font color=\"blue\">Success</font></center>");
+      buffer.append("<center><b><font color=\"blue\">Success</font></b></center>");
       buffer.append("<br><br>");
       buffer.append(appName);
       buffer.append(" was successfully installed to <br><br><center><font color=\"blue\">");
