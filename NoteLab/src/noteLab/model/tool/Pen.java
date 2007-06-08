@@ -160,6 +160,16 @@ public class Pen implements Tool
       notifyModListeners(ModType.Other);
    }
    
+   public void setRawWidth(float width)
+   {
+      if (width <= 0)
+         width = 1;
+      
+      this.initWidth = width;
+      this.width = width;
+      notifyModListeners(ModType.Other);
+   }
+   
    /**
     * Used to get this pen's cursor.
     * 
@@ -204,6 +214,9 @@ public class Pen implements Tool
     */
    public void scaleBy(float val)
    {
+      if (val < 0)
+         val = -val;
+      
       this.scaleLevel *= val;
       this.width = this.initWidth*this.scaleLevel;
       
@@ -212,6 +225,9 @@ public class Pen implements Tool
    
    public void resizeTo(float val)
    {
+      if (val < 0)
+         val = -val;
+      
       float oldScale = this.scaleLevel;
       scaleTo(1);
       
@@ -230,6 +246,9 @@ public class Pen implements Tool
     */
    public void scaleTo(float val)
    {
+      if (val < 0)
+         val = -val;
+      
       this.scaleLevel = val;
       this.width = this.initWidth*val;
       
