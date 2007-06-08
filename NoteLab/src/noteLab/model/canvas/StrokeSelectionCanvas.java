@@ -256,37 +256,42 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             this.deltaScale.width  += xDiff;
             this.deltaScale.height += yDiff;
             
-            this.deltaScale.x += xDiff;
-            this.deltaScale.y += yDiff;
-            
             float xScale = (this.initScale.width+this.deltaScale.width)/
                             this.initScale.width;
             float yScale = (this.initScale.height+this.deltaScale.height)/
                             this.initScale.height;
             
+            float initX = this.initScale.x;
+            float initY = this.initScale.y;
+            
             RectangleUnioner unioner = new RectangleUnioner();
             
             Stroke stroke;
             Pen pen;
+            float curWidth;
             float maxWidth = 0;
             for (int i=0; i<curPage.getNumSelectedStrokes(); i++)
             {
                stroke = curPage.getSelectedStrokeAt(i);
-               
                pen = stroke.getPen();
-               maxWidth = Math.max(maxWidth, pen.getWidth());
+               curWidth = pen.getWidth();
                
+               maxWidth = Math.max(maxWidth, curWidth);
+               
+               stroke.translateBy(-initX, -initY);
                unioner.union(stroke.getBounds2D());
+               
                stroke.scaleTo(xScale, yScale);
-               
                unioner.union(stroke.getBounds2D());
-               maxWidth = Math.max(maxWidth, pen.getWidth());
+               
+               stroke.translateBy(initX, initY);
+               pen.setRawWidth(curWidth);
             }
             
             Rectangle2D.Float union = unioner.getUnion();
             Page page = binder.getCurrentPage();
-            doRepaint((float)union.getX()+page.getX(), 
-                      (float)union.getY()+page.getY(),
+            doRepaint((float)union.getX()+page.getX()+initX, 
+                      (float)union.getY()+page.getY()+initY,
                       (float)union.getWidth(), 
                       (float)union.getHeight(), 
                       maxWidth);
