@@ -460,6 +460,21 @@ public class InfoCenter
       return UNIX_SCRIPT_EXT;
    }
    
+   public static String getUnixScriptExtension()
+   {
+      return UNIX_SCRIPT_EXT;
+   }
+   
+   public static String getWindowsScriptExtension()
+   {
+      return WINDOWS_SCRIPT_EXT;
+   }
+   
+   public static String getMacScriptExtension()
+   {
+      return MAC_SCRIPT_EXT;
+   }
+   
    /**
     * Returns the maximum amount of memory, in megabytes, that NoteLab can use.
     * 
