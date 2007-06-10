@@ -14,14 +14,17 @@ NOTELAB_HOME=${HOME}/.NoteLab
 INIT_FILE=${NOTELAB_HOME}/initenv.sh
 
 # If the file above exists source it so that the environment is initialized.
-if [ -e ${INIT_FILE} ]; then 
-  source ${INIT_FILE}; 
+if [ -e "${INIT_FILE}" ]; then 
+  source "${INIT_FILE}"; 
 fi
 
 # Determine the installation directory, i.e. the directory that contains this script.  
 # '$0' stores the absolute path to this script and the 'dirname' command returns the 
 # absolute path of the parent directory of '$0'.
-INSTALL_DIR=`dirname $0`
+INSTALL_DIR=`dirname "$0"`
+
+# Move to the installation directory
+cd "${INSTALL_DIR}"
 
 # Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
-java ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME=${INIT_FILE} -cp ${INSTALL_DIR}:${INSTALL_DIR}/info noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
+java ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME="${INIT_FILE}" -cp .:./info:${CLASSPATH} noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
