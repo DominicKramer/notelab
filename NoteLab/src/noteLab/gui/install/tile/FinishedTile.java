@@ -120,11 +120,15 @@ public class FinishedTile extends SequenceTile
       {
          if (this.launchBox.isSelected())
          {
+            String filename = this.execFile.getAbsolutePath();
             OSType os = InfoCenter.getOperatingSystem();
+            
+            // If its a UNIX system replace all spaces in the filename with 
+            // the sequence "\ "
             if (os.equals(OSType.Unix))
-               Runtime.getRuntime().exec("bash \""+this.execFile.getAbsolutePath()+"\"");
-            else
-               Runtime.getRuntime().exec(this.execFile.getAbsolutePath());
+               filename = filename.replace(" ", "\\ ");
+            
+            Runtime.getRuntime().exec(filename);
          }
       }
       catch (IOException e)
