@@ -50,6 +50,8 @@ import noteLab.util.InfoCenter.OSType;
 
 public class FinishedTile extends SequenceTile
 {
+   private static final String BASE_EXEC_NAME = "notelab";
+   
    private JCheckBox launchBox;
    private File execFile;
    
@@ -63,7 +65,7 @@ public class FinishedTile extends SequenceTile
       File installDir = prevTile.getInstallDirectory();
       String appName = InfoCenter.getAppName();
       
-      this.execFile = new File(installDir, "notelab"+InfoCenter.getScriptExtension());
+      this.execFile = new File(installDir, BASE_EXEC_NAME+InfoCenter.getScriptExtension());
       
       StringBuffer buffer = new StringBuffer();
       buffer.append("<center><b><font color=\"blue\">Success</font></b></center>");
@@ -120,8 +122,13 @@ public class FinishedTile extends SequenceTile
       {
          if (this.launchBox.isSelected())
          {
-            String scriptName = this.execFile.getName();
             File workingDir = this.execFile.getParentFile();
+            String scriptName = BASE_EXEC_NAME;
+            OSType os = InfoCenter.getOperatingSystem();
+            if (os.equals(OSType.Unix))
+               scriptName += InfoCenter.getUnixScriptExtension();
+            else
+               scriptName += InfoCenter.getWindowsScriptExtension();
             
             Runtime.getRuntime().exec(scriptName, null, workingDir);
          }
