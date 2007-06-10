@@ -118,7 +118,7 @@ public class FinishedTile extends SequenceTile
       try
       {
          if (this.launchBox.isSelected())
-            Runtime.getRuntime().exec(this.execFile.getAbsolutePath());
+            Runtime.getRuntime().exec("\""+this.execFile.getAbsolutePath()+"\"");
       }
       catch (IOException e)
       {
