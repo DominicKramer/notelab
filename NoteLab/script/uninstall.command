@@ -15,14 +15,18 @@ INSTALL_DIR_ENV=${NOTELAB_HOME}/init_install_env.sh
 # Determine the installation directory, i.e. the directory that contains this script.  
 # '$0' stores the absolute path to this script and the 'dirname' command returns the 
 # absolute path of the parent directory of '$0'.
-INSTALL_DIR=`dirname $0`
+INSTALL_DIR=`dirname "$0"`
+
+# Move to the installation directory
+cd "${INSTALL_DIR}"
 
 # Custom arguments for Mac OS X
 DOCK_ARG=-Xdock:name=NoteLab
-ICON_ARG=-Xdock:icon=${INSTALL_DIR}/noteLab/icons/feather.png
+ICON_ARG=-Xdock:icon=./noteLab/icons/feather.png
 
 # Start the Java virtual machine and have it load the uninstaller
-java ${DOCK_ARG} ${ICON_ARG} -cp ${INSTALL_DIR}:${INSTALL_DIR}/info noteLab.gui.uninstall.UninstallFrame ${INSTALL_DIR}
+java ${DOCK_ARG} ${ICON_ARG} -cp .:./info:${CLASSPATH} noteLab.gui.uninstall.UninstallFrame "${INSTALL_DIR}"
 
 # Finish up by removing the installation directory
-rmdir ${INSTALL_DIR}
+cd "${HOME}"
+rmdir "${INSTALL_DIR}"
