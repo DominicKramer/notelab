@@ -27,9 +27,7 @@ package noteLab.gui.install.tile;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -37,7 +35,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.WindowConstants;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
