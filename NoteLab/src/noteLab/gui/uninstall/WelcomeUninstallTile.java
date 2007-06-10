@@ -81,7 +81,7 @@ public class WelcomeUninstallTile
       buffer.append(appVers);
       buffer.append(".<br><br>You can find future releases of ");
       buffer.append(InfoCenter.getAppName());
-      buffer.append(" at its homepage at <br><br><font color=\"blue\"><center>");
+      buffer.append(" on its homepage at <br><br><font color=\"blue\"><center>");
       buffer.append(InfoCenter.getHomepage());
       buffer.append("</center></font><br>  ");
       buffer.append("Any questions or comments are ");
