@@ -46,6 +46,7 @@ import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.sequence.ProceedType;
 import noteLab.gui.sequence.SequenceTile;
 import noteLab.util.InfoCenter;
+import noteLab.util.InfoCenter.OSType;
 
 public class FinishedTile extends SequenceTile
 {
@@ -118,7 +119,13 @@ public class FinishedTile extends SequenceTile
       try
       {
          if (this.launchBox.isSelected())
-            Runtime.getRuntime().exec("\""+this.execFile.getAbsolutePath()+"\"");
+         {
+            OSType os = InfoCenter.getOperatingSystem();
+            if (os.equals(OSType.Unix))
+               Runtime.getRuntime().exec("bash \""+this.execFile.getAbsolutePath()+"\"");
+            else
+               Runtime.getRuntime().exec(this.execFile.getAbsolutePath());
+         }
       }
       catch (IOException e)
       {
