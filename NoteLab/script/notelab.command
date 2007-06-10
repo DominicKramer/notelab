@@ -14,18 +14,21 @@ NOTELAB_HOME=${HOME}/.NoteLab
 INIT_FILE=${NOTELAB_HOME}/initenv.sh
 
 # If the file above exists source it so that the environment is initialized.
-if [ -e ${INIT_FILE} ]; then 
-  source ${INIT_FILE}; 
+if [ -e "${INIT_FILE}" ]; then 
+  source "${INIT_FILE}"; 
 fi
 
 # Determine the installation directory, i.e. the directory that contains this script.  
 # '$0' stores the absolute path to this script and the 'dirname' command returns the 
 # absolute path of the parent directory of '$0'.
-INSTALL_DIR=`dirname $0`
+INSTALL_DIR=`dirname "$0"`
 
-# Custom arguments for Mac OS X
+# Move to the installation directory
+cd "${INSTALL_DIR}"
+
+# Custom arguments for Mac 'OS X
 DOCK_ARG=-Xdock:name=NoteLab
-ICON_ARG=-Xdock:icon=${INSTALL_DIR}/noteLab/icons/feather.png
+ICON_ARG=-Xdock:icon=./noteLab/icons/feather.png
 
 # Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
-java ${DOCK_ARG} ${ICON_ARG} ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME=${INIT_FILE} -cp ${INSTALL_DIR}:${INSTALL_DIR}/info noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
+java ${DOCK_ARG} ${ICON_ARG} ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME="${INIT_FILE}" -cp .:./info:${CLASSPATH} noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
