@@ -92,9 +92,6 @@ public class CompositeCanvas
    
    private float scaleLevel;
    
-   private int pointCount;
-   private int pointModIndex;
-   
    private MouseInputListener mouseListener;
    
    private boolean hasBeenModified;
@@ -146,9 +143,6 @@ public class CompositeCanvas
       this.pageSelCanvas.addModListener(this);
       
       this.curPath = null;
-      
-      this.pointCount = 0;
-      this.pointModIndex = 1;
       
       new Thread()
       {
@@ -225,16 +219,6 @@ public class CompositeCanvas
    public void setHasBeenModified(boolean hasBeenModified)
    {
       this.hasBeenModified = hasBeenModified;
-   }
-   
-   public int getPointModIndex()
-   {
-      return this.pointModIndex;
-   }
-   
-   public void setPointModIndex(int mod)
-   {
-      this.pointModIndex = mod;
    }
    
    public Vector<ToolBarButton> getToolBars()
@@ -554,10 +538,6 @@ public class CompositeCanvas
       public void mouseDragged(final MouseEvent e)
       {
          if (!isEnabled)
-            return;
-         
-         pointCount = (pointCount+1)%pointModIndex;
-         if (pointCount != 0)
             return;
          
          SwingUtilities.invokeLater(new Runnable()
