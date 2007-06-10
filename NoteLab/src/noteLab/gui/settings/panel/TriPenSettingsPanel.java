@@ -41,18 +41,21 @@ public class TriPenSettingsPanel
    private PenSettingsPanel pen1Panel;
    private PenSettingsPanel pen2Panel;
    private PenSettingsPanel pen3Panel;
+   private StrokeSmoothingPanel smoothPanel;
    
    public TriPenSettingsPanel()
    {
       this.pen1Panel = new PenSettingsPanel(1);
       this.pen2Panel = new PenSettingsPanel(2);
       this.pen3Panel = new PenSettingsPanel(3);
+      this.smoothPanel = new StrokeSmoothingPanel();
       
       JPanel innerPanel = new JPanel();
       innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
       innerPanel.add(this.pen1Panel);
       innerPanel.add(this.pen2Panel);
       innerPanel.add(this.pen3Panel);
+      innerPanel.add(this.smoothPanel);
       
       setLayout(new GridLayout());
       add(innerPanel);
@@ -63,6 +66,7 @@ public class TriPenSettingsPanel
       this.pen1Panel.restoreDefaults();
       this.pen2Panel.restoreDefaults();
       this.pen3Panel.restoreDefaults();
+      this.smoothPanel.restoreDefaults();
    }
 
    public void revertToSaved()
@@ -70,6 +74,7 @@ public class TriPenSettingsPanel
       this.pen1Panel.revertToSaved();
       this.pen2Panel.revertToSaved();
       this.pen3Panel.revertToSaved();
+      this.smoothPanel.revertToSaved();
    }
 
    public void encode(StringBuffer buffer)
@@ -77,6 +82,7 @@ public class TriPenSettingsPanel
       this.pen1Panel.encode(buffer);
       this.pen2Panel.encode(buffer);
       this.pen3Panel.encode(buffer);
+      this.smoothPanel.encode(buffer);
    }
 
    public String save()
@@ -85,6 +91,7 @@ public class TriPenSettingsPanel
       buffer.append(this.pen1Panel.save());
       buffer.append(this.pen2Panel.save());
       buffer.append(this.pen3Panel.save());
+      buffer.append(this.smoothPanel.save());
       return buffer.toString();
    }
    
@@ -93,5 +100,6 @@ public class TriPenSettingsPanel
       this.pen1Panel.apply();
       this.pen2Panel.apply();
       this.pen3Panel.apply();
+      this.smoothPanel.apply();
    }
 }
