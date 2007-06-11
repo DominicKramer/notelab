@@ -13,7 +13,7 @@ REM Move to the installation directory
 cd "%INSTALL_DIR%"
 
 REM Start the Java virtual machine and have it load the uninstaller
-java -cp .;./info;%CLASSPATH% noteLab.gui.uninstall.UninstallFrame "%INSTALL_DIR%"
+java -cp .;./info;"%CLASSPATH%" noteLab.gui.uninstall.UninstallFrame "%INSTALL_DIR%"
 
 REM Finish up by removing the installation directory
 REM First change to the home directory so the install directory is not in use.

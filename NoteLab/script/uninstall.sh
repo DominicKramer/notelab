@@ -21,7 +21,7 @@ INSTALL_DIR=`dirname "$0"`
 cd "${INSTALL_DIR}"
 
 # Start the Java virtual machine and have it load the uninstaller
-java -cp .:./info:${CLASSPATH} noteLab.gui.uninstall.UninstallFrame "${INSTALL_DIR}"
+java -cp .:./info:"${CLASSPATH}" noteLab.gui.uninstall.UninstallFrame "${INSTALL_DIR}"
 
 # Finish up by removing the installation directory
 cd "${HOME}"
