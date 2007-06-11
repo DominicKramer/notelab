@@ -144,7 +144,7 @@ public class FinishedTile extends SequenceTile
                command = "\""+command+"\"";
             
             // run the script
-            Runtime.getRuntime().exec(command);
+            Runtime.getRuntime().exec(new String[]{command});
          }
       }
       catch (IOException e)
