@@ -25,7 +25,7 @@ DOCK_ARG=-Xdock:name=NoteLab
 ICON_ARG=-Xdock:icon=./noteLab/icons/feather.png
 
 # Start the Java virtual machine and have it load the uninstaller
-java ${DOCK_ARG} ${ICON_ARG} -cp .:./info:${CLASSPATH} noteLab.gui.uninstall.UninstallFrame "${INSTALL_DIR}"
+java ${DOCK_ARG} ${ICON_ARG} -cp .:./info:"${CLASSPATH}" noteLab.gui.uninstall.UninstallFrame "${INSTALL_DIR}"
 
 # Finish up by removing the installation directory
 cd "${HOME}"

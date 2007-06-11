@@ -20,7 +20,7 @@ REM Move to the installation directory
 cd "%INSTALL_DIR%"
 
 REM Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
-java %NOTELAB_VM_ARGS% -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;%CLASSPATH% noteLab.util.StartupUtilities %NOTELAB_ARGS% %*
+java %NOTELAB_VM_ARGS% -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;"%CLASSPATH%" noteLab.util.StartupUtilities %NOTELAB_ARGS% %*
 
 REM Reset all of the constructed variables
 set INIT_FILE=
