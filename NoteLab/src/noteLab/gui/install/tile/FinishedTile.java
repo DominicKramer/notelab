@@ -122,7 +122,6 @@ public class FinishedTile extends SequenceTile
       {
          if (this.launchBox.isSelected())
          {
-            String command = "";
             File workingDir = this.execFile.getParentFile();
             String ext = "";
             OSType os = InfoCenter.getOperatingSystem();
@@ -134,14 +133,7 @@ public class FinishedTile extends SequenceTile
                ext = InfoCenter.getWindowsScriptExtension();
             
             // store the absolute path to the script
-            command = new File(workingDir, BASE_EXEC_NAME+ext).getAbsolutePath();
-            
-            // Fix the filename if it contains spaces
-            // The fix depends on the type of operating system
-            if (os.equals(OSType.Unix))
-               command = command.replace(" ", "\\ ");
-            else
-               command = "\""+command+"\"";
+            String command = new File(workingDir, BASE_EXEC_NAME+ext).getAbsolutePath();
             
             // run the script
             Runtime.getRuntime().exec(new String[]{command});
