@@ -124,13 +124,20 @@ public class FinishedTile extends SequenceTile
          {
             File workingDir = this.execFile.getParentFile();
             String scriptName = BASE_EXEC_NAME;
+            String path = "";
             OSType os = InfoCenter.getOperatingSystem();
             if (os.equals(OSType.Unix))
+            {
                scriptName += InfoCenter.getUnixScriptExtension();
+               path = ".:${PATH}";
+            }
             else
+            {
                scriptName += InfoCenter.getWindowsScriptExtension();
+               path = ".;%PATH%";
+            }
             
-            Runtime.getRuntime().exec(scriptName, null, workingDir);
+            Runtime.getRuntime().exec(scriptName, new String[] {"PATH="+path}, workingDir);
          }
       }
       catch (IOException e)
