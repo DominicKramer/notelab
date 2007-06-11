@@ -28,7 +28,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.File;
-import java.io.IOException;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -46,7 +45,6 @@ import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.sequence.ProceedType;
 import noteLab.gui.sequence.SequenceTile;
 import noteLab.util.InfoCenter;
-import noteLab.util.InfoCenter.OSType;
 
 public class FinishedTile extends SequenceTile
 {
@@ -122,14 +120,15 @@ public class FinishedTile extends SequenceTile
       {
          if (this.launchBox.isSelected())
          {
-            OSType os = InfoCenter.getOperatingSystem();
-            if (os.equals(OSType.Unix))
-               Runtime.getRuntime().exec(new String[]{this.execFile.getAbsolutePath()});
-            else
-               Runtime.getRuntime().exec(this.execFile.getAbsolutePath());
+            String command = this.execFile.getAbsolutePath();
+            File workingDir = this.execFile.getParentFile();
+            
+            Runtime.getRuntime().exec(new String[]{command}, 
+                                      null, 
+                                      workingDir);
          }
       }
-      catch (IOException e)
+      catch (Exception e)
       {
          int size = GuiSettingsConstants.BUTTON_SIZE;
          ImageIcon errorIcon = DefinedIcon.dialog_error.getIcon(size);
