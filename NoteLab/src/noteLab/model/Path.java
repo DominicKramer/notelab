@@ -373,13 +373,18 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothWithAverages();
+         smoothWithAverages(i);
       
       scaleTo(xScale, yScale);
    }
    
-   private void smoothWithAverages()
+   private void smoothWithAverages(float weight)
    {
+      if (weight < 0)
+         throw new IllegalArgumentException("The weight given to smooth a path using the " +
+                                            "method of moving averages cannot be negative.  " +
+                                            "A value of "+weight+", however, was given.");
+      
       int size = getNumItems();
       // Return if there are not enough points to smooth.  
       // We need at least three points for smoothing.
@@ -399,6 +404,23 @@ public class Path
       float newX = 0;
       float newY = 0;
       
+      // Consider the points prevPt, curPt, and nextPt.  Now suppose we want to give weights 
+      // to the value of each point when calculating the average so that curPt is given more 
+      // weight.  Specifically we'll give prevPt and nextPt a weight represented by 'a' and 
+      // curPt a weight represented by 'b'.  Then we need 
+      //                               a + b + a = 1
+      // Now let 'k' represent the parameter 'weight' and suppose we want b = k*a
+      // (i.e. we want b to be k times the weight of a).  Then we'll have 
+      //                               2a + ka = 1
+      // Thus 
+      //                               a = 1/(2+k)
+      // and 
+      //                               b = ka
+      // This describes the two variables below.
+      
+      float a = 1f/(2f+weight);
+      float b = weight*a;
+      
       for (int i=1; i<size-1; i++)
       {
          curPt = getItemAt(i);
@@ -409,8 +431,8 @@ public class Path
          curPtX = curPt.getX();
          curPtY = curPt.getY();
          
-         newX = 0.25f*prevX + 0.5f*curPtX + 0.25f*nextPt.getX();
-         newY = 0.25f*prevY + 0.5f*curPtY + 0.25f*nextPt.getY();
+         newX = a*prevX + b*curPtX + a*nextPt.getX();
+         newY = a*prevY + b*curPtY + a*nextPt.getY();
          
          prevX = curPtX;
          prevY = curPtY;
