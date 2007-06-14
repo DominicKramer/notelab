@@ -378,6 +378,99 @@ public class Path
       scaleTo(xScale, yScale);
    }
    
+   private void smoothWithTimedLinear(float speed)
+   {
+      int size = getNumItems();
+      // Return if there are not enough points to smooth.  
+      // We need at least three points for smoothing.
+      if (size < 3)
+         return;
+      
+      FloatPoint2D firstPt = getFirst();
+      float prevX = firstPt.getX();
+      float prevY = firstPt.getY();
+      
+      FloatPoint2D curPt;
+      FloatPoint2D nextPt;
+      
+      float curPtX = 0;
+      float curPtY = 0;
+      
+      float nextPtX;
+      float nextPtY;
+      
+      float newX = 0;
+      float newY = 0;
+      
+      float xDiff;
+      float yDiff;
+      
+      float prevT;
+      float nextT;
+      
+      for (int i=1; i<size-1; i++)
+      {
+         curPt = getItemAt(i);
+         nextPt = getItemAt(i+1);
+         if (curPt == null || nextPt == null)
+            continue;
+         
+         curPtX = curPt.getX();
+         curPtY = curPt.getY();
+         
+         nextPtX = nextPt.getX();
+         nextPtY = nextPt.getY();
+         
+         xDiff = curPtX-prevX;
+         yDiff = curPtY-prevY;
+         prevT = (float)Math.sqrt(xDiff*xDiff + yDiff*yDiff)/speed;
+         
+         xDiff = nextPtX-curPtX;
+         yDiff = nextPtY-curPtY;
+         nextT = (float)Math.sqrt(xDiff*xDiff + yDiff*yDiff)/speed;
+         
+         newX = getTimedLinearValue(prevX, curPtX, nextPtX, prevT, nextT);
+         newY = getTimedLinearValue(prevY, curPtY, nextPtY, prevT, nextT);
+         
+         prevX = curPtX;
+         prevY = curPtY;
+         
+         curPt.translateTo(newX, newY);
+      }
+   }
+   
+   private float getTimedLinearValue(float prevX, float curX, float nextX, 
+                                     float prevT, float nextT)
+   {
+      //return (float)Math.pow(prevX*curX*nextX, 1/3f);
+      
+      //return (prevX+curX+nextX)/3f;
+      
+      //float denom = prevT/prevX + (prevT+nextT)/curX + nextT/nextX;
+      //return 2*(prevT+nextT)/denom;
+      
+      /*
+      float factor = 1;
+      float prevW = 1f/prevT;
+      float nextW = 1f/nextT;
+      float curW = factor*(prevW+nextT);
+      float sumT = prevW + curW + nextW;
+      
+      return (prevW*prevX + curW*curX + nextW*nextX)/sumT;
+      */
+      
+      float sumT = nextT - prevT;
+      float sumX = prevX + curX + nextX;
+      
+      float sumXT = nextT*nextX - prevT*prevX;
+      float sumT2 = nextT*nextT + prevT*prevT;
+      
+      float a = (3*sumXT - sumT*sumX)/(3*sumT2 - sumT*sumT);
+      float b = (sumX - a*sumT)/3f;
+      
+      return b;
+   }
+   
    private void smoothWithAverages(float weight)
    {
       if (weight < 0)
@@ -439,6 +532,88 @@ public class Path
          
          curPt.translateTo(newX, newY);
       }
+   }
+   
+   private void smoothWithNAverages(int numPts)
+   {
+      int size = getNumItems();
+      // Return if there are not enough points to smooth.  
+      // We need at least three points for smoothing.
+      if (size < 2*numPts+1)
+         return;
+      
+      // denom = 2*(sum from 1 to numPts) + (numPts+1) 
+      //       = 2*numPts*(numPts+1)/2 + (numPts+1)
+      //       = numPts*numPts + 2*numPts + 1;
+      final float denom = numPts*numPts+2*numPts+1;
+      
+      float[] prevXArr = new float[numPts];
+      float[] prevYArr = new float[numPts];
+      
+      FloatPoint2D ithPt;
+      for (int i=0; i<numPts; i++)
+      {
+         ithPt = getItemAt(i);
+         prevXArr[i] = ithPt.getX();
+         prevYArr[i] = ithPt.getY();
+      }
+      
+      FloatPoint2D curPt;
+      float curPtX;
+      float curPtY;
+      
+      FloatPoint2D tempPt;
+      float[] nextXArr = new float[numPts];
+      float[] nextYArr = new float[numPts];
+      
+      float newX;
+      float newY;
+      
+      for (int i=numPts; i<size-numPts; i++)
+      {
+         curPt = getItemAt(i);
+         if (curPt == null)
+            continue;
+         
+         curPtX = curPt.getX();
+         curPtY = curPt.getY();
+         
+         for (int j=i+1; j<i+1+numPts; j++)
+         {
+            tempPt = getItemAt(j);
+            nextXArr[j-i-1] = tempPt.getX();
+            nextYArr[j-i-1] = tempPt.getY();
+         }
+         
+         newX = getWeightedAverage(prevXArr, curPtX, nextXArr, numPts, denom);
+         newY = getWeightedAverage(prevYArr, curPtY, nextYArr, numPts, denom);
+         
+         for (int j=0; j<numPts-1; j++)
+         {
+            prevXArr[j] = prevXArr[j+1];
+            prevYArr[j] = prevYArr[j+1];
+         }
+         
+         prevXArr[numPts-1] = curPtX;
+         prevYArr[numPts-1] = curPtY;
+         
+         curPt.translateTo(newX, newY);
+      }
+   }
+   
+   private static float getWeightedAverage(float[] prevPts, float curPt, float[] nextPts, 
+                                           int numPts, float denom)
+   {
+      float sum = 0;
+      for (int i=0; i<numPts; i++)
+         sum += (i+1)*prevPts[i];
+      
+      sum += (numPts+1)*curPt;
+      
+      for (int i=0; i<numPts; i++)
+         sum += (numPts-i)*nextPts[i];
+      
+      return sum/denom;
    }
    
    private void smoothImpl(int numPts, int degree)
