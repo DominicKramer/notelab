@@ -39,6 +39,7 @@ import noteLab.util.render.Renderable;
 import noteLab.util.render.Renderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.settings.DebugSettings;
+import noteLab.util.settings.SettingsUtilities;
 
 public class Stroke 
                 extends ItemContainer<Path> 
@@ -180,17 +181,77 @@ public class Stroke
       float width = this.pen.getWidth();
       Color color = this.pen.getColor();
       
-      this.pen.setRawWidth(2f*width);
+      this.pen.setRawWidth( 1.5f*width );
       this.pen.setColor(color.brighter().brighter());
       doRenderInto(mG2d);
       
-      this.pen.setRawWidth(1.5f*width);
+      this.pen.setRawWidth( 1.25f*width );
       this.pen.setColor(color.brighter());
       doRenderInto(mG2d);
       
       this.pen.setRawWidth(width);
       this.pen.setColor(color);
       doRenderInto(mG2d);
+      
+      /*
+      int numSteps = 1;
+      float delta = 0.5f/numSteps;
+      float factor;
+      
+      Color newColor = new Color(color.getRGB());
+      for (int i=1; i<=numSteps; i++)
+         newColor = newColor.brighter();
+      
+      for (int i=numSteps; i>=0; i--)
+      {
+         factor = 1+delta*i;
+         
+         System.err.println("factor = "+factor);
+         
+         this.pen.setRawWidth( factor*width );
+         this.pen.setColor(newColor);
+         
+         newColor = newColor.darker();
+         
+         doRenderInto(mG2d);
+      }
+      System.err.println("DONE!!!!");
+      
+      this.pen.setRawWidth(width);
+      this.pen.setColor(color);
+      */
+      
+      /*
+      System.err.println("RAW width = "+width);
+      System.err.println("RAW alpha = "+color.getAlpha());
+      
+      float factor;
+      int numSteps = 1;//SettingsUtilities.getSmoothFactor();
+      
+      //int alpha;
+      float newWidth;
+      
+      for (int i=numSteps-1; i>=0; i--)
+      {
+         factor = 1-1f/(1+i*i);
+         
+         System.err.println("factor = "+factor);
+         
+         //alpha = (int)(factor*color.getAlpha());
+         newWidth = (1+factor)*width;
+         
+         //System.err.println("alpha = "+(factor*color.getAlpha()));
+         System.err.println("newWidth = "+newWidth);
+         
+         //this.pen.setColor(new Color(color.getRed(), 
+         //                            color.getGreen(), 
+         //                            color.getBlue(), 
+         //                            alpha));
+         this.pen.setRawWidth( newWidth );
+         
+         doRenderInto(mG2d);
+      }
+      */
    }
    
    private void doRenderInto(Renderer2D mG2d)
