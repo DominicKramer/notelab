@@ -111,6 +111,32 @@ public class ItemContainer<T extends Transformable & Bounded & ModBroadcaster>
       notifyModListeners(ModType.Other);
    }
    
+   public T removeItemAt(int index)
+   {
+      T item = this.itemList.remove(index);
+      notifyModListeners(ModType.Other);
+      item.removeModListener(this);
+      
+      return item;
+   }
+   
+   public void insertItemAt(int index, T item)
+   {
+      if (item == null)
+         throw new NullPointerException();
+      
+      if (index >= this.itemList.size())
+      {
+         addItem(item);
+         return;
+      }
+      
+      this.itemList.add(index, item);
+      item.addModListener(this);
+      
+      notifyModListeners(ModType.Other);
+   }
+   
    public void translateBy(float x, float y)
    {
       for (T item : this.itemList)
