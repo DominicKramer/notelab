@@ -24,6 +24,7 @@
 
 package noteLab.model;
 
+import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
@@ -176,6 +177,19 @@ public class Stroke
          return;
       }
       
+      float width = this.pen.getWidth();
+      Color color = this.pen.getColor();
+      
+      this.pen.setRawWidth(2f*width);
+      this.pen.setColor(color.brighter().brighter());
+      doRenderInto(mG2d);
+      
+      this.pen.setRawWidth(1.5f*width);
+      this.pen.setColor(color.brighter());
+      doRenderInto(mG2d);
+      
+      this.pen.setRawWidth(width);
+      this.pen.setColor(color);
       doRenderInto(mG2d);
    }
    
@@ -212,8 +226,15 @@ public class Stroke
          }
          else
          {
+            FloatPoint2D pt1;
+            FloatPoint2D pt2;
             for (int i=0; i<numPts-1; i++)
-               mG2d.drawLine(path.getItemAt(i), path.getItemAt(i+1));
+            {
+               pt1 = path.getItemAt(i);
+               pt2 = path.getItemAt(i+1);
+               if (pt1 != null && pt2 != null)
+                  mG2d.drawLine(pt1, pt2);
+            }
          }
       }
       
