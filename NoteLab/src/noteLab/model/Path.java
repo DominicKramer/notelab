@@ -27,6 +27,8 @@ package noteLab.model;
 import java.util.List;
 import java.util.Vector;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.util.CopyReady;
 import noteLab.util.geom.Bounded;
@@ -365,6 +367,341 @@ public class Path
          addItem(pt); 
    }
    
+   private void interpolateLinear(int numAdd)
+   {
+      if (numAdd < 0)
+         throw new IllegalArgumentException();
+      
+      if (numAdd == 0)
+         return;
+      
+      int size = getNumItems();
+      
+      Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numAdd*(size-1)+size);
+      
+      FloatPoint2D curPt;
+      FloatPoint2D nextPt;
+      
+      float mx;
+      float curX;
+      
+      float my;
+      float curY;
+      
+      float delta;
+      float evalPt;
+      
+      float newX;
+      float newY;
+      
+      for (int i=0; i<size-1; i++)
+      {
+         curPt = getItemAt(i);
+         nextPt = getItemAt(i+1);
+         
+         curX = curPt.getX();
+         curY = curPt.getY();
+         
+         mx = (nextPt.getX()-curX)/2f;
+         my = (nextPt.getY()-curY)/2f;
+         
+         newPts.add(curPt);
+         
+         delta = 2f/(numAdd+2f);
+         
+         for (int j=1; j<=numAdd; j++)
+         {
+            evalPt = -1+j*delta;
+            
+            newX = mx*(evalPt+1)+curX;
+            newY = my*(evalPt+1)+curY;
+            
+            newPts.add(new FloatPoint2D(newX, newY, 
+                                        this.xScaleLevel, 
+                                        this.yScaleLevel));
+         }
+      }
+      
+      clear();
+      for (FloatPoint2D pt : newPts)
+         addItem(pt);
+   }
+   
+   private void quadraticSmooth()
+   {
+      int size = getNumItems();
+      if (size < 4)
+         return;
+      
+      Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(size);
+      
+      FloatPoint2D pt1;
+      FloatPoint2D pt2;
+      FloatPoint2D pt3;
+      FloatPoint2D pt4;
+      
+      Polynomial xquad = new Polynomial(2);
+      Polynomial yquad = new Polynomial(2);
+      
+      for (int i=0; i<size-3; i=i+3)
+      {
+         pt1 = getItemAt(i);
+         pt2 = getItemAt(i+1);
+         pt3 = getItemAt(i+2);
+         pt4 = getItemAt(i+3);
+         
+         fillSmoothQuadratic(pt1.getX(), pt2.getX(), pt3.getX(), pt4.getX(), xquad);
+         fillSmoothQuadratic(pt1.getY(), pt2.getY(), pt3.getY(), pt4.getY(), yquad);
+         
+         newPts.add(pt1);
+         newPts.add(new FloatPoint2D(xquad.eval(2), 
+                                     yquad.eval(2), 
+                                     this.xScaleLevel, 
+                                     this.yScaleLevel));
+         newPts.add(new FloatPoint2D(xquad.eval(3), 
+                                     yquad.eval(3), 
+                                     this.xScaleLevel, 
+                                     this.yScaleLevel));
+      }
+      
+      clear();
+      for (FloatPoint2D pt : newPts)
+         addItem(pt);
+   }
+   
+   private void interpolateQuadratic(int numAdd)
+   {
+      if (numAdd < 0)
+         throw new IllegalArgumentException();
+      
+      if (numAdd == 0)
+         return;
+      
+      int size = getNumItems();
+      if (size < 3)
+         return;
+      
+      Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numAdd*(size-1)+size);
+      
+      FloatPoint2D pt1;
+      FloatPoint2D pt2;
+      FloatPoint2D pt3;
+      
+      Polynomial xQuad = new Polynomial(2);
+      Polynomial yQuad = new Polynomial(2);
+      
+      float delta;
+      float evalPt;
+      
+      float newX;
+      float newY;
+      
+      for (int i=0; i<size-2; i=i+2)
+      {
+         pt1 = getItemAt(i);
+         pt2 = getItemAt(i+1);
+         pt3 = getItemAt(i+2);
+         
+         fillQuadratic(pt1.getX(), pt2.getX(), pt3.getX(), xQuad);
+         fillQuadratic(pt1.getY(), pt2.getY(), pt3.getY(), yQuad);
+         
+         delta = 2f/(numAdd+2f);
+         
+         for (int j=0; j<=numAdd+2; j++)
+         {
+            evalPt = -1+j*delta;
+            
+            newX = xQuad.eval(evalPt);
+            newY = yQuad.eval(evalPt);
+            
+            newPts.add(new FloatPoint2D(newX, newY, 
+                                        this.xScaleLevel, 
+                                        this.yScaleLevel));
+         }
+      }
+      
+      clear();
+      for (FloatPoint2D pt : newPts)
+         addItem(pt);
+   }
+   
+   private void fillQuadratic(float prevX, float curX, float nextX, Polynomial quadratic)
+   {
+      // y = ax^2+bx+c
+      // x_p    x_c    x_n
+      
+      // y(-1) = x_p
+      // y(0)  = x_c
+      // y(1)  = x_n
+      
+      // a-b+c = x_p
+      // c = x_c
+      // a+b+c = x_n
+      
+      // 2a+2c = (x_n+x_p)
+      // a = (x_n+x_p-2c)/2
+      
+      /*
+      float c = curX;
+      float a = (nextX+prevX-2*c)/2f;
+      float b = nextX-a-c;
+      
+      quadratic.setCoefficient(0, c);
+      quadratic.setCoefficient(1, b);
+      quadratic.setCoefficient(2, a);
+      *
+      *
+      */
+   }
+   
+   private void fillSmoothQuadratic(float pt1, float pt2, float pt3, float pt4, Polynomial poly)
+   {
+      int n = 4;
+      
+      float sumY    = pt1+pt2+pt3+pt4;
+      float sumxY   = pt1+2*pt2+3*pt3*4*pt4;
+      float sumx2Y  = pt1+4*pt2+9*pt3+16*pt4;
+      
+      float c1 = 2*n-3*n*n+n*n*n;
+      float c2 = (-1+n)*n*(-4+n*n);
+      float c3 = (float)(4*n-5*Math.pow(n, 3)+Math.pow(n, 5));
+      float c4 = 6+9*n+9*n*n;
+      float c5 = 12*(1+2*n)*(11+8*n);
+      float c6 = -18*(1+2*n);
+      
+      float a = c4/c1*sumY + c6/c1*sumxY + 30/c1*sumx2Y;
+      float b = c6/c1*sumY + c5/c3*sumxY - 180/c2*sumx2Y;
+      float c = 30/c1*sumY - 180/c2*sumxY + 180/c3*sumx2Y;
+      
+      poly.setCoefficient(0, c);
+      poly.setCoefficient(1, b);
+      poly.setCoefficient(2, a);
+      
+      // y = ax^2+bx+c
+      // x_p    x_c    x_n
+      
+      // y(-1) = x_p
+      // y(0)  = x_c
+      // y(1)  = x_n
+      
+      // a-b+c = x_p
+      // c = x_c
+      // a+b+c = x_n
+      
+      // 2a+2c = (x_n+x_p)
+      // a = (x_n+x_p-2c)/2
+      
+      /*
+      float c = curX;
+      float a = (nextX+prevX-2*c)/2f;
+      float b = nextX-a-c;
+      
+      float center = -b/(2*a);
+      float max = c-b*b/(4*a);
+      
+      float e = (nextX-prevX)/2f;
+      float d = (prevX-nextX)/(4*center);
+      float f = smooth*max + e*e/(4*d);
+      
+      return f;
+      */
+      
+      /*
+      float d = (nextX-prevX)/2f;
+      float k = smooth*max;
+      
+      float sum = prevX+nextX;
+      //float e = (float)(0.25*(2*k + prevX + nextX + Math.sqrt(4*k*k-4*k*sum-4*d*d+sum*sum)));
+      float e = (float)(0.25*(2*k + prevX + nextX - Math.sqrt(4*k*k-4*k*sum-4*d*d+sum*sum)));
+      
+      return e;
+      */
+   }
+   
+   /*
+   private void interpolate(int numAdd)
+   {
+      if (numAdd < 0)
+         throw new IllegalArgumentException();
+      
+      if (numAdd == 0)
+         return;
+      
+      int size = getNumItems();
+      // Return if there are not enough points to smooth.  
+      // We need at least three points for smoothing.
+      if (size < 3)
+         return;
+      
+      FloatPoint2D firstPt = getFirst();
+      float prevX = firstPt.getX();
+      float prevY = firstPt.getY();
+      
+      FloatPoint2D curPt;
+      FloatPoint2D nextPt;
+      
+      float curPtX = 0;
+      float curPtY = 0;
+      
+      float nextPtX;
+      float nextPtY;
+      
+      float newX = 0;
+      float newY = 0;
+      
+      Polynomial regLineX;
+      Polynomial regLineY;
+      
+      float delta;
+      float evalPt;
+      
+      Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numAdd*(size-1)+size);
+      
+      for (int i=1; i<size-3; i=i+2)
+      {
+         curPt = getItemAt(i);
+         nextPt = getItemAt(i+1);
+         if (curPt == null || nextPt == null)
+            continue;
+         
+         curPtX = curPt.getX();
+         curPtY = curPt.getY();
+         
+         newPts.add(curPt);
+         
+         nextPtX = nextPt.getX();
+         nextPtY = nextPt.getY();
+         
+         regLineX = getRegressionLine(prevX, curPtX, nextPtX, -1, 1);
+         regLineY = getRegressionLine(prevY, curPtY, nextPtY, -1, 1);
+         
+         delta = 2/(numAdd+2);
+         for (int j=1; j<=numAdd; j++)
+         {
+            evalPt = -1+i*delta;
+            if (evalPt != 0)
+               newPts.add( 
+                            new FloatPoint2D(regLineX.eval(evalPt), 
+                                             regLineY.eval(evalPt), 
+                                             this.xScaleLevel, 
+                                             this.yScaleLevel));
+         }
+         
+         newX = regLineX.eval(0);
+         newY = regLineY.eval(0);
+         
+         prevX = curPtX;
+         prevY = curPtY;
+         
+         curPt.translateTo(newX, newY);
+      }
+      
+      clear();
+      for (FloatPoint2D pt : newPts)
+         addItem(pt);
+   }
+   */
+   
    public void smooth(int numSteps)
    {
       float xScale = getXScaleLevel();
@@ -373,7 +710,16 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothWithAverages(1.5f);
+      {
+         //smoothImpl(4, 2);
+         smoothWithAverages(1);
+      }
+      
+      //interpolateLinear(2);//Math.max(numSteps,4));
+      
+      // FOR GOOD RESULTS UNCOMMENT NEXT TWO LINES
+      //for (int i=1; i<=numSteps; i++)
+      //   smoothWithAverages(1.5f);
       
       scaleTo(xScale, yScale);
    }
@@ -439,26 +785,9 @@ public class Path
       }
    }
    
-   private float getTimedLinearValue(float prevX, float curX, float nextX, 
-                                     float prevT, float nextT)
+   private Polynomial getRegressionLine(float prevX, float curX, float nextX, 
+                                        float prevT, float nextT)
    {
-      //return (float)Math.pow(prevX*curX*nextX, 1/3f);
-      
-      //return (prevX+curX+nextX)/3f;
-      
-      //float denom = prevT/prevX + (prevT+nextT)/curX + nextT/nextX;
-      //return 2*(prevT+nextT)/denom;
-      
-      /*
-      float factor = 1;
-      float prevW = 1f/prevT;
-      float nextW = 1f/nextT;
-      float curW = factor*(prevW+nextT);
-      float sumT = prevW + curW + nextW;
-      
-      return (prevW*prevX + curW*curX + nextW*nextX)/sumT;
-      */
-      
       float sumT = nextT - prevT;
       float sumX = prevX + curX + nextX;
       
@@ -468,7 +797,13 @@ public class Path
       float a = (3*sumXT - sumT*sumX)/(3*sumT2 - sumT*sumT);
       float b = (sumX - a*sumT)/3f;
       
-      return b;
+      return new Polynomial(b, a);
+   }
+   
+   private float getTimedLinearValue(float prevX, float curX, float nextX, 
+                                     float prevT, float nextT)
+   {
+      return getRegressionLine(prevX, curX, nextX, prevT, nextT).getCoefficient(0);
    }
    
    private void smoothWithAverages(float weight)
