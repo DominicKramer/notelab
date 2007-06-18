@@ -69,9 +69,9 @@ public class ButtonPair implements ActionListener, GuiSettingsConstants
       
       this.spinnerModel = new SpinnerNumberModel(value, min, max, stepSize);
       
-      DefinedIcon leftDownIcon = DefinedIcon.go_back_ltr;
+      DefinedIcon leftDownIcon = DefinedIcon.backward;
       if (orientation == Orientation.Vertical)
-         leftDownIcon = DefinedIcon.go_down;
+         leftDownIcon = DefinedIcon.down;
       
       this.leftDownButton = 
          new AutoButton(leftDownIcon.getIcon(MEDIUM_BUTTON_SIZE), 
@@ -79,9 +79,9 @@ public class ButtonPair implements ActionListener, GuiSettingsConstants
       this.leftDownButton.addActionListener(this);
       this.leftDownButton.setActionCommand(LEFT_DOWN);
       
-      DefinedIcon rightUpIcon = DefinedIcon.go_forward_ltr;
+      DefinedIcon rightUpIcon = DefinedIcon.forward;
       if (orientation == Orientation.Vertical)
-         rightUpIcon = DefinedIcon.go_down;
+         rightUpIcon = DefinedIcon.up;
       
       this.rightUpButton = 
          new AutoButton(rightUpIcon.getIcon(MEDIUM_BUTTON_SIZE), 
