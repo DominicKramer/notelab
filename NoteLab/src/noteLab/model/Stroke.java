@@ -39,7 +39,6 @@ import noteLab.util.render.Renderable;
 import noteLab.util.render.Renderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.settings.DebugSettings;
-import noteLab.util.settings.SettingsUtilities;
 
 public class Stroke 
                 extends ItemContainer<Path> 
