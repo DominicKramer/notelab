@@ -48,8 +48,8 @@ public class SequenceFrame
                                       SequenceTileListener, 
                                       WindowListener
 {
-   private static final DefinedIcon FORWARD_ICON = DefinedIcon.go_forward_ltr;
-   private static final DefinedIcon BACKWARD_ICON = DefinedIcon.go_back_ltr;
+   private static final DefinedIcon FORWARD_ICON = DefinedIcon.forward;
+   private static final DefinedIcon BACKWARD_ICON = DefinedIcon.backward;
    private static final DefinedIcon CANCEL_ICON = DefinedIcon.close;
    private static final DefinedIcon FINISH_ICON = DefinedIcon.ok;
    
