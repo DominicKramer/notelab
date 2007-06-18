@@ -25,6 +25,7 @@
 package noteLab.model;
 
 import java.util.List;
+import java.util.Vector;
 
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.util.CopyReady;
@@ -115,6 +116,66 @@ public class Path
       return buffer.toString();
    }
    
+   public void interpolateLinear(int numAdd)
+   {
+      if (numAdd < 0)
+         throw new IllegalArgumentException();
+      
+      if (numAdd == 0)
+         return;
+      
+      int size = getNumItems();
+      
+      Vector<FloatPoint2D> newPts = new Vector<FloatPoint2D>(numAdd*(size-1)+size);
+      
+      FloatPoint2D curPt;
+      FloatPoint2D nextPt;
+      
+      float mx;
+      float curX;
+      
+      float my;
+      float curY;
+      
+      float delta;
+      float evalPt;
+      
+      float newX;
+      float newY;
+      
+      for (int i=0; i<size-1; i++)
+      {
+         curPt = getItemAt(i);
+         nextPt = getItemAt(i+1);
+         
+         curX = curPt.getX();
+         curY = curPt.getY();
+         
+         mx = (nextPt.getX()-curX)/2f;
+         my = (nextPt.getY()-curY)/2f;
+         
+         newPts.add(curPt);
+         
+         delta = 2f/(numAdd+2f);
+         
+         for (int j=1; j<=numAdd; j++)
+         {
+            evalPt = -1+j*delta;
+            
+            newX = mx*(evalPt+1)+curX;
+            newY = my*(evalPt+1)+curY;
+            
+            newPts.add(new FloatPoint2D(newX, newY, 
+                                        this.xScaleLevel, 
+                                        this.yScaleLevel));
+         }
+      }
+      
+      clear();
+      for (FloatPoint2D pt : newPts)
+         addItem(pt);
+   }
+   
    public void smooth(int numSteps)
    {
       float xScale = getXScaleLevel();
@@ -123,7 +184,7 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothWithAverages(2f);
+         smoothWithAverages(1f);
       
       scaleTo(xScale, yScale);
    }
