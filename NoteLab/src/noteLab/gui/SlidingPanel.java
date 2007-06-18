@@ -59,12 +59,12 @@ public class SlidingPanel extends JPanel implements ActionListener
       int size = GuiSettingsConstants.SMALL_BUTTON_SIZE;
       int prefSize = size+2;
       
-      this.backButton = new JButton(DefinedIcon.go_back_ltr.getIcon(size)); 
+      this.backButton = new JButton(DefinedIcon.backward.getIcon(size)); 
       this.backButton.addActionListener(this);
       this.backButton.setActionCommand(BACK);
       this.backButton.setPreferredSize(new Dimension(prefSize, prefSize));
       
-      this.forwardButton = new JButton(DefinedIcon.go_forward_ltr.getIcon(size));
+      this.forwardButton = new JButton(DefinedIcon.forward.getIcon(size));
       this.forwardButton.addActionListener(this);
       this.forwardButton.setActionCommand(FORWARD);
       this.forwardButton.setPreferredSize(new Dimension(prefSize, prefSize));
