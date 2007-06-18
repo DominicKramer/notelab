@@ -182,18 +182,23 @@ public class Stroke
       // width and color to make the stroke look smoother.  By doing 
       // multiple renders, small anomolies in the stroke are painted over.
       
-      Pen realPen = this.pen;
-      float width = this.pen.getWidth();
-      Color color = this.pen.getColor();
-      float scale = this.pen.getScaleLevel();
+      if (!this.isSelected)
+      {
+         Pen realPen = this.pen;
+         
+         float width = this.pen.getWidth();
+         Color color = this.pen.getColor();
+         float scale = this.pen.getScaleLevel();
+         
+         setPen(new Pen(1.5f*width, color.brighter().brighter(), scale));
+         doRenderInto(mG2d);
+         
+         setPen(new Pen(1.25f*width, color.brighter(), scale));
+         doRenderInto(mG2d);
+         
+         setPen(realPen);
+      }
       
-      setPen(new Pen(1.5f*width, color.brighter().brighter(), scale));
-      doRenderInto(mG2d);
-      
-      setPen(new Pen(1.25f*width, color.brighter(), scale));
-      doRenderInto(mG2d);
-      
-      setPen(realPen);
       doRenderInto(mG2d);
    }
    
