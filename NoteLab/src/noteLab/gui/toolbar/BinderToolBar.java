@@ -93,17 +93,17 @@ public class BinderToolBar extends JToolBar implements ActionListener,
       // construct the buttons for moving to the next or 
       // previous page
       this.nextButton = 
-         new JButton(DefinedIcon.go_forward_ltr.getIcon(BUTTON_SIZE));
+         new JButton(DefinedIcon.forward.getIcon(BUTTON_SIZE));
       this.nextButton.setActionCommand(NEXT);
       this.nextButton.addActionListener(this);
       
       this.prevButton = 
-         new JButton(DefinedIcon.go_back_ltr.getIcon(BUTTON_SIZE));
+         new JButton(DefinedIcon.backward.getIcon(BUTTON_SIZE));
       this.prevButton.setActionCommand(PREVIOUS);
       this.prevButton.addActionListener(this);
       
       this.currentButton = 
-         new JButton(DefinedIcon.go_down.getIcon(BUTTON_SIZE));
+         new JButton(DefinedIcon.down.getIcon(BUTTON_SIZE));
       this.currentButton.setActionCommand(CURRENT);
       this.currentButton.addActionListener(this);
       
