@@ -37,6 +37,7 @@ import noteLab.util.mod.ModType;
 import noteLab.util.render.ImageRenderer2D;
 import noteLab.util.render.Renderable;
 import noteLab.util.render.Renderer2D;
+import noteLab.util.render.SVGRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.settings.DebugSettings;
 
@@ -182,7 +183,9 @@ public class Stroke
       // width and color to make the stroke look smoother.  By doing 
       // multiple renders, small anomolies in the stroke are painted over.
       
-      if (!this.isSelected)
+      // if the renderer is an SVG renderer don't render the stroke multiple times
+      
+      if (!this.isSelected && !(mG2d instanceof SVGRenderer2D))
       {
          Pen realPen = this.pen;
          
