@@ -46,10 +46,12 @@ public class Stroke
                            implements Renderable, CopyReady<Stroke>, 
                                       Selectable
 {
+   private static final boolean MULTI_RENDER = true;
+   
    private Pen pen;
    private boolean isSelected;
    private boolean isStable;
-   private BufferedImage cacheImage;
+   private CacheImage cacheImage;
    
    public Stroke(Pen pen, Path path)
    {
@@ -85,28 +87,30 @@ public class Stroke
       
       getPath().setIsStable(isStable);
       
-      if (DebugSettings.getSharedInstance().useCache())
+      if (isStable && DebugSettings.getSharedInstance().useCache())
       {
-         if (isStable)
-         {
-            Rectangle2D bounds = getBounds2D();
-            
-            float delta = 2*this.pen.getWidth();
-            int width  = (int)( (bounds.getWidth()+delta));
-            int height = (int)( (bounds.getHeight()+delta));
-            
-            this.cacheImage = new BufferedImage(width, height, 
-                                                BufferedImage.TYPE_INT_ARGB);
+         Rectangle2D bounds = getBounds2D();
          
-            ImageRenderer2D renderer = new ImageRenderer2D(this.cacheImage);
-            boolean tmpIsSel = this.isSelected;
-            setSelected(false);
-            doRenderInto(renderer);
-            setSelected(tmpIsSel);
-         }
-         else
-            this.cacheImage = null;
+         float x = (float)bounds.getX();
+         float y = (float)bounds.getY();
+         int width  = (int)bounds.getWidth();
+         int height = (int)bounds.getHeight();
+         
+         BufferedImage image = new BufferedImage(width, height, 
+                                                 BufferedImage.TYPE_INT_ARGB);
+         
+         this.cacheImage = new CacheImage(image, x, y);
+         
+         ImageRenderer2D renderer = new ImageRenderer2D(image);
+         renderer.translate(-x, -y);
+         boolean tmpIsSel = this.isSelected;
+         setSelected(false);
+         doRenderIntoMulti(renderer);
+         setSelected(tmpIsSel);
+         renderer.finish();
       }
+      else
+         this.cacheImage = null;
    }
    
    public Pen getPen()
@@ -174,7 +178,13 @@ public class Stroke
       if (this.cacheImage != null && mG2d instanceof SwingRenderer2D && 
           !this.isSelected)
       {
-         ((SwingRenderer2D)mG2d).drawImage(this.cacheImage);
+         float x = this.cacheImage.x;
+         float y = this.cacheImage.y;
+         
+         mG2d.translate(x, y);
+         ((SwingRenderer2D)mG2d).drawImage(this.cacheImage.image);
+         mG2d.translate(-x, -y);
+         
          return;
       }
       
@@ -185,7 +195,12 @@ public class Stroke
       
       // if the renderer is an SVG renderer don't render the stroke multiple times
       
-      if (!this.isSelected && !(mG2d instanceof SVGRenderer2D))
+      doRenderIntoMulti(mG2d);
+   }
+   
+   private void doRenderIntoMulti(Renderer2D mG2d)
+   {
+      if (MULTI_RENDER && !this.isSelected && !(mG2d instanceof SVGRenderer2D))
       {
          Pen realPen = this.pen;
          
@@ -194,18 +209,18 @@ public class Stroke
          float scale = this.pen.getScaleLevel();
          
          setPen(new Pen(1.5f*width, color.brighter().brighter(), scale));
-         doRenderInto(mG2d);
+         doRenderIntoSingle(mG2d);
          
          setPen(new Pen(1.25f*width, color.brighter(), scale));
-         doRenderInto(mG2d);
+         doRenderIntoSingle(mG2d);
          
          setPen(realPen);
       }
       
-      doRenderInto(mG2d);
+      doRenderIntoSingle(mG2d);
    }
    
-   private void doRenderInto(Renderer2D mG2d)
+   private void doRenderIntoSingle(Renderer2D mG2d)
    {
       mG2d.beginGroup(Stroke.this, "", 
                       super.xScaleLevel, super.yScaleLevel);
@@ -301,8 +316,8 @@ public class Stroke
       
       // modify the bounds to also account for the width of the current 
       // pen's stroke
-      float delta = Renderer2D.getStrokeWidth(this.pen.getWidth(), 
-                                              this.isSelected);
+      float delta = 2f*Renderer2D.getStrokeWidth(this.pen.getWidth(), 
+                                                 this.isSelected);
       
       double x = bounds.getX();
       double y = bounds.getY();
@@ -332,5 +347,19 @@ public class Stroke
       buffer.append("]");
       
       return buffer.toString();
+   }
+   
+   private class CacheImage
+   {
+      private BufferedImage image;
+      private float x;
+      private float y;
+      
+      public CacheImage(BufferedImage image, float x, float y)
+      {
+         this.image = image;
+         this.x = x;
+         this.y = y;
+      }
    }
 }
