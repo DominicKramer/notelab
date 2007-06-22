@@ -184,17 +184,17 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothWithAverages(1f);
+         smoothWithAverages(1f, 0.75f);
       
       scaleTo(xScale, yScale);
    }
    
-   private void smoothWithAverages(float weight)
+   private void smoothWithAverages(float power, float weight)
    {
-      if (weight < 0)
+      if (power < 0)
          throw new IllegalArgumentException("The weight given to smooth a path using the " +
                                             "method of moving averages cannot be negative.  " +
-                                            "A value of "+weight+", however, was given.");
+                                            "A value of "+power+", however, was given.");
       
       int size = getNumItems();
       // Return if there are not enough points to smooth.  
@@ -229,8 +229,10 @@ public class Path
       //                               b = ka
       // This describes the two variables below.
       
-      float a = 1f/(2f+weight);
-      float b = weight*a;
+      float a = 1f/(2f+power);
+      float b = power*a;
+      
+      float newWeight = 1-weight;
       
       for (int i=1; i<size-1; i++)
       {
@@ -244,6 +246,9 @@ public class Path
          
          newX = a*prevX + b*curPtX + a*nextPt.getX();
          newY = a*prevY + b*curPtY + a*nextPt.getY();
+         
+         newX = (weight)*curPtX+newWeight*newX;
+         newY = (weight)*curPtY+newWeight*newY;
          
          prevX = curPtX;
          prevY = curPtY;
