@@ -65,6 +65,9 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
          new BufferedImage( (int)width, (int)height, 
                             BufferedImage.TYPE_INT_RGB );
       ImageRenderer2D image2D = new ImageRenderer2D(image);
+      image2D.setColor(Color.WHITE);
+      image2D.fillRectangle(0, 0, width, height);
+      
       synchronized(canvas)
       {
          mainFrame.setMessage("Exporting the session requires momentarily disabling the canvas.", 
