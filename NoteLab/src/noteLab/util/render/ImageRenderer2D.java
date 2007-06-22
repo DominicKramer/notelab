@@ -24,7 +24,6 @@
 
 package noteLab.util.render;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -40,8 +39,6 @@ public class ImageRenderer2D extends SwingRenderer2D
          throw new NullPointerException();
       
       Graphics2D g2d = image.createGraphics();
-      g2d.setBackground(Color.WHITE);
-      g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
       setSwingGraphics(g2d, true);
    }
    
