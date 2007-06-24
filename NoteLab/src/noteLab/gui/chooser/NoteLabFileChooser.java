@@ -56,7 +56,19 @@ public class NoteLabFileChooser extends JFileChooser implements ActionListener
                              boolean checkOverwrite, 
                              FileProcessor processor)
    {
-      super(lastDir);
+      this(approveText, multiSelection, checkOverwrite, processor, null);
+   }
+   
+   public NoteLabFileChooser(String approveText, 
+                             boolean multiSelection, 
+                             boolean checkOverwrite, 
+                             FileProcessor processor, 
+                             File curDir)
+   {
+      if (curDir != null && lastDir == null)
+         setCurrentDirectory(curDir);
+      else
+         setCurrentDirectory(lastDir);
       
       if (approveText == null || processor == null)
          throw new NullPointerException();
