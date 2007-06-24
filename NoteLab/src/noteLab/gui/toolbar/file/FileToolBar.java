@@ -185,6 +185,7 @@ public class FileToolBar
    public void actionPerformed(ActionEvent e)
    {
       final CompositeCanvas canvas = this.mainFrame.getCompositeCanvas();
+      File file = canvas.getFile();
       
       String cmmd = e.getActionCommand();
       if (cmmd.equals(NEW))
@@ -195,7 +196,7 @@ public class FileToolBar
       {
          OpenFileProcessor processor = new OpenFileProcessor();
          NoteLabFileChooser openChooser = 
-                           new NoteLabFileChooser("Open", true, false, processor);
+                           new NoteLabFileChooser("Open", true, false, processor, file);
          openChooser.setAcceptAllFileFilterUsed(false);
          openChooser.addChoosableFileFilter(new JarnalFileFilter());
          openChooser.addChoosableFileFilter(new NoteLabFileFilter());
@@ -219,7 +220,7 @@ public class FileToolBar
          ExportFileProcessor processor = 
                   new ExportFileProcessor(this.mainFrame);
          NoteLabFileChooser exportChooser = 
-                  new NoteLabFileChooser("Export", false, true, processor);
+                  new NoteLabFileChooser("Export", false, true, processor, file);
          exportChooser.setAcceptAllFileFilterUsed(false);
          exportChooser.addChoosableFileFilter(new NoteLabFileFilter());
          exportChooser.setFileFilter(new ImageFileFilter());
@@ -312,7 +313,7 @@ public class FileToolBar
       
       SaveFileProcessor processor = new SaveFileProcessor(this.mainFrame);
       NoteLabFileChooser saveChooser = 
-                            new NoteLabFileChooser("Save", false, true, processor);
+                            new NoteLabFileChooser("Save", false, true, processor, file);
       saveChooser.setAcceptAllFileFilterUsed(false);
       saveChooser.setFileFilter(new NoteLabFileFilter());
       saveChooser.showFileChooser();
