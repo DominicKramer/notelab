@@ -184,7 +184,7 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothWithAverages(1f, 0.75f);
+         smoothWithAverages(1f, 0.9f);
       
       scaleTo(xScale, yScale);
    }
