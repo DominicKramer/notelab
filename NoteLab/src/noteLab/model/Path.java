@@ -184,9 +184,117 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothWithAverages(1f, 0.9f);
+         smoothWithNAverages(2, 0.5f, 0.99f);
       
       scaleTo(xScale, yScale);
+   }
+   
+   private void smoothWithNAverages(int numPts, float baseScale, float weight)
+   {
+      int size = getNumItems();
+      // Return if there are not enough points to smooth.  
+      // We need at least three points for smoothing.
+      if (size < 2*numPts+1)
+         return;
+      
+      float newWeight = 1-weight;
+      
+      float[] scales = new float[2*numPts+1];
+      scales[numPts] = baseScale;
+      float denom = numPts*(numPts+1)/2f;
+      float delta = (baseScale*(2*numPts-1)-1)/denom;
+      float scaleVal;
+      for (int i=1; i<=numPts; i++)
+      {
+         scaleVal = baseScale-i*delta;
+         scales[numPts+i] = scaleVal;
+         scales[numPts-i] = scaleVal;
+      }
+      
+      System.err.println("Scales");
+      float temp;
+      float sum = 0;
+      for (int i=0; i<scales.length; i++)
+      {
+         temp = scales[i];
+         System.err.println(temp);
+         sum += temp;
+      }
+      System.err.println("Sum = "+sum);
+      System.err.println();
+      
+      float[] prevXArr = new float[numPts];
+      float[] prevYArr = new float[numPts];
+      
+      FloatPoint2D ithPt;
+      for (int i=0; i<numPts; i++)
+      {
+         ithPt = getItemAt(i);
+         prevXArr[i] = ithPt.getX();
+         prevYArr[i] = ithPt.getY();
+      }
+      
+      FloatPoint2D curPt;
+      float curPtX;
+      float curPtY;
+      
+      FloatPoint2D tempPt;
+      float[] nextXArr = new float[numPts];
+      float[] nextYArr = new float[numPts];
+      
+      float newX;
+      float newY;
+      
+      for (int i=numPts; i<size-numPts; i++)
+      {
+         curPt = getItemAt(i);
+         if (curPt == null)
+            continue;
+         
+         curPtX = curPt.getX();
+         curPtY = curPt.getY();
+         
+         for (int j=i+1; j<i+1+numPts; j++)
+         {
+            tempPt = getItemAt(j);
+            nextXArr[j-i-1] = tempPt.getX();
+            nextYArr[j-i-1] = tempPt.getY();
+         }
+         
+         newX = getWeightedAverage(prevXArr, curPtX, nextXArr, numPts, scales);
+         newY = getWeightedAverage(prevYArr, curPtY, nextYArr, numPts, scales);
+         
+         newX = weight*curPtX + newWeight*newX;
+         newY = weight*curPtY + newWeight*newY;
+         
+         for (int j=0; j<numPts-1; j++)
+         {
+            prevXArr[j] = prevXArr[j+1];
+            prevYArr[j] = prevYArr[j+1];
+         }
+         
+         prevXArr[numPts-1] = curPtX;
+         prevYArr[numPts-1] = curPtY;
+         
+         curPt.translateTo(newX, newY);
+      }
+   }
+   
+   private static float getWeightedAverage(float[] prevPts, float curPt, float[] nextPts, 
+                                             int numPts, float[] scales)
+   {
+      float sum = 0;
+      int index = 0;
+      
+      for (int i=0; i<numPts; i++)
+         sum += prevPts[i]*scales[index++];
+      
+      sum += curPt*scales[index++];
+      
+      for (int i=0; i<numPts; i++)
+         sum += nextPts[i]*scales[index++];
+      
+      return sum;
    }
    
    private void smoothWithAverages(float power, float weight)
