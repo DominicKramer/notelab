@@ -184,45 +184,69 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothWithNAverages(2, 0.5f, 0.99f);
+         smoothWithNAverages(2, 0.99f);
       
       scaleTo(xScale, yScale);
    }
    
-   private void smoothWithNAverages(int numPts, float baseScale, float weight)
+   private void smoothWithNAverages(int numPts, float weight)
    {
+      if (weight < 0 || weight > 1)
+         throw new IllegalArgumentException("The parameter 'weight' must be " +
+                                             "a floating point number in the " +
+                                             "range [0,1].  However, a value of "+
+                                             weight+" was given.");
+      
       int size = getNumItems();
       // Return if there are not enough points to smooth.  
       // We need at least three points for smoothing.
       if (size < 2*numPts+1)
          return;
       
+      // When calculating the new smoothed value if 'newVal' represents the 
+      // smoothed value obtained by using averaging and 'oldVal' is the previous 
+      // value.  Then the new value is set to the weighted average of the 
+      // old value and the new value.  This average is calculated as 
+      //    newValue = (newWeight)*(newVal)+(weight)*(oldVal);
       float newWeight = 1-weight;
       
+      // To smooth a point 'p', 'numPts' points are used to the left and right of 
+      // the point and their values are averaged together to get the new value.  
+      // The variable 'baseScale' represents the amount of weight to give to the 
+      // current value.  Then as one steps 'i' units (either left or right) away 
+      // from the current value, the weight given to the 'ith' point is 
+      // specified as 
+      //    baseScale - i*delta
+      // That is the weights decay linearly in such a way that the current value 
+      // is given a weight of 'baseScale' and the other values decay linearly 
+      // such that the sum of the weights is one.
+      // The array 'scales' below holds the values of the weights from left to 
+      // right.  That is the middle value in the array is the weight of the 
+      // current value (namely 'baseScale').
+      float baseScale = 1f/(numPts+1f);
+      float slope = -1*baseScale/(numPts+1f);
       float[] scales = new float[2*numPts+1];
       scales[numPts] = baseScale;
-      float denom = numPts*(numPts+1)/2f;
-      float delta = (baseScale*(2*numPts-1)-1)/denom;
+      //float delta = (baseScale*(2*numPts+1)-1)/(numPts*numPts+numPts);
+      
       float scaleVal;
       for (int i=1; i<=numPts; i++)
       {
-         scaleVal = baseScale-i*delta;
+         scaleVal = slope*i+baseScale;
          scales[numPts+i] = scaleVal;
          scales[numPts-i] = scaleVal;
       }
       
-      System.err.println("Scales");
-      float temp;
+      /*
       float sum = 0;
       for (int i=0; i<scales.length; i++)
       {
-         temp = scales[i];
-         System.err.println(temp);
-         sum += temp;
+         System.err.println("scale "+i+"="+scales[i]);
+         sum += scales[i];
       }
-      System.err.println("Sum = "+sum);
-      System.err.println();
-      
+      System.err.println("sum="+sum);
+      */
+            
       float[] prevXArr = new float[numPts];
       float[] prevYArr = new float[numPts];
       
@@ -278,6 +302,9 @@ public class Path
          
          curPt.translateTo(newX, newY);
       }
+      
+      smoothWithAverages(baseScale, weight, 0, numPts);
+      smoothWithAverages(baseScale, weight, size-numPts, size-1);
    }
    
    private static float getWeightedAverage(float[] prevPts, float curPt, float[] nextPts, 
@@ -297,20 +324,25 @@ public class Path
       return sum;
    }
    
-   private void smoothWithAverages(float power, float weight)
+   private void smoothWithAverages(float baseScale, float weight, int start, int end)
    {
-      if (power < 0)
-         throw new IllegalArgumentException("The weight given to smooth a path using the " +
-                                            "method of moving averages cannot be negative.  " +
-                                            "A value of "+power+", however, was given.");
-      
       int size = getNumItems();
       // Return if there are not enough points to smooth.  
       // We need at least three points for smoothing.
       if (size < 3)
          return;
       
-      FloatPoint2D firstPt = getFirst();
+      if (start < 0 || start >= size || end < 0 || end >= size)
+         throw new IllegalArgumentException("The parameters 'start' and 'end' must have " +
+                                             "values in the range [0,"+size+").  However, " +
+                                             "the following values were given:  start=" + 
+                                             start+", end="+end);
+      
+      if (baseScale < 0 || baseScale > 1)
+         throw new IllegalArgumentException("The parameter 'baseScale' must be in the range " +
+                                             "[0,1].  However, a value of "+baseScale+"was given");
+      
+      FloatPoint2D firstPt = getItemAt(start);
       float prevX = firstPt.getX();
       float prevY = firstPt.getY();
       
@@ -328,21 +360,15 @@ public class Path
       // weight.  Specifically we'll give prevPt and nextPt a weight represented by 'a' and 
       // curPt a weight represented by 'b'.  Then we need 
       //                               a + b + a = 1
-      // Now let 'k' represent the parameter 'weight' and suppose we want b = k*a
-      // (i.e. we want b to be k times the weight of a).  Then we'll have 
-      //                               2a + ka = 1
-      // Thus 
-      //                               a = 1/(2+k)
-      // and 
-      //                               b = ka
-      // This describes the two variables below.
-      
-      float a = 1f/(2f+power);
-      float b = power*a;
+      // We'll set 'b=baseScale' and then calculate 'a' so that 'b+2a=1' as specified above.  
+      // The value 'b' would then be the weight given to the current value and 'a' would be 
+      // the weight given to each of the points to the left and right of the current point.
+      float b = baseScale;
+      float a = (1-baseScale)/2f;
       
       float newWeight = 1-weight;
       
-      for (int i=1; i<size-1; i++)
+      for (int i=start; i<=end; i++)
       {
          curPt = getItemAt(i);
          nextPt = getItemAt(i+1);
