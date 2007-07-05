@@ -101,7 +101,7 @@ public class Path
          copy.addItem(pt.getCopy());
       return copy;
    }
-      
+   
    @Override
    public String toString()
    {
@@ -183,13 +183,29 @@ public class Path
       
       scaleTo(1, 1);
       
+      /*
+      float factor = 1;
+      try
+      {
+         factor = 0.6f/drawnZoomLevel;
+      }
+      catch (ArithmeticException e)
+      {
+         factor = 1;
+      }
+      */
+      
+      //float weight = 0.9f;
+      //float weight = 1f/(1+factor*factor);
+      //System.err.println("Weight = "+weight);
+      
       for (int i=1; i<=numSteps; i++)
-         smoothWithNAverages(2, 0.99f);
+         smoothWithNAverages(3, 1f, 0.5f);//weight);//0.9f);
       
       scaleTo(xScale, yScale);
    }
    
-   private void smoothWithNAverages(int numPts, float weight)
+   private void smoothWithNAverages(int numPts, float scaleWeight, float weight)
    {
       if (weight < 0 || weight > 1)
          throw new IllegalArgumentException("The parameter 'weight' must be " +
@@ -223,16 +239,20 @@ public class Path
       // The array 'scales' below holds the values of the weights from left to 
       // right.  That is the middle value in the array is the weight of the 
       // current value (namely 'baseScale').
-      float baseScale = 1f/(numPts+1f);
-      float slope = -1*baseScale/(numPts+1f);
-      float[] scales = new float[2*numPts+1];
-      scales[numPts] = baseScale;
-      //float delta = (baseScale*(2*numPts+1)-1)/(numPts*numPts+numPts);
+      float maxBase = 1f/(numPts+1f);
+      float minBase = 1f/(2*numPts+1);
+      float baseDiff = maxBase-minBase;
       
+      float maxWeight = minBase+scaleWeight*baseDiff;
+      float minWeight = (1f-maxWeight*numPts)/(numPts+1f);
+      float slope = (minWeight-maxWeight)/numPts;
+      
+      float[] scales = new float[2*numPts+1];
+      scales[numPts] = maxWeight;
       float scaleVal;
       for (int i=1; i<=numPts; i++)
       {
-         scaleVal = slope*i+baseScale;
+         scaleVal = slope*i+maxWeight;
          scales[numPts+i] = scaleVal;
          scales[numPts-i] = scaleVal;
       }
@@ -245,8 +265,9 @@ public class Path
          sum += scales[i];
       }
       System.err.println("sum="+sum);
+      System.err.println();
       */
-            
+      
       float[] prevXArr = new float[numPts];
       float[] prevYArr = new float[numPts];
       
@@ -303,8 +324,8 @@ public class Path
          curPt.translateTo(newX, newY);
       }
       
-      smoothWithAverages(baseScale, weight, 0, numPts);
-      smoothWithAverages(baseScale, weight, size-numPts, size-1);
+      smoothWithAverages(maxWeight, weight, 0, numPts);
+      smoothWithAverages(maxWeight, weight, size-numPts, size-1);
    }
    
    private static float getWeightedAverage(float[] prevPts, float curPt, float[] nextPts, 
