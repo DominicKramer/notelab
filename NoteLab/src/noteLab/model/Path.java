@@ -183,35 +183,16 @@ public class Path
       
       scaleTo(1, 1);
       
-      /*
-      float factor = 1;
-      try
-      {
-         factor = 0.6f/drawnZoomLevel;
-      }
-      catch (ArithmeticException e)
-      {
-         factor = 1;
-      }
-      */
-      
-      //float weight = 0.9f;
-      //float weight = 1f/(1+factor*factor);
-      //System.err.println("Weight = "+weight);
-      
       for (int i=1; i<=numSteps; i++)
-         smoothWithNAverages(3, 1f, 0.5f);//weight);//0.9f);
+         smoothWithNAverages(2, 1f);
       
       scaleTo(xScale, yScale);
    }
    
-   private void smoothWithNAverages(int numPts, float scaleWeight, float weight)
+   private void smoothWithNAverages(int numPts, float weight)
    {
-      if (weight < 0 || weight > 1)
-         throw new IllegalArgumentException("The parameter 'weight' must be " +
-                                             "a floating point number in the " +
-                                             "range [0,1].  However, a value of "+
-                                             weight+" was given.");
+      if (numPts <= 0)
+         return;
       
       int size = getNumItems();
       // Return if there are not enough points to smooth.  
@@ -219,31 +200,48 @@ public class Path
       if (size < 2*numPts+1)
          return;
       
-      // When calculating the new smoothed value if 'newVal' represents the 
-      // smoothed value obtained by using averaging and 'oldVal' is the previous 
-      // value.  Then the new value is set to the weighted average of the 
-      // old value and the new value.  This average is calculated as 
-      //    newValue = (newWeight)*(newVal)+(weight)*(oldVal);
-      float newWeight = 1-weight;
+      // A weighted average is used to calculate a smoothed value of a point.  
+      // To smooth the point 'numPts' are used to the left of the current point 
+      // and 'numPts' are used to the right to calculate the average.
+      // 
+      // There are two possible extremes that can be done to achieve proper 
+      // weighting.  That is the middle point could be given maximum weight and 
+      // the weight is decreased linearly as the distance from the middle 
+      // point increases.  The other extreme is that all points could be given 
+      // the same weight.
+      // 
+      // In the first case the center point has weight 'maxWeight' and in the 
+      // the second case it has weight 'minWeight'.  The value of the parameter
+      // 'weight' (which is a floating point number in the range [0,1]) 
+      // describes to which extreme the weighting should be done.
+      // 
+      // For example a value of 0.75f implies that the weight of the center 
+      // point should be 75% of the way between 'maxBase' and 'minBase' being 
+      // closer to 'maxBase'.
+      // 
+      // After the weight of the middle point is determined from the value of 
+      // the parameters 'weight', 'maxBase', and 'minBase' the weight of the 
+      // points farthest from the middle point are determined.  The parameter 
+      // 'maxWeight' stores the weight of the middle point and the parameter 
+      // 'minWeight' stores the weight of the points farthest away.  
+      // 
+      // The value of the weight of the points farthest away are calculated so 
+      // that the weights decrease linearly as one moves away from the center 
+      // point and the sum of the weights is equal to one.
+      // 
+      // That is is 'f(x) = mx+b' represents the weight at 'x' units away from 
+      // the center point then we need 'f(0) = b = maxWeight' and 
+      // 'f(numPts) = minWeight'.  Last we need 
+      //                 b + 2*sum(f(x)) = b + 2*sum(m*x+b) = 1 
+      // Where the sum is taken over 'x' as 'x' ranges from '1' to 'numPts' and 
+      // 'x' is an integer.  The expressions for 'minWeight' and 'slope' below 
+      // follow from this equation.
       
-      // To smooth a point 'p', 'numPts' points are used to the left and right of 
-      // the point and their values are averaged together to get the new value.  
-      // The variable 'baseScale' represents the amount of weight to give to the 
-      // current value.  Then as one steps 'i' units (either left or right) away 
-      // from the current value, the weight given to the 'ith' point is 
-      // specified as 
-      //    baseScale - i*delta
-      // That is the weights decay linearly in such a way that the current value 
-      // is given a weight of 'baseScale' and the other values decay linearly 
-      // such that the sum of the weights is one.
-      // The array 'scales' below holds the values of the weights from left to 
-      // right.  That is the middle value in the array is the weight of the 
-      // current value (namely 'baseScale').
       float maxBase = 1f/(numPts+1f);
       float minBase = 1f/(2*numPts+1);
       float baseDiff = maxBase-minBase;
       
-      float maxWeight = minBase+scaleWeight*baseDiff;
+      float maxWeight = minBase+weight*baseDiff;
       float minWeight = (1f-maxWeight*numPts)/(numPts+1f);
       float slope = (minWeight-maxWeight)/numPts;
       
@@ -256,17 +254,6 @@ public class Path
          scales[numPts+i] = scaleVal;
          scales[numPts-i] = scaleVal;
       }
-      
-      /*
-      float sum = 0;
-      for (int i=0; i<scales.length; i++)
-      {
-         System.err.println("scale "+i+"="+scales[i]);
-         sum += scales[i];
-      }
-      System.err.println("sum="+sum);
-      System.err.println();
-      */
       
       float[] prevXArr = new float[numPts];
       float[] prevYArr = new float[numPts];
@@ -309,9 +296,6 @@ public class Path
          newX = getWeightedAverage(prevXArr, curPtX, nextXArr, numPts, scales);
          newY = getWeightedAverage(prevYArr, curPtY, nextYArr, numPts, scales);
          
-         newX = weight*curPtX + newWeight*newX;
-         newY = weight*curPtY + newWeight*newY;
-         
          for (int j=0; j<numPts-1; j++)
          {
             prevXArr[j] = prevXArr[j+1];
@@ -324,8 +308,8 @@ public class Path
          curPt.translateTo(newX, newY);
       }
       
-      smoothWithAverages(maxWeight, weight, 0, numPts);
-      smoothWithAverages(maxWeight, weight, size-numPts, size-1);
+      smoothWithAverages(maxWeight, 0, numPts);
+      smoothWithAverages(maxWeight, size-numPts, size-1);
    }
    
    private static float getWeightedAverage(float[] prevPts, float curPt, float[] nextPts, 
@@ -345,7 +329,7 @@ public class Path
       return sum;
    }
    
-   private void smoothWithAverages(float baseScale, float weight, int start, int end)
+   private void smoothWithAverages(float baseScale, int start, int end)
    {
       int size = getNumItems();
       // Return if there are not enough points to smooth.  
@@ -387,8 +371,6 @@ public class Path
       float b = baseScale;
       float a = (1-baseScale)/2f;
       
-      float newWeight = 1-weight;
-      
       for (int i=start; i<=end; i++)
       {
          curPt = getItemAt(i);
@@ -401,9 +383,6 @@ public class Path
          
          newX = a*prevX + b*curPtX + a*nextPt.getX();
          newY = a*prevY + b*curPtY + a*nextPt.getY();
-         
-         newX = (weight)*curPtX+newWeight*newX;
-         newY = (weight)*curPtY+newWeight*newY;
          
          prevX = curPtX;
          prevY = curPtY;
