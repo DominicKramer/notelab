@@ -42,6 +42,21 @@ public class Path
                 extends ItemContainer<FloatPoint2D> 
                            implements CopyReady<Path>, Bounded
 {
+   private static final float[] SMOOTHING_WEIGHTS;
+   static
+   {
+      float a = 0.5f;
+      float b = 0.18301270189f;
+      float c = 0.066987298106f;
+      
+      SMOOTHING_WEIGHTS = new float[5];
+      SMOOTHING_WEIGHTS[0] = c;
+      SMOOTHING_WEIGHTS[1] = b;
+      SMOOTHING_WEIGHTS[2] = a;
+      SMOOTHING_WEIGHTS[3] = b;
+      SMOOTHING_WEIGHTS[4] = c;
+   }
+   
    private int[] xArr;
    private int[] yArr;
    
@@ -184,22 +199,13 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothWithNAverages(2, 1f);
+         smoothWithNAverages(2, SMOOTHING_WEIGHTS);
       
       scaleTo(xScale, yScale);
    }
    
-   private void smoothWithNAverages(int numPts, float weight)
+   private float[] getLinearWeights(int numPts, float weight)
    {
-      if (numPts <= 0)
-         return;
-      
-      int size = getNumItems();
-      // Return if there are not enough points to smooth.  
-      // We need at least three points for smoothing.
-      if (size < 2*numPts+1)
-         return;
-      
       // A weighted average is used to calculate a smoothed value of a point.  
       // To smooth the point 'numPts' are used to the left of the current point 
       // and 'numPts' are used to the right to calculate the average.
@@ -255,6 +261,29 @@ public class Path
          scales[numPts-i] = scaleVal;
       }
       
+      return scales;
+   }
+   
+   private void smoothWithNAverages(int numPts, float[] scales)
+   {
+      if (numPts <= 0)
+         return;
+      
+      int size = getNumItems();
+      // Return if there are not enough points to smooth.  
+      // We need at least three points for smoothing.
+      if (size < 2*numPts+1)
+         return;
+      
+      if (scales == null)
+         throw new NullPointerException();
+      
+      if (scales.length != (2*numPts+1))
+         throw new IllegalArgumentException("The array of scales given to smooth a path "+
+                                             "must have a length of '2*numPts+1'="+(2*numPts+1)+
+                                             ".  However, an array of length "+scales.length+
+                                             " was given.");
+      
       float[] prevXArr = new float[numPts];
       float[] prevYArr = new float[numPts];
       
@@ -308,8 +337,8 @@ public class Path
          curPt.translateTo(newX, newY);
       }
       
-      smoothWithAverages(maxWeight, 0, numPts);
-      smoothWithAverages(maxWeight, size-numPts, size-1);
+      smoothWithAverages(scales[numPts], 1, numPts);
+      smoothWithAverages(scales[numPts], size-numPts, size-2);
    }
    
    private static float getWeightedAverage(float[] prevPts, float curPt, float[] nextPts, 
