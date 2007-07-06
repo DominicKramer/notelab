@@ -263,7 +263,7 @@ public class MainFrame extends JFrame implements Menued,
                
                //CHANGED:  This might need to check if the file was actually 
                //          saved.
-               fileToolBar.save(false);
+               fileToolBar.save(false, true);
             }
          }
          
