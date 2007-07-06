@@ -207,13 +207,13 @@ public class FileToolBar
       {
          // the boolean argument is false so that saving doesn't force 
          // the "save as" option
-         save(false);
+         save(false, false);
       }
       else if (cmmd.equals(SAVE_AS))
       {
          // the boolean argument is true so that saving forces  
          // the "save as" option
-         save(true);
+         save(true, false);
       }
       else if (cmmd.equals(EXPORT))
       {
@@ -290,12 +290,12 @@ public class FileToolBar
       }
    }
    
-   public void save(boolean forceSaveAs)
+   public void save(boolean forceSaveAs, boolean block)
    {
       final File file = this.mainFrame.getCompositeCanvas().getFile();
       if (!forceSaveAs && file != null)
       {
-         new Thread(new Runnable()
+         Runnable saver = new Runnable()
          {
             public void run()
             {
@@ -306,7 +306,12 @@ public class FileToolBar
                                              true, // Report progress to the user 
                                              "Saving the session");
             }
-         }).start();
+         };
+         
+         if (block)
+            saver.run();
+         else
+            new Thread(saver).start();
          
          return;
       }
