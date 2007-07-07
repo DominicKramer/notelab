@@ -46,17 +46,17 @@ public class Path
    static
    {
       DECAY_FACTORS = new float[5];
-      DECAY_FACTORS[0] = 0.5f;
-      DECAY_FACTORS[1] = 0.366025403784f;
-      DECAY_FACTORS[2] = 0.34250803168f;
-      DECAY_FACTORS[3] = 0.336196693163f;
-      DECAY_FACTORS[4] = 0.334263242375f;
+      DECAY_FACTORS[0] = 0.166666666666f;
+      DECAY_FACTORS[1] = 0.145497224368f;
+      DECAY_FACTORS[2] = 0.14321775526f;
+      DECAY_FACTORS[3] = 0.142908233276f;
+      DECAY_FACTORS[4] = 0.142864430682f;
    }
    
    private static final float[][] SMOOTHING_FACTORS;
    static
    {
-      float scalar = 0.5f;
+      float scalar = 0.75f;
       int length = 0;
       
       SMOOTHING_FACTORS = new float[5][];
@@ -236,7 +236,8 @@ public class Path
       scaleTo(1, 1);
       
       //for (int i=1; i<=numSteps; i++)
-      smoothWithNAverages(numSteps, SMOOTHING_FACTORS[numSteps-1]);
+      for (int i=1; i<=3; i++)
+         smoothWithNAverages(numSteps, SMOOTHING_FACTORS[numSteps-1]);
       
       scaleTo(xScale, yScale);
    }
