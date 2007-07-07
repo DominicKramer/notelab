@@ -135,11 +135,11 @@ public class SwingDrawingBoard extends JPanel implements Scrollable
     * coalescing, drawing looks smooth.
     * 
     * @return <code>null</code> to indicate that no coalescing has taken place
-    */
+    /
    @Override
    protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent)
    {
       //Indicates no coalescing has done
       return null;
-   }
+   }*/
 }
