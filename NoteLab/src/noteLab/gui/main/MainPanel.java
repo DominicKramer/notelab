@@ -153,11 +153,11 @@ public class MainPanel extends JPanel implements RepaintListener
     * coalescing, drawing looks smooth.
     * 
     * @return <code>null</code> to indicate that no coalescing has taken place
-    */
+    /
    @Override
    protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent)
    {
       //Indicates no coalescing has been done
       return null;
-   }
+   }*/
 }
