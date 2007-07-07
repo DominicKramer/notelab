@@ -196,7 +196,15 @@ public class SettingsUtilities implements SettingsKeys
    {
       if (factor < 0)
          throw new IllegalArgumentException("The smoothing factor "+factor+
-                                            " is not valid since it must be nonnegative");
+                                            " is not valid since it must be nonnegative.  " +
+                                            "However, a smoothing factor of "+factor+
+                                            " was given.");
+      
+      if (factor > 5)
+         throw new IllegalArgumentException("The smoothing factor "+factor+
+                                            " is not valid since it must be an whole number " +
+                                            "between 1 and 5.  However, a smoothing factor of "+
+                                            factor+" was given.");
       
       SettingsManager.getSharedInstance().setValue(SMOOTH_FACTOR, factor);
    }
