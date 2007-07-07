@@ -24,7 +24,6 @@
 
 package noteLab.model;
 
-import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
@@ -37,7 +36,6 @@ import noteLab.util.mod.ModType;
 import noteLab.util.render.ImageRenderer2D;
 import noteLab.util.render.Renderable;
 import noteLab.util.render.Renderer2D;
-import noteLab.util.render.SVGRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.settings.DebugSettings;
 
@@ -46,8 +44,6 @@ public class Stroke
                            implements Renderable, CopyReady<Stroke>, 
                                       Selectable
 {
-   private static final boolean MULTI_RENDER = true;
-   
    private Pen pen;
    private boolean isSelected;
    private boolean isStable;
@@ -105,7 +101,7 @@ public class Stroke
          renderer.translate(-x, -y);
          boolean tmpIsSel = this.isSelected;
          setSelected(false);
-         doRenderIntoMulti(renderer);
+         doRenderInto(renderer);
          setSelected(tmpIsSel);
          renderer.finish();
       }
@@ -188,54 +184,10 @@ public class Stroke
          return;
       }
       
-      // We render the stroke with a slightly larger width and slightly 
-      // brighter color before rendering the stroke with its actual 
-      // width and color to make the stroke look smoother.  By doing 
-      // multiple renders, small anomolies in the stroke are painted over.
-      
-      // if the renderer is an SVG renderer don't render the stroke multiple times
-      
-      doRenderIntoMulti(mG2d);
+      doRenderInto(mG2d);
    }
    
-   private void doRenderIntoMulti(Renderer2D mG2d)
-   {
-      if (MULTI_RENDER && !this.isSelected && !(mG2d instanceof SVGRenderer2D))
-      {
-         Pen realPen = this.pen;
-         
-         float width = this.pen.getWidth();
-         Color color = this.pen.getColor();
-         float scale = this.pen.getScaleLevel();
-         
-         // A stroke slightly brighter than the real stroke is drawn under the 
-         // real stroke to make it look more smooth.  The brightness of this 
-         // second stroke depends on its its width and is calculated below.
-         int numSteps = 0;
-         if (width <= 0.3f)
-            numSteps = 10;
-         if (width <= 0.7f)
-            numSteps = 13;
-         else if (width <= 1.1f)
-            numSteps = 15;
-         else if (width <= 2)
-            numSteps = 13;
-         else
-            numSteps = 0;
-         
-         for (int i=1; i<=numSteps; i++)
-            color = color.brighter();
-         
-         setPen(new Pen(2f*width, color, scale));
-         doRenderIntoSingle(mG2d);
-         
-         setPen(realPen);
-      }
-      
-      doRenderIntoSingle(mG2d);
-   }
-   
-   private void doRenderIntoSingle(Renderer2D mG2d)
+   private void doRenderInto(Renderer2D mG2d)
    {
       mG2d.beginGroup(Stroke.this, "", 
                       super.xScaleLevel, super.yScaleLevel);
