@@ -42,6 +42,8 @@ public class Path
                 extends ItemContainer<FloatPoint2D> 
                            implements CopyReady<Path>, Bounded
 {
+   /*
+   // use with scale factor 0.9
    private static final float[] DECAY_FACTORS;
    static
    {
@@ -53,10 +55,35 @@ public class Path
       DECAY_FACTORS[4] = 0.052631599085f;
    }
    
+   // use with scale factor 0.75
+   private static final float[] DECAY_FACTORS;
+   static
+   {
+      DECAY_FACTORS = new float[5];
+      DECAY_FACTORS[0] = 0.166666666666f;
+      DECAY_FACTORS[1] = 0.145497224368f;
+      DECAY_FACTORS[2] = 0.14321775526f;
+      DECAY_FACTORS[3] = 0.142908233276f;
+      DECAY_FACTORS[4] = 0.142864430682f;
+   }
+   */
+   
+   // use with scale factor 0.5
+   private static final float[] DECAY_FACTORS;
+   static
+   {
+      DECAY_FACTORS = new float[5];
+      DECAY_FACTORS[0] = 0.5f;
+      DECAY_FACTORS[1] = 0.366025403784f;
+      DECAY_FACTORS[2] = 0.34250803168f;
+      DECAY_FACTORS[3] = 0.336196693163f;
+      DECAY_FACTORS[4] = 0.334263242375f;
+   }
+   
    private static final float[][] SMOOTHING_FACTORS;
    static
    {
-      float scalar = 0.9f;
+      float scalar = 0.5f;
       int length = 0;
       
       SMOOTHING_FACTORS = new float[5][];
@@ -66,14 +93,15 @@ public class Path
          SMOOTHING_FACTORS[i-1] = new float[length];
          SMOOTHING_FACTORS[i-1][i] = scalar;
          float val;
-         for (int j=0; j<i; j++)
+         for (int j=1; j<=i; j++)
          {
-            val = (float)(scalar*Math.pow(DECAY_FACTORS[i-1], j+1));
-            SMOOTHING_FACTORS[i-1][j] = val;
-            SMOOTHING_FACTORS[i-1][length-j-1] = val;
+            val = (float)(scalar*Math.pow(DECAY_FACTORS[i-1], j));
+            SMOOTHING_FACTORS[i-1][i+j] = val;
+            SMOOTHING_FACTORS[i-1][i-j] = val;
          }
       }
       
+      /*
       for (int i=0; i<SMOOTHING_FACTORS.length; i++)
       {
          float sum = 0;
@@ -87,6 +115,7 @@ public class Path
          System.err.println("sum = "+sum);
          System.err.println();
       }
+      */
    }
    
    private int[] xArr;
@@ -235,8 +264,7 @@ public class Path
       
       scaleTo(1, 1);
       
-      //for (int i=1; i<=numSteps; i++)
-      for (int i=1; i<=3; i++)
+      //for (int i=1; i<=3; i++)
          smoothWithNAverages(numSteps, SMOOTHING_FACTORS[numSteps-1]);
       
       scaleTo(xScale, yScale);
