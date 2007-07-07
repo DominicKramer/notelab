@@ -24,7 +24,6 @@
 
 package noteLab.model;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -43,88 +42,51 @@ public class Path
                 extends ItemContainer<FloatPoint2D> 
                            implements CopyReady<Path>, Bounded
 {
-   private static final float[] SMOOTHING_WEIGHTS_2;
+   private static final float[] DECAY_FACTORS;
    static
    {
-      /*
-      float a = 0.5f;
-      float b = 0.18301270189f;
-      float c = 0.066987298106f;
-      */
-      
-      float a = 0.33f;
-      float b = 0.206180549058f;
-      float c = 0.128819450939f;
-      
-      SMOOTHING_WEIGHTS_2 = new float[5];
-      SMOOTHING_WEIGHTS_2[0] = c;
-      SMOOTHING_WEIGHTS_2[1] = b;
-      SMOOTHING_WEIGHTS_2[2] = a;
-      SMOOTHING_WEIGHTS_2[3] = b;
-      SMOOTHING_WEIGHTS_2[4] = c;
+      DECAY_FACTORS = new float[5];
+      DECAY_FACTORS[0] = 0.5f;
+      DECAY_FACTORS[1] = 0.366025403784f;
+      DECAY_FACTORS[2] = 0.34250803168f;
+      DECAY_FACTORS[3] = 0.336196693163f;
+      DECAY_FACTORS[4] = 0.334263242375f;
    }
    
-   private static final float[] SMOOTHING_WEIGHTS_3;
+   private static final float[][] SMOOTHING_FACTORS;
    static
    {
-      float a = 0.5f;
-      float b = 0.171254015684f;
-      float c = 0.058655875776f;
-      float d = 0.02009010854f;
+      float scalar = 0.5f;
+      int length = 0;
       
-      SMOOTHING_WEIGHTS_3 = new float[7];
-      SMOOTHING_WEIGHTS_3[0] = d;
-      SMOOTHING_WEIGHTS_3[1] = c;
-      SMOOTHING_WEIGHTS_3[2] = b;
-      SMOOTHING_WEIGHTS_3[3] = a;
-      SMOOTHING_WEIGHTS_3[4] = b;
-      SMOOTHING_WEIGHTS_3[5] = c;
-      SMOOTHING_WEIGHTS_3[6] = d;
-   }
-   
-   private static final float[] SMOOTHING_WEIGHTS_4;
-   static
-   {
-      float a = 0.5f;
-      float b = 0.168098346582f;
-      float c = 0.056514108247f;
-      float d = 0.01899985631f;
-      float e = 0.006387688862f;
+      SMOOTHING_FACTORS = new float[5][];
+      for (int i=1; i<=5; i++)
+      {
+         length = 2*i+1;
+         SMOOTHING_FACTORS[i-1] = new float[length];
+         SMOOTHING_FACTORS[i-1][i] = scalar;
+         float val;
+         for (int j=0; j<i; j++)
+         {
+            val = (float)(scalar*Math.pow(DECAY_FACTORS[i-1], j+1));
+            SMOOTHING_FACTORS[i-1][j] = val;
+            SMOOTHING_FACTORS[i-1][length-j-1] = val;
+         }
+      }
       
-      SMOOTHING_WEIGHTS_4 = new float[9];
-      SMOOTHING_WEIGHTS_4[0] = e;
-      SMOOTHING_WEIGHTS_4[1] = d;
-      SMOOTHING_WEIGHTS_4[2] = c;
-      SMOOTHING_WEIGHTS_4[3] = b;
-      SMOOTHING_WEIGHTS_4[4] = a;
-      SMOOTHING_WEIGHTS_4[5] = b;
-      SMOOTHING_WEIGHTS_4[6] = c;
-      SMOOTHING_WEIGHTS_4[7] = d;
-      SMOOTHING_WEIGHTS_4[8] = e;
-   }
-   
-   private static final float[] SMOOTHING_WEIGHTS_5;
-   static
-   {
-      float a = 0.5f;
-      float b = 0.167161621187f;
-      float c = 0.055865957601f;
-      float d = 0.018673936126f;
-      float e = 0.006242010437f;
-      float f = 0.002086474648f;
-      
-      SMOOTHING_WEIGHTS_5 = new float[11];
-      SMOOTHING_WEIGHTS_5[0]  = f;
-      SMOOTHING_WEIGHTS_5[1]  = e;
-      SMOOTHING_WEIGHTS_5[2]  = d;
-      SMOOTHING_WEIGHTS_5[3]  = c;
-      SMOOTHING_WEIGHTS_5[4]  = b;
-      SMOOTHING_WEIGHTS_5[5]  = a;
-      SMOOTHING_WEIGHTS_5[6]  = b;
-      SMOOTHING_WEIGHTS_5[7]  = c;
-      SMOOTHING_WEIGHTS_5[8]  = d;
-      SMOOTHING_WEIGHTS_5[9]  = e;
-      SMOOTHING_WEIGHTS_5[10] = f;
+      for (int i=0; i<SMOOTHING_FACTORS.length; i++)
+      {
+         float sum = 0;
+         System.err.println("at i = "+(i+1));
+         for (int j = 0; j<SMOOTHING_FACTORS[i].length; j++)
+         {
+            float val = SMOOTHING_FACTORS[i][j];
+            System.err.println(val);
+            sum += val;
+         }
+         System.err.println("sum = "+sum);
+         System.err.println();
+      }
    }
    
    private int[] xArr;
@@ -263,13 +225,18 @@ public class Path
    
    public void smooth(int numSteps)
    {
+      if (numSteps <= 0 || numSteps > 5)
+         throw new IllegalArgumentException("The Path.smooth() method can only smooth a path " +
+                                             "with a 'numSteps' parameter in the integer range " +
+                                             "[1,5].  However, a value of "+numSteps+" was given.");
+      
       float xScale = getXScaleLevel();
       float yScale = getYScaleLevel();
       
       scaleTo(1, 1);
       
-      for (int i=1; i<=numSteps; i++)
-         smoothWithNAverages(5, SMOOTHING_WEIGHTS_5);
+      //for (int i=1; i<=numSteps; i++)
+      smoothWithNAverages(numSteps, SMOOTHING_FACTORS[numSteps-1]);
       
       scaleTo(xScale, yScale);
    }
