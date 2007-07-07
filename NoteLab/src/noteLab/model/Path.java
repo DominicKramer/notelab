@@ -46,17 +46,17 @@ public class Path
    static
    {
       DECAY_FACTORS = new float[5];
-      DECAY_FACTORS[0] = 0.166666666666f;
-      DECAY_FACTORS[1] = 0.145497224368f;
-      DECAY_FACTORS[2] = 0.14321775526f;
-      DECAY_FACTORS[3] = 0.142908233276f;
-      DECAY_FACTORS[4] = 0.142864430682f;
+      DECAY_FACTORS[0] = 0.0555555555f;
+      DECAY_FACTORS[1] = 0.052770798393f;
+      DECAY_FACTORS[2] = 0.052638852466f;
+      DECAY_FACTORS[3] = 0.052631961567f;
+      DECAY_FACTORS[4] = 0.052631599085f;
    }
    
    private static final float[][] SMOOTHING_FACTORS;
    static
    {
-      float scalar = 0.75f;
+      float scalar = 0.9f;
       int length = 0;
       
       SMOOTHING_FACTORS = new float[5][];
