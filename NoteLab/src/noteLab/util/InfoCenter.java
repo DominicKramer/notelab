@@ -132,13 +132,6 @@ public class InfoCenter
    private static final String ICON_PATH_NAME = "noteLab/icons/";
    
    /**
-    * The path, relative to the application's home directory, that points 
-    * to the directory that contains the application's preference 
-    * information.
-    */
-   private static final String PREF_HOME_NAME = "preferences";
-   
-   /**
     * The file on the user's hard drive that points to the 
     * application's home directory.
     */
@@ -148,13 +141,6 @@ public class InfoCenter
       File userHome = new File(System.getProperty("user.home"));
       APP_HOME = new File(userHome, "."+getAppName());
    }
-   
-   /**
-    * The file on the user's hard drive that points to the 
-    * directory that contains the application's preferences.
-    */
-   private static final File PREF_HOME = 
-                                new File(getAppHome(), PREF_HOME_NAME);
    
    /** The file extension of executable scripts on Windows-based systems. */
    private static final String WINDOWS_SCRIPT_EXT = ".bat";
@@ -283,18 +269,6 @@ public class InfoCenter
    }
    
    /**
-    * Used to retrieve the directory where the application's 
-    * preference information is stored.  (This directory is a 
-    * subdirectory of the application's home directory).
-    * 
-    * @return The application's preference directory.
-    */
-   public static final File getPreferencesHome()
-   {
-      return PREF_HOME;
-   }
-   
-   /**
     * Used to determine if the application's home directory is valid.  
     * The directory is valid, if it and its subdirectories either 
     * exist, or can be made, and are readable and writable.
@@ -306,10 +280,6 @@ public class InfoCenter
    public static final String isAppHomeValid()
    {
       String result = isDirValid(getAppHome());
-      if (result != null)
-         return result;
-      
-      result = isDirValid(getPreferencesHome());
       if (result != null)
          return result;
       
@@ -328,10 +298,6 @@ public class InfoCenter
    public static final String buildAppHome()
    {
       String result = mkdir(getAppHome());
-      if (result != null)
-         return result;
-      
-      result = mkdir(getPreferencesHome());
       if (result != null)
          return result;
       
