@@ -24,6 +24,7 @@
 
 package noteLab.model;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -42,19 +43,88 @@ public class Path
                 extends ItemContainer<FloatPoint2D> 
                            implements CopyReady<Path>, Bounded
 {
-   private static final float[] SMOOTHING_WEIGHTS;
+   private static final float[] SMOOTHING_WEIGHTS_2;
    static
    {
+      /*
       float a = 0.5f;
       float b = 0.18301270189f;
       float c = 0.066987298106f;
+      */
       
-      SMOOTHING_WEIGHTS = new float[5];
-      SMOOTHING_WEIGHTS[0] = c;
-      SMOOTHING_WEIGHTS[1] = b;
-      SMOOTHING_WEIGHTS[2] = a;
-      SMOOTHING_WEIGHTS[3] = b;
-      SMOOTHING_WEIGHTS[4] = c;
+      float a = 0.33f;
+      float b = 0.206180549058f;
+      float c = 0.128819450939f;
+      
+      SMOOTHING_WEIGHTS_2 = new float[5];
+      SMOOTHING_WEIGHTS_2[0] = c;
+      SMOOTHING_WEIGHTS_2[1] = b;
+      SMOOTHING_WEIGHTS_2[2] = a;
+      SMOOTHING_WEIGHTS_2[3] = b;
+      SMOOTHING_WEIGHTS_2[4] = c;
+   }
+   
+   private static final float[] SMOOTHING_WEIGHTS_3;
+   static
+   {
+      float a = 0.5f;
+      float b = 0.171254015684f;
+      float c = 0.058655875776f;
+      float d = 0.02009010854f;
+      
+      SMOOTHING_WEIGHTS_3 = new float[7];
+      SMOOTHING_WEIGHTS_3[0] = d;
+      SMOOTHING_WEIGHTS_3[1] = c;
+      SMOOTHING_WEIGHTS_3[2] = b;
+      SMOOTHING_WEIGHTS_3[3] = a;
+      SMOOTHING_WEIGHTS_3[4] = b;
+      SMOOTHING_WEIGHTS_3[5] = c;
+      SMOOTHING_WEIGHTS_3[6] = d;
+   }
+   
+   private static final float[] SMOOTHING_WEIGHTS_4;
+   static
+   {
+      float a = 0.5f;
+      float b = 0.168098346582f;
+      float c = 0.056514108247f;
+      float d = 0.01899985631f;
+      float e = 0.006387688862f;
+      
+      SMOOTHING_WEIGHTS_4 = new float[9];
+      SMOOTHING_WEIGHTS_4[0] = e;
+      SMOOTHING_WEIGHTS_4[1] = d;
+      SMOOTHING_WEIGHTS_4[2] = c;
+      SMOOTHING_WEIGHTS_4[3] = b;
+      SMOOTHING_WEIGHTS_4[4] = a;
+      SMOOTHING_WEIGHTS_4[5] = b;
+      SMOOTHING_WEIGHTS_4[6] = c;
+      SMOOTHING_WEIGHTS_4[7] = d;
+      SMOOTHING_WEIGHTS_4[8] = e;
+   }
+   
+   private static final float[] SMOOTHING_WEIGHTS_5;
+   static
+   {
+      float a = 0.5f;
+      float b = 0.167161621187f;
+      float c = 0.055865957601f;
+      float d = 0.018673936126f;
+      float e = 0.006242010437f;
+      float f = 0.002086474648f;
+      
+      SMOOTHING_WEIGHTS_5 = new float[11];
+      SMOOTHING_WEIGHTS_5[0]  = f;
+      SMOOTHING_WEIGHTS_5[1]  = e;
+      SMOOTHING_WEIGHTS_5[2]  = d;
+      SMOOTHING_WEIGHTS_5[3]  = c;
+      SMOOTHING_WEIGHTS_5[4]  = b;
+      SMOOTHING_WEIGHTS_5[5]  = a;
+      SMOOTHING_WEIGHTS_5[6]  = b;
+      SMOOTHING_WEIGHTS_5[7]  = c;
+      SMOOTHING_WEIGHTS_5[8]  = d;
+      SMOOTHING_WEIGHTS_5[9]  = e;
+      SMOOTHING_WEIGHTS_5[10] = f;
    }
    
    private int[] xArr;
@@ -199,7 +269,7 @@ public class Path
       scaleTo(1, 1);
       
       for (int i=1; i<=numSteps; i++)
-         smoothWithNAverages(2, SMOOTHING_WEIGHTS);
+         smoothWithNAverages(5, SMOOTHING_WEIGHTS_5);
       
       scaleTo(xScale, yScale);
    }
