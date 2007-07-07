@@ -208,10 +208,10 @@ public class Stroke
          Color color = this.pen.getColor();
          float scale = this.pen.getScaleLevel();
          
-         setPen(new Pen(1.5f*width, color.brighter().brighter(), scale));
-         doRenderIntoSingle(mG2d);
+         for (int i=1; i<=9; i++)
+            color = color.brighter();
          
-         setPen(new Pen(1.25f*width, color.brighter(), scale));
+         setPen(new Pen(2f*width, color, scale));
          doRenderIntoSingle(mG2d);
          
          setPen(realPen);
