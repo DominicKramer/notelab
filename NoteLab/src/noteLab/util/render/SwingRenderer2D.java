@@ -41,6 +41,8 @@ import noteLab.util.settings.DebugSettings;
 
 public class SwingRenderer2D extends Renderer2D
 {
+   private static final float SCALE_FACTOR = 100000;
+   
    private Graphics2D g2d;
    
    public SwingRenderer2D()
@@ -54,6 +56,7 @@ public class SwingRenderer2D extends Renderer2D
          throw new NullPointerException();
       
       this.g2d = g2d;
+      this.g2d.scale(1.0/SCALE_FACTOR, 1.0/SCALE_FACTOR);
       
       setRenderingHints(antialias);
    }
@@ -91,36 +94,27 @@ public class SwingRenderer2D extends Renderer2D
       if (path == null)
          throw new NullPointerException();
       
-      final int size = path.getNumItems();
-      if (size == 0)
-         return;
-      else if (size == 1)
-      {
-         FloatPoint2D pt = path.getFirst();
-         drawLine(pt, pt);
-         return;
-      }
-      
       doDrawing(new Runnable()
       {
          public void run()
          {
-            g2d.drawPolyline(path.getXArray(), 
-                                  path.getYArray(), 
-                                  size);
+            int numPts = path.getNumItems();
             
-            if (DebugSettings.getSharedInstance().displayKnots())
+            if (numPts == 1)
             {
-               int width = (int)(4*getLineWidth());
-               int widthHalf = width/2;
-               
-               for (FloatPoint2D pt : path)
-               {
-                  g2d.fillOval((int)pt.getX()-widthHalf, 
-                               (int)pt.getY()-widthHalf, 
-                               width, 
-                               width);
-               }
+               FloatPoint2D pt1 = path.getFirst();
+               drawLine(pt1, pt1);
+               return;
+            }
+            
+            FloatPoint2D pt1;
+            FloatPoint2D pt2;
+            for (int i=0; i<numPts-1; i++)
+            {
+               pt1 = path.getItemAt(i);
+               pt2 = path.getItemAt(i+1);
+               if (pt1 != null && pt2 != null)
+                  drawLine(pt1, pt2);
             }
          }
       });
@@ -135,15 +129,32 @@ public class SwingRenderer2D extends Renderer2D
       {
          public void run()
          {
-            int pt1x = (int)(pt1.getX());
-            int pt1y = (int)(pt1.getY());
+            int pt1x = (int)(SCALE_FACTOR*pt1.getX());
+            int pt1y = (int)(SCALE_FACTOR*pt1.getY());
             
-            int pt2x = (int)(pt2.getX());
-            int pt2y = (int)(pt2.getY());
+            int pt2x = (int)(SCALE_FACTOR*pt2.getX());
+            int pt2y = (int)(SCALE_FACTOR*pt2.getY());
             
             g2d.drawLine( pt1x, pt1y, pt2x, pt2y );
+            
+            if (DebugSettings.getSharedInstance().displayKnots())
+            {
+               drawKnot(pt1);
+               drawKnot(pt2);
+            }
          }
       });
+   }
+   
+   private void drawKnot(FloatPoint2D pt)
+   {
+      int width = (int)(4*getLineWidth());
+      int widthHalf = width/2;
+      
+      this.g2d.fillOval((int)pt.getX()-widthHalf, 
+                        (int)pt.getY()-widthHalf, 
+                        width, 
+                        width);
    }
    
    public void drawRectangle(final float x, final float y, 
@@ -153,10 +164,10 @@ public class SwingRenderer2D extends Renderer2D
       {
          public void run()
          {
-            g2d.drawRect( (int)x, 
-                          (int)y, 
-                          (int)width, 
-                          (int)height );
+            g2d.drawRect( (int)(SCALE_FACTOR*x), 
+                          (int)(SCALE_FACTOR*y), 
+                          (int)(SCALE_FACTOR*width), 
+                          (int)(SCALE_FACTOR*height) );
          }
       });
    }
@@ -168,10 +179,10 @@ public class SwingRenderer2D extends Renderer2D
       {
          public void run()
          {
-            g2d.fillRect( (int)x, 
-                          (int)y, 
-                          (int)width, 
-                          (int)height );
+            g2d.fillRect( (int)(SCALE_FACTOR*x), 
+                          (int)(SCALE_FACTOR*y), 
+                          (int)(SCALE_FACTOR*width), 
+                          (int)(SCALE_FACTOR*height) );
          }
       });
    }
@@ -185,9 +196,9 @@ public class SwingRenderer2D extends Renderer2D
    @Override
    public void setLineWidth(float width)
    {
-      this.g2d.setStroke(new BasicStroke(width, 
-                                         BasicStroke.CAP_ROUND, 
-                                         BasicStroke.JOIN_ROUND));
+      this.g2d.setStroke(new BasicStroke(SCALE_FACTOR*width, 
+                                          BasicStroke.CAP_ROUND, 
+                                          BasicStroke.JOIN_ROUND));
    }
    
    @Override
@@ -197,7 +208,7 @@ public class SwingRenderer2D extends Renderer2D
       if ( !(stroke instanceof BasicStroke) )
          return 0;
       
-      return ((BasicStroke)stroke).getLineWidth();
+      return ((BasicStroke)stroke).getLineWidth()/SCALE_FACTOR;
    }
    
    @Override
@@ -214,6 +225,8 @@ public class SwingRenderer2D extends Renderer2D
    @Override
    public void finish()
    {
+      this.g2d.scale(SCALE_FACTOR, SCALE_FACTOR);
+      this.g2d.dispose();
    }
    
    public void drawImage(Image image)
@@ -253,7 +266,7 @@ public class SwingRenderer2D extends Renderer2D
    @Override
    public void translate(float x, float y)
    {
-      this.g2d.translate( (int)x, (int)y );
+      this.g2d.translate( (int)(SCALE_FACTOR*x), (int)(SCALE_FACTOR*y) );
    }
 
    @Override
@@ -263,6 +276,14 @@ public class SwingRenderer2D extends Renderer2D
          throw new NullPointerException();
       
       Rectangle clipBounds = this.g2d.getClipBounds();
+      if (clipBounds == null)
+         return true;
+      
+      clipBounds.x /= SCALE_FACTOR;
+      clipBounds.y /= SCALE_FACTOR;
+      clipBounds.width /= SCALE_FACTOR;
+      clipBounds.height /= SCALE_FACTOR;
+      
       Rectangle2D bounds = bounded.getBounds2D();
       
       Rectangle2D intersection = new Rectangle2D.Double();
@@ -278,6 +299,9 @@ public class SwingRenderer2D extends Renderer2D
       
       public SelectedStroke(float width)
       {
+         // the selected stroke width should respect the current scale factor
+         width *= SCALE_FACTOR;
+         
          // shrink the width down slightly so that the line surrounding the 
          // highlighted path is not too thick
          width *= 0.30;
