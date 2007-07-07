@@ -78,6 +78,14 @@ public class SmoothFactorArg extends Argument
       
       try
       {
+         if (size > 5)
+         {
+            System.out.println("The smooth factor "+size+
+                               " is invalid since it must be a whole number between 1 and 5 " +
+                               "inclusive.  The maximum value of 5 will be used.");
+            size = 5;
+         }
+         
          SettingsUtilities.setSmoothFactor(size);
       }
       catch (IllegalArgumentException e)
