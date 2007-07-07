@@ -208,7 +208,22 @@ public class Stroke
          Color color = this.pen.getColor();
          float scale = this.pen.getScaleLevel();
          
-         for (int i=1; i<=9; i++)
+         // A stroke slightly brighter than the real stroke is drawn under the 
+         // real stroke to make it look more smooth.  The brightness of this 
+         // second stroke depends on its its width and is calculated below.
+         int numSteps = 0;
+         if (width <= 0.3f)
+            numSteps = 10;
+         if (width <= 0.7f)
+            numSteps = 13;
+         else if (width <= 1.1f)
+            numSteps = 15;
+         else if (width <= 2)
+            numSteps = 13;
+         else
+            numSteps = 0;
+         
+         for (int i=1; i<=numSteps; i++)
             color = color.brighter();
          
          setPen(new Pen(2f*width, color, scale));
