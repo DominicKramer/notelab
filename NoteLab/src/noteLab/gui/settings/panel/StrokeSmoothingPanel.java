@@ -55,7 +55,7 @@ public class StrokeSmoothingPanel
       boolean smoothingEnabled = (smoothFactor > 0);
       
       int min = 1;
-      int max = 10;
+      int max = 5;
       int space = 1;
       if (smoothFactor < min)
          smoothFactor = min;
