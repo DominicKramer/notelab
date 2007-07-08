@@ -26,7 +26,7 @@ package noteLab.gui;
 
 public interface GuiSettingsConstants
 {
-   public static final int BUTTON_SIZE = 24;
-   public static final int MEDIUM_BUTTON_SIZE = 24;
+   public static final int BUTTON_SIZE = 20;
+   public static final int MEDIUM_BUTTON_SIZE = 16;
    public static final int SMALL_BUTTON_SIZE = 16;
 }
