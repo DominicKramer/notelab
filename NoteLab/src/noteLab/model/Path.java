@@ -32,6 +32,50 @@ import noteLab.util.CopyReady;
 import noteLab.util.geom.Bounded;
 import noteLab.util.geom.ItemContainer;
 
+/*
+ * Dominic Kramer
+ * NoteLab Project Leader
+ * July 8, 2007
+ * 
+ * The performance of the smooth() method in this class was compared against the 
+ * Jarnal program.  This program is a pen-centric journaling application and is 
+ * licensed under the GNU GPL just like NoteLab.  The version being used was 
+ * Jarnal 908, was written by David K. Levine and Gunnar Teege, and can be found 
+ * at http://www.dklevine.com/general/software/tc1000/jarnal.htm as of July 8, 2007.
+ * 
+ * Even though the GNU GPL encourages use of code from one program to improve another, 
+ * no code from the Jarnal project was explicitly used in this class.  Before comparing 
+ * NoteLab against Jarnal, methods for smoothing a path using linear, quadratic, and 
+ * cubic regression, as well as using cubic spline interpolation were added to this class.  
+ * After looking at Jarnal, I found it used linear regression using two points to the 
+ * left and right of the current point to smooth strokes.  I also found it used a 
+ * weighted average with weights that decayed approximately exponentially.  I was using 
+ * weights that decayed linearly.
+ * 
+ * As such I tried using weights that decayed exponentially and they seemed to work very 
+ * well.  Thus even though I did not use any code from the Jarnal project, I used the idea 
+ * of using weights that decayed exponentially.  Also even though I thought about using an 
+ * exponential decay model before looking at Jarnal, after looking at Jarnal I found that 
+ * it was probably the model to use since Jarnal used it.
+ * 
+ * Also in the process of testing NoteLab against Jarnal, I thought about rendering strokes 
+ * multiple times to make them look smoother.  This is not done in Jarnal.  However, I am 
+ * mentioning it because I thought of it while comparing NoteLab against Jarnal and as 
+ * such the comparison against Jarnal allowed myself to develop this idea.
+ * 
+ * Last I found that a rounding error in the SwingRenderer2D class caused the strokes to 
+ * not look as smooth as they could.  After fixing the problem I found that Jarnal had a 
+ * similar problem that it had to overcome.  Again I did not use any code from the Jarnal 
+ * project in the fix.  In addition, I also didn't understand that Jarnal had the same 
+ * problem until after I fixed the problem in NoteLab.  However, I would still like to note 
+ * that this fix could not have been found without comparing the performance of NoteLab 
+ * against that of Jarnal.
+ * 
+ * Therefore, in conclusion, no code from the Jarnal project was used in NoteLab.  However, 
+ * it was very useful to compare the performance of NoteLab against that of Jarnal to 
+ * find problems in and improve NoteLab.
+ */
+
 /**
  * This class basically represents a curve.  That is, it represents a 
  * path of points.
@@ -264,8 +308,7 @@ public class Path
       
       scaleTo(1, 1);
       
-      //for (int i=1; i<=3; i++)
-         smoothWithNAverages(numSteps, SMOOTHING_FACTORS[numSteps-1]);
+      smoothWithNAverages(numSteps, SMOOTHING_FACTORS[numSteps-1]);
       
       scaleTo(xScale, yScale);
    }
