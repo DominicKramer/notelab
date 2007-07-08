@@ -201,9 +201,7 @@ public class Pen implements Tool
       if (renderer == null)
          throw new NullPointerException();
       
-      float width = this.width;
-      
-      renderer.setLineWidth(width);
+      renderer.setLineWidth(this.width);
       renderer.setColor(this.color);
    }
    
