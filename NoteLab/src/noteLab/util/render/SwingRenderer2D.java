@@ -57,6 +57,8 @@ public class SwingRenderer2D extends Renderer2D
       
       this.g2d = g2d;
       this.g2d.scale(1.0/SCALE_FACTOR, 1.0/SCALE_FACTOR);
+      this.g2d.setStroke(new SelectableStroke(getLineWidth()));
+      setSelected(false);
       
       setRenderingHints(antialias);
    }
@@ -188,6 +190,18 @@ public class SwingRenderer2D extends Renderer2D
    }
    
    @Override
+   public void setSelected(boolean selected)
+   {
+      super.setSelected(selected);
+      if (this.g2d != null)
+      {
+         Stroke stroke = this.g2d.getStroke();
+         if (stroke instanceof SelectableStroke)
+            ((SelectableStroke)stroke).setSelected(selected);
+      }
+   }
+
+   @Override
    public void setColor(Color color)
    {
       this.g2d.setColor(color);
@@ -196,19 +210,19 @@ public class SwingRenderer2D extends Renderer2D
    @Override
    public void setLineWidth(float width)
    {
-      this.g2d.setStroke(new BasicStroke(SCALE_FACTOR*width, 
-                                          BasicStroke.CAP_ROUND, 
-                                          BasicStroke.JOIN_ROUND));
+      Stroke stroke = this.g2d.getStroke();
+      if (stroke instanceof SelectableStroke)
+         ((SelectableStroke)stroke).setLineWidth(width);
    }
    
    @Override
    public float getLineWidth()
    {
       Stroke stroke = this.g2d.getStroke();
-      if ( !(stroke instanceof BasicStroke) )
+      if ( !(stroke instanceof SelectableStroke) )
          return 0;
       
-      return ((BasicStroke)stroke).getLineWidth()/SCALE_FACTOR;
+      return ((SelectableStroke)stroke).getLineWidth();
    }
    
    @Override
@@ -242,18 +256,7 @@ public class SwingRenderer2D extends Renderer2D
       if (drawRunnable == null)
          throw new NullPointerException();
       
-      boolean isSelected = isSelected();
-      Stroke prevStroke = this.g2d.getStroke();
-      if (isSelected)
-      {
-         float curWidth = ((BasicStroke)this.g2d.getStroke()).getLineWidth();
-         this.g2d.setStroke(new SelectedStroke(curWidth));
-      }
-      
       drawRunnable.run();
-      
-      if (isSelected)
-         this.g2d.setStroke(prevStroke);
    }
    
    // The Renderer2D class doesn't specify a scale() method
@@ -292,33 +295,64 @@ public class SwingRenderer2D extends Renderer2D
       return !intersection.isEmpty();
    }
    
-   private static class SelectedStroke implements Stroke
+   private static class SelectableStroke implements Stroke
    {
-      private BasicStroke outerStroke;
-      private BasicStroke innerStroke;
+      private boolean selected;
       
-      public SelectedStroke(float width)
+      private BasicStroke baseStroke;
+      
+      private BasicStroke outerSelStroke;
+      private BasicStroke innerSelStroke;
+      
+      public SelectableStroke(float width)
       {
-         // the selected stroke width should respect the current scale factor
-         width *= SCALE_FACTOR;
+         this.selected = false;
+         setLineWidth(width);
+      }
+      
+      public boolean isSelected()
+      {
+         return this.selected;
+      }
+      
+      public void setSelected(boolean selected)
+      {
+         this.selected = selected;
+      }
+      
+      public float getLineWidth()
+      {
+         return this.baseStroke.getLineWidth()/SCALE_FACTOR;
+      }
+      
+      public void setLineWidth(float width)
+      {
+         float scaledWidth = SCALE_FACTOR*width;
+         
+         this.baseStroke = new BasicStroke(scaledWidth, 
+                                            BasicStroke.CAP_ROUND, 
+                                            BasicStroke.JOIN_ROUND);
          
          // shrink the width down slightly so that the line surrounding the 
-         // highlighted path is not too thick
-         width *= 0.30;
+         // highlighted (selected) stroke is not too thick
+         scaledWidth *= 0.30;
          
-         this.outerStroke = new BasicStroke(getStrokeWidth(width, true), 
-                                            BasicStroke.CAP_ROUND, 
-                                            BasicStroke.JOIN_ROUND);
+         this.outerSelStroke = new BasicStroke(getStrokeWidth(scaledWidth, true), 
+                                                BasicStroke.CAP_ROUND, 
+                                                BasicStroke.JOIN_ROUND);
          
-         this.innerStroke = new BasicStroke(getStrokeWidth(width, false), 
-                                            BasicStroke.CAP_ROUND, 
-                                            BasicStroke.JOIN_ROUND);
+         this.innerSelStroke = new BasicStroke(getStrokeWidth(scaledWidth, false), 
+                                                BasicStroke.CAP_ROUND, 
+                                                BasicStroke.JOIN_ROUND);
       }
       
       public Shape createStrokedShape(Shape p)
       {
-         return this.innerStroke.
-                   createStrokedShape(this.outerStroke.createStrokedShape(p));
+         if (this.selected)
+            return this.innerSelStroke.
+                       createStrokedShape(this.outerSelStroke.createStrokedShape(p));
+         
+         return this.baseStroke.createStrokedShape(p);
       }
    }
 }
