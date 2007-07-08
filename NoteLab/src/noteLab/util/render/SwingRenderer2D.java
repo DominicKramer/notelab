@@ -96,30 +96,24 @@ public class SwingRenderer2D extends Renderer2D
       if (path == null)
          throw new NullPointerException();
       
-      doDrawing(new Runnable()
+      int numPts = path.getNumItems();
+      
+      if (numPts == 1)
       {
-         public void run()
-         {
-            int numPts = path.getNumItems();
-            
-            if (numPts == 1)
-            {
-               FloatPoint2D pt1 = path.getFirst();
-               drawLine(pt1, pt1);
-               return;
-            }
-            
-            FloatPoint2D pt1;
-            FloatPoint2D pt2;
-            for (int i=0; i<numPts-1; i++)
-            {
-               pt1 = path.getItemAt(i);
-               pt2 = path.getItemAt(i+1);
-               if (pt1 != null && pt2 != null)
-                  drawLine(pt1, pt2);
-            }
-         }
-      });
+         FloatPoint2D pt1 = path.getFirst();
+         drawLine(pt1, pt1);
+         return;
+      }
+      
+      FloatPoint2D pt1;
+      FloatPoint2D pt2;
+      for (int i=0; i<numPts-1; i++)
+      {
+         pt1 = path.getItemAt(i);
+         pt2 = path.getItemAt(i+1);
+         if (pt1 != null && pt2 != null)
+            drawLine(pt1, pt2);
+      }
    }
    
    public void drawLine(final FloatPoint2D pt1, final FloatPoint2D pt2)
@@ -127,25 +121,19 @@ public class SwingRenderer2D extends Renderer2D
       if (pt1 == null || pt2 == null)
          throw new NullPointerException();
       
-      doDrawing(new Runnable()
+      int pt1x = (int)(SCALE_FACTOR*pt1.getX());
+      int pt1y = (int)(SCALE_FACTOR*pt1.getY());
+      
+      int pt2x = (int)(SCALE_FACTOR*pt2.getX());
+      int pt2y = (int)(SCALE_FACTOR*pt2.getY());
+      
+      this.g2d.drawLine( pt1x, pt1y, pt2x, pt2y );
+      
+      if (DebugSettings.getSharedInstance().displayKnots())
       {
-         public void run()
-         {
-            int pt1x = (int)(SCALE_FACTOR*pt1.getX());
-            int pt1y = (int)(SCALE_FACTOR*pt1.getY());
-            
-            int pt2x = (int)(SCALE_FACTOR*pt2.getX());
-            int pt2y = (int)(SCALE_FACTOR*pt2.getY());
-            
-            g2d.drawLine( pt1x, pt1y, pt2x, pt2y );
-            
-            if (DebugSettings.getSharedInstance().displayKnots())
-            {
-               drawKnot(pt1);
-               drawKnot(pt2);
-            }
-         }
-      });
+         drawKnot(pt1);
+         drawKnot(pt2);
+      }
    }
    
    private void drawKnot(FloatPoint2D pt)
@@ -162,31 +150,19 @@ public class SwingRenderer2D extends Renderer2D
    public void drawRectangle(final float x, final float y, 
                              final float width, final float height)
    {
-      doDrawing(new Runnable()
-      {
-         public void run()
-         {
-            g2d.drawRect( (int)(SCALE_FACTOR*x), 
-                          (int)(SCALE_FACTOR*y), 
-                          (int)(SCALE_FACTOR*width), 
-                          (int)(SCALE_FACTOR*height) );
-         }
-      });
+      this.g2d.drawRect( (int)(SCALE_FACTOR*x), 
+                         (int)(SCALE_FACTOR*y), 
+                         (int)(SCALE_FACTOR*width), 
+                         (int)(SCALE_FACTOR*height) );
    }
    
    public void fillRectangle(final float x, final float y, 
                              final float width, final float height)
    {
-      doDrawing(new Runnable()
-      {
-         public void run()
-         {
-            g2d.fillRect( (int)(SCALE_FACTOR*x), 
-                          (int)(SCALE_FACTOR*y), 
-                          (int)(SCALE_FACTOR*width), 
-                          (int)(SCALE_FACTOR*height) );
-         }
-      });
+      this.g2d.fillRect( (int)(SCALE_FACTOR*x), 
+                         (int)(SCALE_FACTOR*y), 
+                         (int)(SCALE_FACTOR*width), 
+                         (int)(SCALE_FACTOR*height) );
    }
    
    @Override
@@ -249,14 +225,6 @@ public class SwingRenderer2D extends Renderer2D
          throw new NullPointerException();
       
       this.g2d.drawImage(image, 0, 0, null);
-   }
-   
-   private void doDrawing(Runnable drawRunnable)
-   {
-      if (drawRunnable == null)
-         throw new NullPointerException();
-      
-      drawRunnable.run();
    }
    
    // The Renderer2D class doesn't specify a scale() method
