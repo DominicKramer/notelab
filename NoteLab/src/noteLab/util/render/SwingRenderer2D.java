@@ -295,23 +295,21 @@ public class SwingRenderer2D extends Renderer2D
       
       public void setLineWidth(float width)
       {
-         float scaledWidth = SCALE_FACTOR*width;
-         
-         this.baseStroke = new BasicStroke(scaledWidth, 
-                                            BasicStroke.CAP_ROUND, 
-                                            BasicStroke.JOIN_ROUND);
+         this.baseStroke = new BasicStroke(SCALE_FACTOR*width, 
+                                           BasicStroke.CAP_ROUND, 
+                                           BasicStroke.JOIN_ROUND);
          
          // shrink the width down slightly so that the line surrounding the 
          // highlighted (selected) stroke is not too thick
-         scaledWidth *= 0.30;
+         width *= 0.30;
          
-         this.outerSelStroke = new BasicStroke(getStrokeWidth(scaledWidth, true), 
-                                                BasicStroke.CAP_ROUND, 
-                                                BasicStroke.JOIN_ROUND);
+         this.outerSelStroke = new BasicStroke(SCALE_FACTOR*getStrokeWidth(width, true), 
+                                               BasicStroke.CAP_ROUND, 
+                                               BasicStroke.JOIN_ROUND);
          
-         this.innerSelStroke = new BasicStroke(getStrokeWidth(scaledWidth, false), 
-                                                BasicStroke.CAP_ROUND, 
-                                                BasicStroke.JOIN_ROUND);
+         this.innerSelStroke = new BasicStroke(SCALE_FACTOR*getStrokeWidth(width, false), 
+                                               BasicStroke.CAP_ROUND, 
+                                               BasicStroke.JOIN_ROUND);
       }
       
       public Shape createStrokedShape(Shape p)
