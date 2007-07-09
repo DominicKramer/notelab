@@ -312,6 +312,35 @@ public class SwingRenderer2D extends Renderer2D
                                                BasicStroke.JOIN_ROUND);
       }
       
+      /*
+       * The code in this method was inspired by a description of making custom 
+       * strokes found in the book "Java Examples in a Nutshell, 3nd Edition" by 
+       * David Flanagan.  As stated in the copyright notice attached to the code, 
+       * permission is given to use the code in any open-source project as long 
+       * as the notice below is attached.  As such, since NoteLab is open-source, 
+       * it is fine to use the code since the notice has been attached.
+       * 
+       * Original notice:
+       * 
+       * Copyright (c) 2004 David Flanagan.  All rights reserved.
+       * This code is from the book Java Examples in a Nutshell, 3nd Edition.
+       * It is provided AS-IS, WITHOUT ANY WARRANTY either expressed or implied.
+       * You may study, use, and modify it for any non-commercial purpose,
+       * including teaching and use in open-source projects.
+       * You may distribute it non-commercially as long as you retain this notice.
+       * For a commercial use license, or to purchase the book, 
+       * please visit http://www.davidflanagan.com/javaexamples3.
+       * 
+       * The original code that was used was:  
+       * 
+       * public Shape createStrokedShape(Shape s) {
+       *    // Use the first stroke to create an outline of the shape
+       *    Shape outline = stroke1.createStrokedShape(s);  
+       *    // Use the second stroke to create an outline of that outline.
+       *    // It is this outline of the outline that will be filled in
+       *    return stroke2.createStrokedShape(outline);
+       * }
+       */
       public Shape createStrokedShape(Shape p)
       {
          if (this.selected)
