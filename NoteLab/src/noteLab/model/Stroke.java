@@ -206,7 +206,7 @@ public class Stroke
       // If the curve isn't stable don't waste memory making an array 
       // that will be soon be out of date.  Instead draw the path point 
       // by point.
-      if (this.isStable)
+      if (this.isStable && !this.isSelected)
          mG2d.drawPath(getPath());
       else
       {
@@ -220,14 +220,25 @@ public class Stroke
          }
          else
          {
+            int increment = 1;
+            if (this.isSelected && numPts > 2)
+               increment = 2;
+            
             FloatPoint2D pt1;
             FloatPoint2D pt2;
-            for (int i=0; i<numPts-1; i++)
+            for (int i=0; i<numPts-increment; i=i+increment)
             {
                pt1 = path.getItemAt(i);
                pt2 = path.getItemAt(i+1);
                if (pt1 != null && pt2 != null)
                   mG2d.drawLine(pt1, pt2);
+            }
+            
+            if (this.isSelected && (numPts%2==1) )
+            {
+               FloatPoint2D last = path.getLast();
+               if (last != null)
+                  mG2d.drawLine(last, last);
             }
          }
       }
