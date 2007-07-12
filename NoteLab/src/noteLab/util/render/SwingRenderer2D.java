@@ -44,10 +44,13 @@ public class SwingRenderer2D extends Renderer2D
    private static final float SCALE_FACTOR = 100000;
    
    private Graphics2D g2d;
+   private float width;
    
    public SwingRenderer2D()
    {
       super();
+      
+      this.width = 0;
    }
    
    public void setSwingGraphics(Graphics2D g2d, boolean antialias)
@@ -57,7 +60,6 @@ public class SwingRenderer2D extends Renderer2D
       
       this.g2d = g2d;
       this.g2d.scale(1.0/SCALE_FACTOR, 1.0/SCALE_FACTOR);
-      this.g2d.setStroke(new SelectableStroke(getLineWidth()));
       setSelected(false);
       
       setRenderingHints(antialias);
@@ -116,6 +118,7 @@ public class SwingRenderer2D extends Renderer2D
       }
    }
    
+   @Override
    public void drawLine(final FloatPoint2D pt1, final FloatPoint2D pt2)
    {
       if (pt1 == null || pt2 == null)
@@ -147,6 +150,7 @@ public class SwingRenderer2D extends Renderer2D
                         width);
    }
    
+   @Override
    public void drawRectangle(final float x, final float y, 
                              final float width, final float height)
    {
@@ -156,6 +160,7 @@ public class SwingRenderer2D extends Renderer2D
                          (int)(SCALE_FACTOR*height) );
    }
    
+   @Override
    public void fillRectangle(final float x, final float y, 
                              final float width, final float height)
    {
@@ -171,9 +176,12 @@ public class SwingRenderer2D extends Renderer2D
       super.setSelected(selected);
       if (this.g2d != null)
       {
-         Stroke stroke = this.g2d.getStroke();
-         if (stroke instanceof SelectableStroke)
-            ((SelectableStroke)stroke).setSelected(selected);
+         if (selected)
+            this.g2d.setStroke(new SelectedStroke(this.width));
+         else
+            this.g2d.setStroke(new BasicStroke(SCALE_FACTOR*this.width, 
+                                               BasicStroke.CAP_ROUND, 
+                                               BasicStroke.JOIN_ROUND));
       }
    }
 
@@ -186,19 +194,14 @@ public class SwingRenderer2D extends Renderer2D
    @Override
    public void setLineWidth(float width)
    {
-      Stroke stroke = this.g2d.getStroke();
-      if (stroke instanceof SelectableStroke)
-         ((SelectableStroke)stroke).setLineWidth(width);
+      this.width = width;
+      setSelected(isSelected());
    }
    
    @Override
    public float getLineWidth()
    {
-      Stroke stroke = this.g2d.getStroke();
-      if ( !(stroke instanceof SelectableStroke) )
-         return 0;
-      
-      return ((SelectableStroke)stroke).getLineWidth();
+      return this.width;
    }
    
    @Override
@@ -263,46 +266,13 @@ public class SwingRenderer2D extends Renderer2D
       return !intersection.isEmpty();
    }
    
-   private static class SelectableStroke implements Stroke
+   private static class SelectedStroke implements Stroke
    {
-      private boolean selected;
-      
-      private BasicStroke baseStroke;
-      
       private BasicStroke outerSelStroke;
       private BasicStroke innerSelStroke;
       
-      public SelectableStroke(float width)
+      public SelectedStroke(float width)
       {
-         this.selected = false;
-         setLineWidth(width);
-      }
-      
-      public boolean isSelected()
-      {
-         return this.selected;
-      }
-      
-      public void setSelected(boolean selected)
-      {
-         this.selected = selected;
-      }
-      
-      public float getLineWidth()
-      {
-         return this.baseStroke.getLineWidth()/SCALE_FACTOR;
-      }
-      
-      public void setLineWidth(float width)
-      {
-         this.baseStroke = new BasicStroke(SCALE_FACTOR*width, 
-                                           BasicStroke.CAP_ROUND, 
-                                           BasicStroke.JOIN_ROUND);
-         
-         // shrink the width down slightly so that the line surrounding the 
-         // highlighted (selected) stroke is not too thick
-         width *= 0.30;
-         
          this.outerSelStroke = new BasicStroke(SCALE_FACTOR*getStrokeWidth(width, true), 
                                                BasicStroke.CAP_ROUND, 
                                                BasicStroke.JOIN_ROUND);
@@ -343,11 +313,8 @@ public class SwingRenderer2D extends Renderer2D
        */
       public Shape createStrokedShape(Shape p)
       {
-         if (this.selected)
-            return this.innerSelStroke.
-                       createStrokedShape(this.outerSelStroke.createStrokedShape(p));
-         
-         return this.baseStroke.createStrokedShape(p);
+         return this.innerSelStroke.
+                    createStrokedShape(this.outerSelStroke.createStrokedShape(p));
       }
    }
 }
