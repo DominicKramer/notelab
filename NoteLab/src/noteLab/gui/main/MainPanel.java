@@ -24,7 +24,6 @@
 
 package noteLab.gui.main;
 
-import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
