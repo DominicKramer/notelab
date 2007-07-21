@@ -294,8 +294,9 @@ public class Stroke
       
       // modify the bounds to also account for the width of the current 
       // pen's stroke
-      float delta = 2f*Renderer2D.getStrokeWidth(this.pen.getWidth(), 
-                                                 this.isSelected);
+      float penWidth = this.pen.getWidth();
+      if (this.isSelected)
+         penWidth = Renderer2D.getStrokeWidth(penWidth, true);
       
       double x = bounds.getX();
       double y = bounds.getY();
@@ -308,8 +309,8 @@ public class Stroke
       // the box was shifted.  Then add delta to the width and 
       // height again to account for the fact that the line has a width, 
       // specifically 2*delta.
-      bounds.setRect(x-delta, y-delta, 
-                     width+2*delta, height+2*delta);
+      bounds.setRect(x-penWidth, y-penWidth, 
+                     width+2*penWidth, height+2*penWidth);
       
       return bounds;
    }
