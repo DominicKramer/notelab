@@ -273,6 +273,8 @@ public class SwingRenderer2D extends Renderer2D
       
       public SelectedStroke(float width)
       {
+         width *= 0.7f;
+         
          this.outerSelStroke = new BasicStroke(SCALE_FACTOR*getStrokeWidth(width, true), 
                                                BasicStroke.CAP_ROUND, 
                                                BasicStroke.JOIN_ROUND);
