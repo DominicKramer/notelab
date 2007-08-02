@@ -139,7 +139,7 @@ public abstract class Renderer2D implements Selectable
       if (!isSelected)
          return width;
       
-      return width+4;
+      return width+2;
    }
    
    public abstract void drawPath(Path path);
