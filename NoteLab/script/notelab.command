@@ -27,8 +27,9 @@ INSTALL_DIR=`dirname "$0"`
 cd "${INSTALL_DIR}"
 
 # Custom arguments for Mac 'OS X
+MENU_ARG=-Dapple.laf.useScreenMenuBar=true
 DOCK_ARG=-Xdock:name=NoteLab
 ICON_ARG=-Xdock:icon=./noteLab/icons/feather.png
 
 # Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
-java ${DOCK_ARG} ${ICON_ARG} ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME="${INIT_FILE}" -cp .:./info:"${CLASSPATH}" noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
+java ${DOCK_ARG} ${ICON_ARG} ${MENU_ARG} ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME="${INIT_FILE}" -cp .:./info:"${CLASSPATH}" noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
