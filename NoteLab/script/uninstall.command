@@ -21,11 +21,12 @@ INSTALL_DIR=`dirname "$0"`
 cd "${INSTALL_DIR}"
 
 # Custom arguments for Mac OS X
+MENU_ARG=-Dapple.laf.useScreenMenuBar=true
 DOCK_ARG=-Xdock:name=NoteLab
 ICON_ARG=-Xdock:icon=./noteLab/icons/feather.png
 
 # Start the Java virtual machine and have it load the uninstaller
-java ${DOCK_ARG} ${ICON_ARG} -cp .:./info:"${CLASSPATH}" noteLab.gui.uninstall.UninstallFrame "${INSTALL_DIR}"
+java ${DOCK_ARG} ${ICON_ARG} ${MENU_ARG} -cp .:./info:"${CLASSPATH}" noteLab.gui.uninstall.UninstallFrame "${INSTALL_DIR}"
 
 # Finish up by removing the installation directory
 cd "${HOME}"
