@@ -33,3 +33,25 @@ ICON_ARG=-Xdock:icon=./noteLab/icons/feather.png
 
 # Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
 java ${DOCK_ARG} ${ICON_ARG} ${MENU_ARG} ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME="${INIT_FILE}" -cp .:./info:"${CLASSPATH}" noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
+
+# The variable ${NOTELAB_VM_ARGS} specifies the initial amount and maximum amount of memory that 
+# should be given to the virtual machine.  If NoteLab fails to start from the invocation of 'java' 
+# above, it may because there is not enough memory to meet NoteLab's request.  Thus start NoteLab 
+# without requiring a specific amount of memory.
+
+# The variable '$?' stores the exit status of the previous command run.  If the exit status of 
+# 'java' is not 0, an error has occured when 'java' was run.
+if [ $? != 0 ]; then
+  echo ""
+  echo "The system would not allow NoteLab to start with its requested amount of maximum or initial memory."
+  echo "The most likely cause is that there is not enough memory available."
+  echo "NoteLab will now start without requiring any special amount of memory."
+  java ${DOCK_ARG} ${ICON_ARG} ${MENU_ARG} -DNOTELAB_SETTINGS_FILENAME="${INIT_FILE}" -cp .:./info:"${CLASSPATH}" noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
+  if [ $? != 0 ]; then
+    echo ""
+    echo "NoteLab could not be started.  See the messages above to find the cause of the failure."
+    echo "For assistance, NoteLab's head developer, Dominic Kramer, can be contacted at kramerd@users.sourceforge.net."
+    echo "Please include any messages above and the messages below for the best support."
+    java -version
+  fi
+fi
