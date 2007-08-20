@@ -22,6 +22,37 @@ cd "%INSTALL_DIR%"
 REM Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
 java %NOTELAB_VM_ARGS% -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;"%CLASSPATH%" noteLab.util.StartupUtilities %NOTELAB_ARGS% %*
 
+REM The command 'IF NOT ERRORLEVEL 1' returns true if the variable ERRORLEVEL is not greater than or 
+REM equal to 1, i.e. is less than 1.
+
+REM If the errorlevel is set to 0 then the invocation of 'java' above returned with no errors.
+REM Thus the script should just finish.  Otherwise, NoteLab could not be started and 
+REM further work should be done to start NoteLab.
+IF NOT ERRORLEVEL 1 GOTO Finish
+
+REM At startup NoteLab requests a specific amout of initial and maximum memory.  These values are 
+REM stored in the variable %NOTELAB_VM_ARGS%.  If NoteLab fails to start from the invocation 
+REM of 'java' above, it may because there is not enough memory to meet NoteLab's request.  
+REM Thus start NoteLab without requiring a specific amount of memory.
+
+ECHO The system would not allow NoteLab to start with its requested amount of maximum or initial memory.
+ECHO The most likely cause is that there is not enough memory available.
+ECHO NoteLab will now start without requiring any special amount of memory.
+
+java -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;"%CLASSPATH%" noteLab.util.StartupUtilities %NOTELAB_ARGS% %*
+
+REM If the errorlevel is set to 0 then this invocation of 'java' was successful and the script should 
+REM just finish.  Otherwise a message should be printed stating that NoteLab could not be started.
+IF NOT ERRORLEVEL 1 GOTO Finish
+
+ECHO NoteLab could not be started.  See the messages above to find the cause of the failure.
+ECHO For assistance, NoteLab's head developer, Dominic Kramer, can be contacted at kramerd@users.sourceforge.net.
+ECHO Please include any messages above and the messages below for the best support.
+java -version
+
+REM The label that marks the part of the script that cleans up the environment variables.
+:Finish
+
 REM Reset all of the constructed variables
 set INIT_FILE=
 set NOTELAB_VM_ARGS=
