@@ -31,6 +31,7 @@ import java.awt.Rectangle;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.MouseInputListener;
 
@@ -62,6 +63,7 @@ public class MainPanel extends JPanel implements RepaintListener
       this.paintPanel.addMouseMotionListener(inputListener);
       
       this.scrollPane = new JScrollPane(this.paintPanel);
+      this.scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
       this.scrollPane.setWheelScrollingEnabled(true);
       this.scrollPane.
          setHorizontalScrollBarPolicy(
