@@ -38,11 +38,11 @@ import javax.swing.Scrollable;
 
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.render.SwingRenderer2D;
+import noteLab.util.render.SwingRenderer2D.RenderMode;
 import noteLab.util.settings.DebugSettings;
 
 public class SwingDrawingBoard extends JPanel implements Scrollable
 {
-   private static final boolean ANTIALIAS = true;
    private static final int SCROLL_STEP = 20;
    
    private CompositeCanvas canvas;
@@ -83,7 +83,12 @@ public class SwingDrawingBoard extends JPanel implements Scrollable
       
       Graphics2D g2d = (Graphics2D)g;
       super.paintComponent(g2d);
-      this.renderer.setSwingGraphics(g2d, ANTIALIAS);
+      
+      RenderMode mode = RenderMode.Appearance;
+      if (this.mainPanel.isScrolling())
+         mode = RenderMode.Performance;
+      
+      this.renderer.setSwingGraphics(g2d, mode);
       canvas.renderInto(this.renderer);
       
       if (DebugSettings.getSharedInstance().displayUpdateBox())
