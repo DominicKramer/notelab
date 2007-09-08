@@ -41,6 +41,12 @@ import noteLab.util.settings.DebugSettings;
 
 public class SwingRenderer2D extends Renderer2D
 {
+   public enum RenderMode
+   {
+      Appearance, 
+      Performance
+   };
+   
    private static final float SCALE_FACTOR = 100000;
    
    private Graphics2D g2d;
@@ -53,7 +59,7 @@ public class SwingRenderer2D extends Renderer2D
       this.width = 0;
    }
    
-   public void setSwingGraphics(Graphics2D g2d, boolean antialias)
+   public void setSwingGraphics(Graphics2D g2d, RenderMode mode)
    {
       if (g2d == null)
          throw new NullPointerException();
@@ -62,34 +68,60 @@ public class SwingRenderer2D extends Renderer2D
       this.g2d.scale(1.0/SCALE_FACTOR, 1.0/SCALE_FACTOR);
       setSelected(false);
       
-      setRenderingHints(antialias);
+      setRenderingHints(mode);
    }
    
-   private void setRenderingHints(boolean antialias)
+   private void setRenderingHints(RenderMode mode)
    {
-      Object val = RenderingHints.VALUE_ANTIALIAS_OFF;
-      if (antialias)
-         val = RenderingHints.VALUE_ANTIALIAS_ON;
+      if (mode == null)
+         throw new NullPointerException();
       
-      this.g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, val);
-      
-      this.g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
-                                RenderingHints.VALUE_RENDER_QUALITY);
-      
-      this.g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
-                                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-      
-      this.g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, 
-                                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-      
-      this.g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, 
-                                RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-      
-      this.g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
-                                RenderingHints.VALUE_STROKE_PURE);
-      
-      this.g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
-                                RenderingHints.VALUE_DITHER_ENABLE);
+      if (mode == RenderMode.Appearance)
+      {
+         this.g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+                                   RenderingHints.VALUE_ANTIALIAS_ON);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
+                                   RenderingHints.VALUE_RENDER_QUALITY);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+                                   RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, 
+                                   RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, 
+                                   RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
+                                   RenderingHints.VALUE_STROKE_PURE);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
+                                   RenderingHints.VALUE_DITHER_ENABLE);
+      }
+      else if (mode == RenderMode.Performance)
+      {
+         this.g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+                                   RenderingHints.VALUE_ANTIALIAS_OFF);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
+                                   RenderingHints.VALUE_RENDER_SPEED);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+                                   RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, 
+                                   RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, 
+                                   RenderingHints.VALUE_COLOR_RENDER_SPEED);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
+                                   RenderingHints.VALUE_STROKE_PURE);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
+                                   RenderingHints.VALUE_DITHER_DISABLE);
+      }
    }
    
    @Override
