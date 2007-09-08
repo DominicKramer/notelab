@@ -39,7 +39,7 @@ public class ImageRenderer2D extends SwingRenderer2D
          throw new NullPointerException();
       
       Graphics2D g2d = image.createGraphics();
-      setSwingGraphics(g2d, true);
+      setSwingGraphics(g2d, RenderMode.Appearance);
    }
    
    @Override
