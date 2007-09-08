@@ -50,7 +50,7 @@ public class PrinterRenderer2D extends SwingRenderer2D
       double pageHeight = format.getImageableHeight();
       g2d.scale(pageWidth/width, pageHeight/height);
       
-      setSwingGraphics(g2d, true);
+      setSwingGraphics(g2d, RenderMode.Appearance);
    }
    
    @Override
