@@ -28,6 +28,8 @@ import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,7 +42,9 @@ import noteLab.model.Page;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.settings.DebugSettings;
 
-public class MainPanel extends JPanel implements RepaintListener
+public class MainPanel 
+                extends JPanel implements 
+                                  RepaintListener, AdjustmentListener
 {
    private CompositeCanvas canvas;
    private JPanel paintPanel;
@@ -63,6 +67,8 @@ public class MainPanel extends JPanel implements RepaintListener
       this.paintPanel.addMouseMotionListener(inputListener);
       
       this.scrollPane = new JScrollPane(this.paintPanel);
+      this.scrollPane.getVerticalScrollBar().addAdjustmentListener(this);
+      this.scrollPane.getHorizontalScrollBar().addAdjustmentListener(this);
       this.scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
       this.scrollPane.setWheelScrollingEnabled(true);
       this.scrollPane.
@@ -81,6 +87,12 @@ public class MainPanel extends JPanel implements RepaintListener
       return this.canvas;
    }
    
+   public boolean isScrolling()
+   {
+      return this.scrollPane.getVerticalScrollBar().getValueIsAdjusting() || 
+             this.scrollPane.getHorizontalScrollBar().getValueIsAdjusting();
+   }
+   
    public void updatePreferredSize()
    {
       int width = 1+(int)(this.canvas.getWidth()+this.canvas.getX());
@@ -95,10 +107,33 @@ public class MainPanel extends JPanel implements RepaintListener
    
    public void repaint()
    {
-      super.repaint();
+      boolean painted = false;
+      if (this.scrollPane != null)
+      {
+         JViewport viewPort = this.scrollPane.getViewport();
+         if (viewPort != null)
+         {
+            Rectangle viewRect = viewPort.getViewRect();
+            painted = (viewRect != null);
+            if (painted)
+            {
+               super.repaint(viewRect);
+               
+               if (DebugSettings.getSharedInstance().notifyOfRepaints())
+                  System.err.println("repaint() called and only the current " +
+                                     "visible rectangle " + viewRect + 
+                                     " was repainted");
+            }
+         }
+      }
       
-      if (DebugSettings.getSharedInstance().notifyOfRepaints())
-         System.err.println("repaint() called");
+      if (!painted)
+      {
+         super.repaint();
+         
+         if (DebugSettings.getSharedInstance().notifyOfRepaints())
+            System.err.println("repaint() called and the entire canvas was repainted");
+      }
    }
    
    public void repaint(float x, float y, float width, float height)
@@ -161,5 +196,14 @@ public class MainPanel extends JPanel implements RepaintListener
    {
       //Indicates no coalescing has been done
       return null;
+   }
+   
+   public void adjustmentValueChanged(AdjustmentEvent e)
+   {
+      if (e == null)
+         throw new NullPointerException();
+      
+      if (!e.getValueIsAdjusting())
+         repaint();
    }
 }
