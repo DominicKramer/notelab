@@ -107,33 +107,10 @@ public class MainPanel
    
    public void repaint()
    {
-      boolean painted = false;
-      if (this.scrollPane != null)
-      {
-         JViewport viewPort = this.scrollPane.getViewport();
-         if (viewPort != null)
-         {
-            Rectangle viewRect = viewPort.getViewRect();
-            painted = (viewRect != null);
-            if (painted)
-            {
-               super.repaint(viewRect);
-               
-               if (DebugSettings.getSharedInstance().notifyOfRepaints())
-                  System.err.println("repaint() called and only the current " +
-                                     "visible rectangle " + viewRect + 
-                                     " was repainted");
-            }
-         }
-      }
+      super.repaint();
       
-      if (!painted)
-      {
-         super.repaint();
-         
-         if (DebugSettings.getSharedInstance().notifyOfRepaints())
-            System.err.println("repaint() called and the entire canvas was repainted");
-      }
+      if (DebugSettings.getSharedInstance().notifyOfRepaints())
+         System.err.println("repaint() called");
    }
    
    public void repaint(float x, float y, float width, float height)
