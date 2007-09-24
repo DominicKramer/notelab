@@ -102,7 +102,6 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
    private Rectangle2D.Float selRect;
    
    private Rectangle2D.Float initScale;
-   private Rectangle2D.Float deltaScale;
    
    private Vector<CopyStateListener> copyListenerVec;
    
@@ -118,7 +117,6 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       this.toolBar = new SelectionToolBar();
       
       this.initScale = new Rectangle2D.Float();
-      this.deltaScale = new Rectangle2D.Float();
    }
    
    public SelectionToolBar getToolBarButton()
@@ -250,16 +248,14 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
              this.initScale.width  != 0    && 
              this.initScale.height != 0)
          {
-            float xDiff = lastPt.getX()-this.prevPoint.getX();
-            float yDiff = lastPt.getY()-this.prevPoint.getY();
+            float newWidth  = this.initScale.width+lastPt.getX()-this.prevPoint.getX();
+            float newHeight = this.initScale.height+lastPt.getY()-this.prevPoint.getY();
             
-            this.deltaScale.width  += xDiff;
-            this.deltaScale.height += yDiff;
+            float xScale = newWidth/this.initScale.width;
+            float yScale = newHeight/this.initScale.height;
             
-            float xScale = (this.initScale.width+this.deltaScale.width)/
-                            this.initScale.width;
-            float yScale = (this.initScale.height+this.deltaScale.height)/
-                            this.initScale.height;
+            this.initScale.width = newWidth;
+            this.initScale.height = newHeight;
             
             float initX = this.initScale.x;
             float initY = this.initScale.y;
@@ -281,7 +277,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                stroke.translateBy(-initX, -initY);
                unioner.union(stroke.getBounds2D());
                
-               stroke.scaleTo(xScale, yScale);
+               stroke.resizeTo(xScale, yScale);
                unioner.union(stroke.getBounds2D());
                
                stroke.translateBy(initX, initY);
@@ -805,7 +801,6 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             Rectangle2D union = unioner.getUnion();
             
             initScale.setRect(union);
-            deltaScale.setRect(0, 0, 0, 0);
          }
          else if (cmmd.equals(Action.Select_All.toString()))
          {
