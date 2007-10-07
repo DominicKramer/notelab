@@ -69,15 +69,9 @@ public class SlidingPanel extends JPanel implements ActionListener
       this.forwardButton.setActionCommand(FORWARD);
       this.forwardButton.setPreferredSize(new Dimension(prefSize, prefSize));
       
-      JPanel leftPanel = new JPanel(new GridLayout(1,1));
-      leftPanel.add(this.backButton);
-      
-      JPanel rightPanel = new JPanel(new GridLayout(1,1));
-      rightPanel.add(this.forwardButton);
-      
-      add(leftPanel, BorderLayout.WEST);
+      add(this.backButton, BorderLayout.WEST);
       add(this.contentPanel, BorderLayout.CENTER);
-      add(rightPanel, BorderLayout.EAST);
+      add(this.forwardButton, BorderLayout.EAST);
    }
    
    public void append(Component comp)
