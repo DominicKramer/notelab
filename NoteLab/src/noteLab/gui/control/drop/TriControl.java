@@ -25,13 +25,12 @@
 package noteLab.gui.control.drop;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.WindowConstants;
 
 import noteLab.gui.DecoratedButton.Style;
@@ -44,8 +43,8 @@ import noteLab.util.geom.unit.MValue;
 import noteLab.util.geom.unit.Unit;
 
 public class TriControl<V, T extends DualDropButton<V, T>> 
-                extends JPanel implements ValueControl<V, T>, 
-                                          ValueChangeListener<V, T>
+                extends JToolBar implements ValueControl<V, T>, 
+                                            ValueChangeListener<V, T>
 {
    private T drop1;
    private T drop2;
@@ -58,6 +57,8 @@ public class TriControl<V, T extends DualDropButton<V, T>>
    {
       if (givenDrop1 == null || givenDrop2 == null || givenDrop3 == null)
          throw new NullPointerException();
+      
+      setFloatable(false);
       
       this.changeListenerVec = new Vector<ValueChangeListener<V, T>>();
       this.selListenerVec = 
@@ -99,7 +100,6 @@ public class TriControl<V, T extends DualDropButton<V, T>>
       this.drop3.getDecoratedButton().addActionListener(drop3Listener);
       this.drop3.addValueChangeListener(this);
       
-      setLayout(new FlowLayout(FlowLayout.LEFT));
       add(this.drop1);
       add(this.drop2);
       add(this.drop3);
