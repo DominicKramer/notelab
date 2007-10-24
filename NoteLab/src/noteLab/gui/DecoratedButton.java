@@ -47,26 +47,26 @@ public class DecoratedButton extends JButton implements Selectable
       Square
    }
    
-   private int value;
+   private int imageWidth;
    private Color color;
    private boolean fill;
    private Style style;
    private boolean isSelected;
    private float scaleFactor;
    
-   public DecoratedButton(int value, Color color, 
+   public DecoratedButton(int imageWidth, Color color, 
                           boolean fill, Style style, 
-                          int prefSize, float scaleFactor)
+                          int buttonWidth, float scaleFactor)
    {
-      setValue(value);
+      setValue(imageWidth);
       setColor(color);
       setStyle(style);
       setFilled(fill);
       setSelected(false);
       scaleTo(scaleFactor);
       
-      prefSize += 2*DELTA;
-      setPreferredSize(new Dimension(prefSize, prefSize));
+      buttonWidth += 2*DELTA;
+      setPreferredSize(new Dimension(buttonWidth, buttonWidth));
    }
    
    public float getScaleFactor()
@@ -76,7 +76,7 @@ public class DecoratedButton extends JButton implements Selectable
    
    public void resizeTo(float factor)
    {
-      this.value *= factor;
+      this.imageWidth *= factor;
    }
    
    public void scaleBy(float scaleFactor)
@@ -122,12 +122,12 @@ public class DecoratedButton extends JButton implements Selectable
    
    public int getValue()
    {
-      return this.value;
+      return this.imageWidth;
    }
 
    public void setValue(int width)
    {
-      this.value = width;
+      this.imageWidth = width;
       repaint();
    }
    
@@ -163,46 +163,48 @@ public class DecoratedButton extends JButton implements Selectable
       
       g.setColor(this.color);
       
-      int realValue = (int)(this.scaleFactor*this.value);
+      int realValue = (int)(this.scaleFactor*this.imageWidth);
       
       Dimension sizeDim = getSize();
-      int size = Math.max(sizeDim.width, sizeDim.height);
       
+      int xMid = sizeDim.width/2;
+      int x1 = xMid-(int)Math.round(realValue/2.0);
+      int x2 = xMid+realValue/2;
       
-      int mid = size/2;
-      int x1 = mid-realValue/2;
-      int x2 = mid+realValue/2;
+      int yMid = sizeDim.height/2;
+      int y1 = yMid-(int)Math.round(realValue/2.0);
       
       if (this.style == Style.Circle)
       {
          if (this.fill)
-            g.fillOval(x1, x1, realValue, realValue);
+            g.fillOval(x1, y1, realValue, realValue);
          else
-            g.drawOval(x1, x1, realValue, realValue);
+            g.drawOval(x1, y1, realValue, realValue);
       }
       else if (this.style == Style.Square)
       {
          if (this.fill)
-            g.fillRect(x1, x1, realValue, realValue);
+            g.fillRect(x1, y1, realValue, realValue);
          else
-            g.drawRect(x1, x1, realValue, realValue);
+            g.drawRect(x1, y1, realValue, realValue);
       }
       else if (this.style == Style.Line)
       {
          int littleDelta = 2;
-         int yTop = mid+littleDelta;
-         int yBottom = mid-littleDelta;
+         int yTop = yMid+littleDelta;
+         int yBottom = yMid-littleDelta;
          
-         g.drawLine(x1, mid, x2, mid);
+         g.drawLine(x1, xMid, x2, xMid);
          g.drawLine(x1, yTop, x1, yBottom);
          g.drawLine(x2, yTop, x2, yBottom);
       }
       
       if (this.isSelected)
       {
-         int width = getWidth()-3;
+         int width = sizeDim.width-4;
+         int height = sizeDim.height-4;
          g.setColor(SELECTION_COLOR);
-         g.draw3DRect(1, 1, width, width, true);
+         g.draw3DRect(1, 1, width, height, true);
       }
    }
    
