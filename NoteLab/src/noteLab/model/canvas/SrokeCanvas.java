@@ -244,9 +244,9 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       {
          super(DefinedIcon.compose);
          
-         ColorControl color1 = new ColorControl(PEN_1_COLOR, BUTTON_SIZE);
-         ColorControl color2 = new ColorControl(PEN_2_COLOR, BUTTON_SIZE);
-         ColorControl color3 = new ColorControl(PEN_3_COLOR, BUTTON_SIZE);
+         ColorControl color1 = new ColorControl(PEN_1_COLOR, DUAL_BUTTON_SIZE);
+         ColorControl color2 = new ColorControl(PEN_2_COLOR, DUAL_BUTTON_SIZE);
+         ColorControl color3 = new ColorControl(PEN_3_COLOR, DUAL_BUTTON_SIZE);
          this.colorControl = 
             new TriControl<Color, ColorControl>(color1, color2, color3);
          
@@ -254,25 +254,28 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
             new SizeControl("", FINE_SIZE_PX, MIN_SIZE_PX, 
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, 
-                            Color.BLACK, BUTTON_SIZE, 1);
+                            Color.BLACK, DUAL_BUTTON_SIZE, 1);
          SizeControl size2 = 
             new SizeControl("", MEDIUM_SIZE_PX, MIN_SIZE_PX, 
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, 
-                            Color.BLACK, BUTTON_SIZE, 1);
+                            Color.BLACK, DUAL_BUTTON_SIZE, 1);
          SizeControl size3 = 
             new SizeControl("", THICK_SIZE_PX, MIN_SIZE_PX, 
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, Color.BLACK, 
-                            BUTTON_SIZE, 1);
+                            DUAL_BUTTON_SIZE, 1);
          
          this.sizeControl = 
             new TriControl<MValue, SizeControl>(size1, size2, size3);
          
-         JToolBar toolPanel = getToolBar();
+         
+         JToolBar toolPanel = new JToolBar();
+         toolPanel.setFloatable(false);
          toolPanel.add(this.sizeControl);
          toolPanel.addSeparator();
          toolPanel.add(this.colorControl);
+         getSlidingPanel().append(toolPanel);
          
          this.colorControl.addValueChangeListener(this);
          this.colorControl.addSelectionChangeListener(this);
