@@ -127,15 +127,12 @@ public class MainFrame extends JFrame implements Menued,
         
         BinderToolBar binderToolBar = new BinderToolBar(this.canvas);
         topPanel.add(binderToolBar);
-        
-      JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-      bottomPanel.add(new CanvasControlToolBar(this.canvas));
       
       this.toolbarPanel = new JPanel();
       this.toolbarPanel.setLayout(new BoxLayout(this.toolbarPanel, 
                                                 BoxLayout.Y_AXIS));
       this.toolbarPanel.add(topPanel);
-      this.toolbarPanel.add(bottomPanel);
+      this.toolbarPanel.add(new CanvasControlToolBar(this.canvas));
       
       this.progressBar = new JProgressBar(0,100);
       this.progressBar.setStringPainted(false);
