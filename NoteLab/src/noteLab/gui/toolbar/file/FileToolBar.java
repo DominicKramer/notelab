@@ -77,6 +77,8 @@ public class FileToolBar
       if (mainFrame == null)
          throw new NullPointerException();
       
+      setFloatable(false);
+      
       this.mainFrame = mainFrame;
       
       JButton saveButton = 
