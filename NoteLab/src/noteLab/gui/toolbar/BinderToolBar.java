@@ -72,6 +72,8 @@ public class BinderToolBar extends JToolBar implements ActionListener,
    
    public BinderToolBar(CompositeCanvas canvas)
    {
+      setFloatable(false);
+      
       this.canvas = canvas;
       
       // construct the buttons for zooming
