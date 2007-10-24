@@ -551,7 +551,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          Page curPage = getCompositeCanvas().getBinder().getCurrentPage();
          this.bgColorButton = 
             new ColorControl(curPage.getPaper().getBackgroundColor(), 
-                             BUTTON_SIZE+8);
+                             DUAL_BUTTON_SIZE);
          JButton colorButton = this.bgColorButton.getDecoratedButton();
          colorButton.setActionCommand(Action.ChangeBGColor.toString());
          colorButton.addActionListener(this);
@@ -563,6 +563,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.clearPageButton.addActionListener(this);
          
          JToolBar selBar = new JToolBar();
+         selBar.setFloatable(false);
          selBar.add(this.selButton);
          selBar.add(this.selAllButton);
          selBar.addSeparator();
@@ -593,24 +594,22 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.dropButton.setEnabled(false);
          
          JToolBar editBar = new JToolBar();
+         editBar.setFloatable(false);
          editBar.add(this.delPageButton);
          editBar.add(this.clearPageButton);
          editBar.addSeparator();
          editBar.add(this.cutToolbar);
          
          JToolBar importBar = new JToolBar();
+         importBar.setFloatable(false);
          importBar.add(this.openButton);
          importBar.add(this.fileField);
          importBar.add(this.dropButton);
          
-         SlidingPanel slidePanel = new SlidingPanel();
+         SlidingPanel slidePanel = getSlidingPanel();
          slidePanel.append(selBar);
          slidePanel.append(editBar);
          slidePanel.append(importBar);
-         
-         //add the components to the toolbar
-         JToolBar panel = getToolBar();
-         panel.add(slidePanel);
          
          //set up the menu items
          this.menuItemVec = new Vector<PathMenuItem>();
