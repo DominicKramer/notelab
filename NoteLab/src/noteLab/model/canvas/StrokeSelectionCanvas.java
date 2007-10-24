@@ -536,13 +536,13 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          this.sizeControl = 
                         new SizeControl("Size", 1.2, 0, 20, 0.2, 
                                         Unit.PIXEL, Style.Circle, false, 
-                                        Color.BLACK, BUTTON_SIZE+BUTTON_SIZE/4, 1);
+                                        Color.BLACK, DUAL_BUTTON_SIZE, 1);
          SizeListener sizeListener = new SizeListener();
          this.sizeControl.addValueChangeListener(sizeListener);
          this.sizeControl.getDecoratedButton().
                              addActionListener(sizeListener);
          
-         this.colorControl = new ColorControl(Color.BLACK, BUTTON_SIZE+BUTTON_SIZE/4);
+         this.colorControl = new ColorControl(Color.BLACK, DUAL_BUTTON_SIZE);
          
          ColorListener colorListener = new ColorListener();
          this.colorControl.addValueChangeListener(colorListener);
@@ -558,6 +558,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          selUnselGroup.add(this.scaleButton);
          
          JToolBar selToolBar = new JToolBar();
+         selToolBar.setFloatable(false);
          selToolBar.add(this.selButton);
          selToolBar.add(this.selBoxButton);
          selToolBar.add(this.selAllButton);
@@ -568,6 +569,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          selToolBar.add(this.unselAllButton);
          
          JToolBar editToolBar = new JToolBar();
+         editToolBar.setFloatable(false);
          editToolBar.add(this.removeButton);
          editToolBar.add(this.combButton);
          editToolBar.add(this.moveButton);
@@ -580,15 +582,12 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          
          CutCopyPasteToolBar<CopyVector<Stroke>> copyToolbar = 
                                                     new CutCopyPasteToolBar(this);
-         copyToolbar.setFloatable(true);
+         copyToolbar.setFloatable(false);
          
-         SlidingPanel slidePanel = new SlidingPanel();
+         SlidingPanel slidePanel = getSlidingPanel();
          slidePanel.append(selToolBar);
          slidePanel.append(editToolBar);
          slidePanel.append(copyToolbar);
-         
-         JToolBar toolBarPanel = getToolBar();
-         toolBarPanel.add(slidePanel);
          
          // set up the menus
          this.menuItemVec = new Vector<PathMenuItem>();
