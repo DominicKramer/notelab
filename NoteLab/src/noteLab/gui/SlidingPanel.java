@@ -24,10 +24,10 @@
 
 package noteLab.gui;
 
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -35,9 +35,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.WindowConstants;
 
-public class SlidingPanel extends JPanel implements ActionListener
+public class SlidingPanel extends JToolBar implements ActionListener
 {
    private static final String FORWARD = "Forward";
    private static final String BACK = "Back";
@@ -50,27 +51,32 @@ public class SlidingPanel extends JPanel implements ActionListener
    
    public SlidingPanel()
    {
-      super(new BorderLayout());
+      setFloatable(false);
       
       this.cardLayout = new CardLayout(0, 0);
       this.contentPanel = new JPanel(this.cardLayout);
       
       int size = GuiSettingsConstants.SMALL_BUTTON_SIZE;
-      int prefSize = size+2;
+      Dimension prefSize = new Dimension(size+3, size+3);
       
       this.backButton = new JButton(DefinedIcon.backward.getIcon(size)); 
       this.backButton.addActionListener(this);
       this.backButton.setActionCommand(BACK);
-      this.backButton.setPreferredSize(new Dimension(prefSize, prefSize));
+      this.backButton.setBorderPainted(false);
+      this.backButton.setPreferredSize(prefSize);
+      this.backButton.setVisible(false);
       
       this.forwardButton = new JButton(DefinedIcon.forward.getIcon(size));
       this.forwardButton.addActionListener(this);
       this.forwardButton.setActionCommand(FORWARD);
-      this.forwardButton.setPreferredSize(new Dimension(prefSize, prefSize));
+      this.forwardButton.setBorderPainted(false);
+      this.forwardButton.setPreferredSize(prefSize);
+      this.forwardButton.setVisible(false);
       
-      add(this.backButton, BorderLayout.WEST);
-      add(this.contentPanel, BorderLayout.CENTER);
-      add(this.forwardButton, BorderLayout.EAST);
+      setLayout(new FlowLayout(FlowLayout.LEFT));
+      add(this.backButton);
+      add(this.contentPanel);
+      add(this.forwardButton);
    }
    
    public void append(Component comp)
@@ -80,8 +86,13 @@ public class SlidingPanel extends JPanel implements ActionListener
       
       this.contentPanel.add(comp, "");
       
-      Dimension minPrefSize = this.cardLayout.preferredLayoutSize(this.contentPanel);
-      this.contentPanel.setPreferredSize(minPrefSize);
+      if (this.contentPanel.getComponentCount() == 2)
+      {
+         this.backButton.setVisible(true);
+         this.forwardButton.setVisible(true);
+      }
+      
+      setPreferredSize(getMinimumSize());
    }
    
    public void actionPerformed(ActionEvent e)
