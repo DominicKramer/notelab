@@ -24,11 +24,7 @@
 
 package noteLab.gui;
 
-import java.awt.FlowLayout;
-import java.awt.Insets;
-
 import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 
 import noteLab.gui.menu.Menued;
 import noteLab.model.canvas.SubCanvas;
@@ -37,12 +33,15 @@ public abstract class ToolBarButton
                         extends JToggleButton 
                                    implements Menued, GuiSettingsConstants
 {
-   private JToolBar toolBar;
+   private SlidingPanel slidingPanel;
    
    public ToolBarButton(DefinedIcon icon)
    {
       super(icon.getIcon(BUTTON_SIZE));
       
+      this.slidingPanel = new SlidingPanel();
+      
+      /*
       this.toolBar = new JToolBar(JToolBar.HORIZONTAL);
       this.toolBar.setMargin(new Insets(0, 0, 0, 0));
       this.toolBar.setFloatable(false);
@@ -51,11 +50,12 @@ public abstract class ToolBarButton
       layout.setHgap(2);
       this.toolBar.setLayout(layout);
       this.toolBar.setBorderPainted(false);
+      */
    }
    
-   public JToolBar getToolBar()
+   public SlidingPanel getSlidingPanel()
    {
-      return this.toolBar;
+      return this.slidingPanel;
    }
    
    public abstract SubCanvas getCanvas();
