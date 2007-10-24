@@ -30,9 +30,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
-import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.EmptyBorder;
 
 import noteLab.gui.ToolBarButton;
 import noteLab.model.canvas.CompositeCanvas;
@@ -40,8 +39,7 @@ import noteLab.model.canvas.CompositeCanvas;
 public class CanvasControlToolBar extends JToolBar implements ActionListener
 {
    private CompositeCanvas canvas;
-   private JPanel buttonPanel;
-   private JPanel controlPanel;
+   private JToolBar controlPanel;
    
    private Vector<ToolBarButton> toolBarVec;
    
@@ -50,18 +48,24 @@ public class CanvasControlToolBar extends JToolBar implements ActionListener
       if (canvas == null)
          throw new NullPointerException();
       
+      setFloatable(false);
+      setLayout(new FlowLayout(FlowLayout.LEFT, 2, 0));
+      
       this.canvas = canvas;
       
-      this.buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-      this.buttonPanel.setBorder(new TitledBorder(""));
-      
-      this.controlPanel = new JPanel(new CardLayout());
-      this.controlPanel.setBorder(new TitledBorder(""));
+      this.controlPanel = new JToolBar();
+      this.controlPanel.setFloatable(false);
+      this.controlPanel.setLayout(new CardLayout());
       
       this.toolBarVec = this.canvas.getToolBars();
       
+      //FlowLayout mainLayout = new FlowLayout(FlowLayout.LEFT);
+      //mainLayout.setVgap(0);
+      // Constructor definition:  
+      // new EmptyBorder(int top, int left, int bottom, int right)
+      setBorder(new EmptyBorder(-10, 5, -10, 0));
+      
       ToolBarButton tempButton;
-      JToolBar tempPanel;
       String cmmd;
       int i = 0;
       for (ToolBarButton toolBar : this.toolBarVec)
@@ -71,15 +75,12 @@ public class CanvasControlToolBar extends JToolBar implements ActionListener
          tempButton = toolBar;
          tempButton.setActionCommand(cmmd);
          tempButton.addActionListener(this);
-         this.buttonPanel.add(tempButton);
+         add(tempButton);
          
-         tempPanel = toolBar.getToolBar();
-         
-         this.controlPanel.add(tempPanel, cmmd);
+         this.controlPanel.add(toolBar.getSlidingPanel(), cmmd);
       }
       
-      setLayout(new FlowLayout(FlowLayout.LEFT));
-      add(this.buttonPanel);
+      //setLayout(mainLayout);
       add(this.controlPanel);
       
       this.toolBarVec.firstElement().doClick();
