@@ -51,6 +51,8 @@ public class UndoRedoToolBar extends JToolBar implements UndoRedoListener,
       if (manager == null)
          throw new NullPointerException();
       
+      setFloatable(false);
+      
       this.manager = manager;
       this.manager.addUndoRedoListener(this);
       
