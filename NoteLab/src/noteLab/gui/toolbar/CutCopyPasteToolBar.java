@@ -57,6 +57,8 @@ public class CutCopyPasteToolBar<E extends Object & CopyReady<E>>
       if (handler == null)
          throw new NullPointerException();
       
+      setFloatable(false);
+      
       this.handler = handler;
       this.handler.addCopyStateListener(this);
       
