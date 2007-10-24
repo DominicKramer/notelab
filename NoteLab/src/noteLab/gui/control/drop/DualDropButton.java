@@ -24,12 +24,12 @@
 
 package noteLab.gui.control.drop;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.util.Vector;
 
-import javax.swing.JPanel;
+import javax.swing.JToolBar;
 
 import noteLab.gui.DecoratedButton;
 import noteLab.gui.DecoratedButton.Style;
@@ -38,32 +38,35 @@ import noteLab.gui.listener.ValueChangeListener;
 import noteLab.util.Selectable;
 
 public abstract class DualDropButton<V, S> 
-                         extends JPanel implements ValueControl<V, S>, 
-                                                   Selectable
+                         extends JToolBar implements ValueControl<V, S>, 
+                                                     Selectable
 {
+   private static final int DROP_BUTTON_WIDTH = 15;
+   
    private DecoratedButton decorButton;
    private DropDownButton dropButton;
    protected Vector<ValueChangeListener<V, S>> listenerVec;
    
-   public DualDropButton(int width, Color color, 
+   public DualDropButton(int imageWidth, Color color, 
                          boolean fill, Style style, 
-                         int prefSize, float scaleFactor)
+                         int buttonWidth, float scaleFactor)
    {
-      super();
+      setFloatable(false);
       
       this.decorButton = 
-            new DecoratedButton(width, color, fill, style, 
-                                prefSize, scaleFactor);
+            new DecoratedButton(imageWidth, color, fill, style, 
+                                buttonWidth, scaleFactor);
+      
       this.dropButton = new DropDownButton();
-      this.dropButton.setPreferredSize(new Dimension(15, prefSize));
+      this.dropButton.setPreferredSize(new Dimension(DROP_BUTTON_WIDTH, buttonWidth));
       
       this.listenerVec = new Vector<ValueChangeListener<V, S>>();
       
-      BorderLayout layout = new BorderLayout();
-      layout.setHgap(2);
+      FlowLayout layout = new FlowLayout(FlowLayout.CENTER);
+      layout.setHgap(1);
       setLayout(layout);
-      add(this.decorButton, BorderLayout.CENTER);
-      add(this.dropButton, BorderLayout.EAST);
+      add(this.decorButton);
+      add(this.dropButton);
    }
    
    @Override
