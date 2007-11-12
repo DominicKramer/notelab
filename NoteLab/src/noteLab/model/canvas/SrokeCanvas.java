@@ -374,6 +374,8 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          pen.setWidth(width);
          pen.setColor(color);
          pen.scaleTo(getCompositeCanvas().getZoomLevel());
+         
+         getCompositeCanvas().setCursor(pen.getCursor());
       }
       
       public void selectionChanged(SelectionChangeEvent event)
@@ -454,6 +456,7 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       private void resizeControlsTo(float factor)
       {
          pen.resizeTo(factor);
+         getCompositeCanvas().setCursor(pen.getCursor());
          
          resizeSizeControlTo(this.sizeControl.getControl1(), factor);
          resizeSizeControlTo(this.sizeControl.getControl2(), factor);
@@ -463,6 +466,7 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       private void scaleControlsTo(float factor)
       {
          pen.scaleTo(factor);
+         getCompositeCanvas().setCursor(pen.getCursor());
          
          scaleSizeControlTo(this.sizeControl.getControl1(), factor);
          scaleSizeControlTo(this.sizeControl.getControl2(), factor);
@@ -472,6 +476,7 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       private void scaleControlsBy(float factor)
       {
          pen.scaleBy(factor);
+         getCompositeCanvas().setCursor(pen.getCursor());
          
          scaleSizeControlBy(this.sizeControl.getControl1(), factor);
          scaleSizeControlBy(this.sizeControl.getControl2(), factor);
