@@ -33,6 +33,7 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.util.Vector;
 
+import noteLab.util.InfoCenter;
 import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
 import noteLab.util.render.Renderer2D;
@@ -47,6 +48,9 @@ public class Pen implements Tool
 {
    /** The default width of the line drawn by this tool. */
    private static final int DEFAULT_WIDTH = 1;
+   
+   private static final int MIN_CURSOR_WIDTH = 3;
+   private static final String CURSOR_NAME = InfoCenter.getAppName()+"CustomPenCursor";
    
    /** The default color of the line drawn by this tool. */
    private static final Color DEFAULT_COLOR = Color.BLACK;
@@ -96,7 +100,7 @@ public class Pen implements Tool
       this.initWidth = width/scaleLevel;
       this.width = width;
       this.color = color;
-      syncCursor();
+      this.cursor = getCursor();
       
       this.scaleLevel = scaleLevel;
       this.modListenerVec = new Vector<ModListener>();
@@ -135,7 +139,7 @@ public class Pen implements Tool
          throw new NullPointerException();
       
       this.color = color;
-      syncCursor();
+      invalidateCursor();
       
       notifyModListeners(ModType.Other);
    }
@@ -163,7 +167,7 @@ public class Pen implements Tool
       float newWidth = width/this.scaleLevel;
       this.initWidth = newWidth;
       this.width = newWidth;
-      syncCursor();
+      invalidateCursor();
       notifyModListeners(ModType.Other);
    }
    
@@ -174,7 +178,7 @@ public class Pen implements Tool
       
       this.initWidth = width;
       this.width = width;
-      syncCursor();
+      invalidateCursor();
       notifyModListeners(ModType.Other);
    }
    
@@ -185,44 +189,46 @@ public class Pen implements Tool
     */
    public Cursor getCursor()
    {
+      if (this.cursor == null)
+      {
+         int size = (int)Math.max(1+(int)this.width, MIN_CURSOR_WIDTH);
+         
+         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+         Graphics2D g2d = (Graphics2D)image.createGraphics();
+         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+                                             RenderingHints.VALUE_ANTIALIAS_ON);
+         
+         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
+                                             RenderingHints.VALUE_RENDER_QUALITY);
+         
+         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+                                             RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+         
+         g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, 
+                                             RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+         
+         g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, 
+                                             RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+         
+         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
+                                             RenderingHints.VALUE_STROKE_PURE);
+         
+         g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
+                                             RenderingHints.VALUE_DITHER_ENABLE);
+         g2d.setColor(this.color);
+         g2d.fillOval(0, 0, size, size);
+         
+         this.cursor = Toolkit.getDefaultToolkit().createCustomCursor(image, 
+                                                                      new Point(size/2, size/2), 
+                                                                      CURSOR_NAME);
+      }
+      
       return this.cursor;
    }
    
-   private void syncCursor()
+   private void invalidateCursor()
    {
-      float minSize = 3;
-      
-      System.err.println("this.width = "+this.width);
-      int size = (int)Math.max(1+(int)this.width, minSize);
-      
-      BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-      Graphics2D g2d = (Graphics2D)image.createGraphics();
-      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-                                          RenderingHints.VALUE_ANTIALIAS_ON);
-      
-      g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
-                                          RenderingHints.VALUE_RENDER_QUALITY);
-      
-      g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
-                                          RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-      
-      g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, 
-                                          RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-      
-      g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, 
-                                          RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-      
-      g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
-                                          RenderingHints.VALUE_STROKE_PURE);
-      
-      g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
-                                          RenderingHints.VALUE_DITHER_ENABLE);
-      g2d.setColor(this.color);
-      g2d.fillOval(0, 0, size, size);
-      
-      this.cursor = Toolkit.getDefaultToolkit().createCustomCursor(image, 
-                                                                   new Point(size/2, size/2), 
-                                                                   "PenCursor");
+      this.cursor = null;
    }
    
    /**
@@ -262,7 +268,7 @@ public class Pen implements Tool
       
       this.scaleLevel *= val;
       this.width = this.initWidth*this.scaleLevel;
-      syncCursor();
+      invalidateCursor();
       
       notifyModListeners(ModType.ScaleBy);
    }
@@ -278,7 +284,7 @@ public class Pen implements Tool
       this.initWidth *= val;
       this.width = this.initWidth;
       this.scaleLevel = 1;
-      syncCursor();
+      invalidateCursor();
       
       scaleTo(oldScale);
    }
@@ -296,7 +302,7 @@ public class Pen implements Tool
       
       this.scaleLevel = val;
       this.width = this.initWidth*val;
-      syncCursor();
+      invalidateCursor();
       
       notifyModListeners(ModType.ScaleTo);
    }
