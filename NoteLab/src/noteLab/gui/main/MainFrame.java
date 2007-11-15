@@ -101,7 +101,9 @@ public class MainFrame extends JFrame implements Menued,
       if (canvas == null)
          throw new NullPointerException();
       
-      setIconImage(DefinedIcon.feather.getIcon(24).getImage());
+      setIconImage(DefinedIcon.feather.
+                      getIcon(DefinedIcon.ORIGINAL_SIZE).
+                         getImage());
       
       //make the exit item on the file menu
       this.menuItemVec = new Vector<PathMenuItem>(1);
