@@ -423,7 +423,7 @@ public class SVGRenderer2D extends Renderer2D implements NoteLabFileConstants
       this.originX += x;
       this.originY += y;
    }
-
+   
    @Override
    public boolean isInClipRegion(Bounded bounded)
    {

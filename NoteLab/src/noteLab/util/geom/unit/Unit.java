@@ -75,7 +75,8 @@ public enum Unit implements NoteLabFileConstants
                                 Unit newUnit, 
                                 int screenRes)
    {
-      return getValue(curVal, curUnit, newUnit, screenRes, SettingsUtilities.getUnitScaleFactor());
+      return getValue(curVal, curUnit, newUnit, screenRes, 
+                      SettingsUtilities.getUnitScaleFactor());
    }
    
    /**

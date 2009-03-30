@@ -24,6 +24,8 @@
 
 package noteLab.util.structure;
 
+import java.util.Arrays;
+
 /**
  * This class represents a stack of a finite number of elements.  Stacks follow the first 
  * in first out paradigm.
@@ -140,8 +142,14 @@ public class FiniteStack<E>
     */
    public void clear()
    {
+      // Reset the variables recording the size stack
       this.curIndex = -1;
       this.curLength = 0;
+      
+      // Set each element in the stack to 'null'
+      // This will allow the garbage collector to 
+      // remove them from memory if appropriate.
+      Arrays.fill(this.stackArr, null);
    }
    
    public void setSize(int size)

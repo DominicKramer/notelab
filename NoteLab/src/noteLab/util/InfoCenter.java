@@ -66,7 +66,7 @@ public class InfoCenter
    private static final String NAME = "NoteLab";
    
    /** The application's version. */
-   private static final String VERSION = "0.1.5";
+   private static final String VERSION = "0.2";
    
    /** The file extension for this application's native file. */
    private static final String NATIVE_EXT = ".ntlb";
@@ -266,6 +266,11 @@ public class InfoCenter
    public static final File getAppHome()
    {
       return APP_HOME;
+   }
+   
+   public static final String getUserHome()
+   {
+      return System.getProperty("user.home");
    }
    
    /**

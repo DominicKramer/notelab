@@ -307,12 +307,6 @@ public class NoteLabFileLoader
                           String qName) throws SAXException
    {
       super.endElement(uri, localName, qName);
-      
-      if (this.lastID == null)
-         return;
-      
-      if (this.lastID.equals(STROKE_ID_NAME))
-         this.curStroke.setIsStable(true);
    }
 
    @Override

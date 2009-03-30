@@ -30,7 +30,9 @@ import noteLab.model.Page;
 
 public class FlowBinder extends Binder
 {
-   private static final float DEFAULT_GAP = 7;
+   //private static final float DEFAULT_GAP = 7;
+   //TODO:  CHANGE THIS BACK TO 7 WHEN THE RENDERER IS FIXED
+   private static final float DEFAULT_GAP = 0;
    
    private float pageGap;
    

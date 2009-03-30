@@ -1,0 +1,28 @@
+12-22-2006_04-55-42_build.xml
+---------------------------------
+This version of the build script has the ability to backup the ant build script implemented.
+
+12-22-2006_05-17-24_build.xml
+---------------------------------
+This version of the buildfile has support for backing up the script directory.
+
+12-22-2006_06-07-59_build.xml
+---------------------------------
+This version of the build file has support for constructing the old jar-based builds as well as the new zip-based builds which include starup scripts.
+
+12-22-2006_06-33-29_build.xml
+---------------------------------
+Now the build file adds a build.xml file to the zip file when it is making a zip build.
+
+12-22-2006_09-45-02_build.xml
+---------------------------------
+Now the build script has the name "backup.src" instead of "backup" for the source backup target.
+
+02-15-2007_02-01-50_build.xml
+---------------------------------
+Now the ant build.xml file will add a changelog to the installation file made from the build.installer task.
+
+09-01-2008_11-16-39_build.xml
+---------------------------------
+Now using the <touch> task gives an error.  I have determined that these commands are not needed since they are called directly after a <mkdir> task is executed.  This backup contains the 'build.xml' script without any use of <touch> tasks.
+

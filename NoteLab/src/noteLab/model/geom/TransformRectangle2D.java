@@ -397,8 +397,8 @@ public class TransformRectangle2D implements Bounded, Transformable,
       Rectangle2D bounds = this.srcRect.getBounds2D();
       
       return new Rectangle2D.Float((float)bounds.getX(), 
-                                 (float)bounds.getY(), 
-                                 (float)bounds.getWidth(), 
-                                 (float)bounds.getHeight());
+                                   (float)bounds.getY(), 
+                                   (float)bounds.getWidth(), 
+                                   (float)bounds.getHeight());
    }
 }

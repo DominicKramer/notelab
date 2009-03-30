@@ -25,19 +25,16 @@
 package noteLab.model;
 
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.tool.Pen;
 import noteLab.util.CopyReady;
 import noteLab.util.Selectable;
 import noteLab.util.geom.ItemContainer;
+import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
-import noteLab.util.render.ImageRenderer2D;
 import noteLab.util.render.Renderable;
 import noteLab.util.render.Renderer2D;
-import noteLab.util.render.SwingRenderer2D;
-import noteLab.util.settings.DebugSettings;
 
 public class Stroke 
                 extends ItemContainer<Path> 
@@ -46,8 +43,6 @@ public class Stroke
 {
    private Pen pen;
    private boolean isSelected;
-   private boolean isStable;
-   private CacheImage cacheImage;
    
    public Stroke(Pen pen, Path path)
    {
@@ -58,9 +53,6 @@ public class Stroke
       addItem(path);
       setPen(pen);
       this.isSelected = false;
-      this.isStable = false;
-      
-      this.cacheImage = null;
    }
    
    public boolean isSelected()
@@ -75,38 +67,6 @@ public class Stroke
       
       this.isSelected = selected;
       notifyModListeners(ModType.Other);
-   }
-   
-   public void setIsStable(boolean isStable)
-   {
-      this.isStable = isStable;
-      
-      getPath().setIsStable(isStable);
-      
-      if (isStable && DebugSettings.getSharedInstance().useCache())
-      {
-         Rectangle2D bounds = getBounds2D();
-         
-         float x = (float)bounds.getX();
-         float y = (float)bounds.getY();
-         int width  = (int)bounds.getWidth();
-         int height = (int)bounds.getHeight();
-         
-         BufferedImage image = new BufferedImage(width, height, 
-                                                 BufferedImage.TYPE_INT_ARGB);
-         
-         this.cacheImage = new CacheImage(image, x, y);
-         
-         ImageRenderer2D renderer = new ImageRenderer2D(image);
-         renderer.translate(-x, -y);
-         boolean tmpIsSel = this.isSelected;
-         setSelected(false);
-         doRenderInto(renderer);
-         setSelected(tmpIsSel);
-         renderer.finish();
-      }
-      else
-         this.cacheImage = null;
    }
    
    public Pen getPen()
@@ -149,6 +109,11 @@ public class Stroke
       
       Path path = getPath();
       int numPts = path.getNumItems();
+      if (numPts <= 2)
+         return FloatPoint2D.lineContainsPoint(path.getFirst(), 
+                                               path.getLast(), 
+                                               point);
+      
       for (int i=0; i<numPts-2; i++)
          if (FloatPoint2D.lineContainsPoint(path.getItemAt(i), 
                                             path.getItemAt(i+1), 
@@ -163,6 +128,10 @@ public class Stroke
       Stroke copy = new Stroke(getPen().getCopy(), 
                                getPath().getCopy());
       copy.setSelected(this.isSelected);
+      
+      for (ModListener listener : super.modListenerVec)
+         copy.addModListener(listener);
+      
       return copy;
    }
    
@@ -171,24 +140,6 @@ public class Stroke
       if (mG2d == null)
          throw new NullPointerException();
       
-      if (this.cacheImage != null && mG2d instanceof SwingRenderer2D && 
-          !this.isSelected)
-      {
-         float x = this.cacheImage.x;
-         float y = this.cacheImage.y;
-         
-         mG2d.translate(x, y);
-         ((SwingRenderer2D)mG2d).drawImage(this.cacheImage.image);
-         mG2d.translate(-x, -y);
-         
-         return;
-      }
-      
-      doRenderInto(mG2d);
-   }
-   
-   private void doRenderInto(Renderer2D mG2d)
-   {
       mG2d.beginGroup(Stroke.this, "", 
                       super.xScaleLevel, super.yScaleLevel);
       
@@ -199,14 +150,12 @@ public class Stroke
       
       this.pen.adjustRenderer(mG2d);
       
-      // If this stroke's path is stable, draw the path.  This uses 
-      // memory because a cached array of the x and y coordinates of 
-      // the points must be used.  
-      // 
-      // If the curve isn't stable don't waste memory making an array 
-      // that will be soon be out of date.  Instead draw the path point 
-      // by point.
-      if (this.isStable && !this.isSelected)
+      // If the stroke isn't selected just draw its path.  
+      // Otherwise if it is selected, every other segment 
+      // of the path is drawn to look selected.  This 
+      // has a better appearance than drawing every 
+      // segment of the path in the selected style.
+      if (!this.isSelected)
          mG2d.drawPath(getPath());
       else
       {
@@ -241,10 +190,10 @@ public class Stroke
                   mG2d.drawLine(last, last);
             }
          }
+         
+         if (this.isSelected)
+            mG2d.setSelected(false);
       }
-      
-      if (this.isSelected)
-         mG2d.setSelected(false);
       
       mG2d.endGroup(Stroke.this);
    }
@@ -254,7 +203,6 @@ public class Stroke
    {
       super.scaleBy(x, y);
       this.pen.scaleBy(Math.max(x, y));
-      setIsStable(true);
    }
 
    @Override
@@ -262,7 +210,6 @@ public class Stroke
    {
       super.scaleTo(x, y);
       this.pen.scaleTo(Math.max(x, y));
-      setIsStable(true);
    }
    
    @Override
@@ -270,21 +217,18 @@ public class Stroke
    {
       super.resizeTo(x, y);
       this.pen.resizeTo(Math.max(x, y));
-      setIsStable(true);
    }
 
    @Override
    public void translateBy(float x, float y)
    {
       super.translateBy(x, y);
-      setIsStable(true);
    }
 
    @Override
    public void translateTo(float x, float y)
    {
       super.translateTo(x, y);
-      setIsStable(true);
    }
    
    @Override
@@ -326,19 +270,5 @@ public class Stroke
       buffer.append("]");
       
       return buffer.toString();
-   }
-   
-   private class CacheImage
-   {
-      private BufferedImage image;
-      private float x;
-      private float y;
-      
-      public CacheImage(BufferedImage image, float x, float y)
-      {
-         this.image = image;
-         this.x = x;
-         this.y = y;
-      }
    }
 }

@@ -25,29 +25,38 @@
 package noteLab.gui.main;
 
 import java.awt.AWTEvent;
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.Scrollable;
 
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.render.SwingRenderer2D.RenderMode;
-import noteLab.util.settings.DebugSettings;
 
-public class SwingDrawingBoard extends JPanel implements Scrollable
+public class SwingDrawingBoard extends JComponent implements Scrollable
 {
    private static final int SCROLL_STEP = 20;
+   
+   private static final int SCREEN_WIDTH;
+   private static final int SCREEN_HEIGHT;
+   static
+   {
+      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      SCREEN_WIDTH = screenSize.width;
+      SCREEN_HEIGHT = screenSize.height;
+   }
    
    private CompositeCanvas canvas;
    private MainPanel mainPanel;
    private SwingRenderer2D renderer;
+   private BufferedImage drawingboard;
    
    public SwingDrawingBoard(CompositeCanvas canvas, MainPanel mainPanel)
    {
@@ -59,6 +68,11 @@ public class SwingDrawingBoard extends JPanel implements Scrollable
       this.mainPanel = mainPanel;
       this.renderer = new SwingRenderer2D();
       
+      
+      this.drawingboard = new BufferedImage(SCREEN_WIDTH, 
+                                            SCREEN_HEIGHT, 
+                                            BufferedImage.TYPE_INT_ARGB);
+      
       //setting this to true means that this panel agrees to 
       //paint its entire area.  By setting this value to true, 
       //painting is completed more quickly by swing.  However, 
@@ -67,10 +81,15 @@ public class SwingDrawingBoard extends JPanel implements Scrollable
       //anamolies may result.
       setOpaque(true);
       setDoubleBuffered(true);
+      
+      // clear the drawing board
+      clear();
    }
    
    public void paintComponent(Graphics g)
    {
+      super.paintComponent(g);
+      
       if ( !(g instanceof Graphics2D) )
       {
          System.out.println("Warning:  The screen could not be painted " +
@@ -81,26 +100,48 @@ public class SwingDrawingBoard extends JPanel implements Scrollable
       
       this.mainPanel.updatePreferredSize();
       
-      Graphics2D g2d = (Graphics2D)g;
-      super.paintComponent(g2d);
+      final boolean isScrolling = this.mainPanel.isScrolling();
       
       RenderMode mode = RenderMode.Appearance;
-      if (this.mainPanel.isScrolling())
+      if (isScrolling)
          mode = RenderMode.Performance;
       
-      this.renderer.setSwingGraphics(g2d, mode);
-      canvas.renderInto(this.renderer);
-      
-      if (DebugSettings.getSharedInstance().displayUpdateBox())
+      if (!isScrolling)
       {
-         g2d.setColor(Color.MAGENTA);
-         g2d.setStroke(new BasicStroke(1));
+         Graphics2D g2d = this.drawingboard.createGraphics();
          
-         Rectangle clip = g2d.getClipBounds();
-         g2d.drawRect(clip.x+1, clip.y+1, clip.width-3, clip.height-3);
+         Rectangle viewRect = this.mainPanel.getViewport().getViewRect();
+         g2d.translate(-viewRect.x, -viewRect.y);
+         g2d.setClip(g.getClip());
+         
+         this.renderer.setSwingGraphics(g2d, mode);
+         canvas.renderInto(this.renderer);
+         g2d.finalize();
+         
+         g.translate(viewRect.x, viewRect.y);
+         g.drawImage(this.drawingboard, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+      }
+      else
+      {
+         this.renderer.setSwingGraphics((Graphics2D)g, mode);
+         canvas.renderInto(this.renderer);
       }
       
       revalidate();
+   }
+   
+   public void clear()
+   {
+      if (this.drawingboard == null)
+         return;
+      
+      Graphics2D g2d = this.drawingboard.createGraphics();
+      if (g2d == null)
+         return;
+      
+      g2d.setBackground(getBackground());
+      g2d.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+      g2d.finalize();
    }
    
    public Dimension getPreferredScrollableViewportSize()
@@ -134,8 +175,15 @@ public class SwingDrawingBoard extends JPanel implements Scrollable
       return SCROLL_STEP;
    }
    
+   @Override
+   public void repaint()
+   {
+      clear();
+      super.repaint();
+   }
+   
    /**
-    * Overriden so that multiple mouse dragged events are not coalesced into 
+    * Overridden so that multiple mouse dragged events are not coalesced into 
     * one.  If this were done, drawing would look choppy.  By disabling 
     * coalescing, drawing looks smooth.
     * 

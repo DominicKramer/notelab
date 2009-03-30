@@ -26,6 +26,7 @@ package noteLab.model.tool;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -50,7 +51,9 @@ public class Pen implements Tool
    private static final int DEFAULT_WIDTH = 1;
    
    private static final int MIN_CURSOR_WIDTH = 3;
-   private static final String CURSOR_NAME = InfoCenter.getAppName()+"CustomPenCursor";
+   private static final int MAX_CURSOR_WIDTH = 15;
+   private static final String CURSOR_NAME = InfoCenter.getAppName()+
+                                                "CustomPenCursor";
    
    /** The default color of the line drawn by this tool. */
    private static final Color DEFAULT_COLOR = Color.BLACK;
@@ -71,6 +74,25 @@ public class Pen implements Tool
    
    /** The vector of listeners that are notified when this pen is modified. */
    private Vector<ModListener> modListenerVec;
+   
+   private Pen(Pen pen)
+   {
+      this.scaleLevel = pen.scaleLevel;
+      this.initWidth = pen.initWidth;
+      this.width = pen.width;
+      
+      int red = pen.color.getRed();
+      int green = pen.color.getGreen();
+      int blue = pen.color.getBlue();
+      int alpha = pen.color.getAlpha();
+      this.color = new Color(red, green, blue, alpha);
+      
+      this.cursor = pen.constructCursor();
+      
+      this.modListenerVec = new Vector<ModListener>();
+      for (ModListener listener : pen.modListenerVec)
+         this.modListenerVec.add(listener);
+   }
    
    /**
     * Constructs a pen such that width of the lines drawn by this pen 
@@ -190,40 +212,49 @@ public class Pen implements Tool
    public Cursor getCursor()
    {
       if (this.cursor == null)
-      {
-         int size = (int)Math.max(1+(int)this.width, MIN_CURSOR_WIDTH);
-         
-         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-         Graphics2D g2d = (Graphics2D)image.createGraphics();
-         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-                                             RenderingHints.VALUE_ANTIALIAS_ON);
-         
-         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
-                                             RenderingHints.VALUE_RENDER_QUALITY);
-         
-         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
-                                             RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-         
-         g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, 
-                                             RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-         
-         g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, 
-                                             RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-         
-         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
-                                             RenderingHints.VALUE_STROKE_PURE);
-         
-         g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
-                                             RenderingHints.VALUE_DITHER_ENABLE);
-         g2d.setColor(this.color);
-         g2d.fillOval(0, 0, size, size);
-         
-         this.cursor = Toolkit.getDefaultToolkit().createCustomCursor(image, 
-                                                                      new Point(size/2, size/2), 
-                                                                      CURSOR_NAME);
-      }
+         this.cursor = constructCursor();
       
       return this.cursor;
+   }
+
+   private Cursor constructCursor()
+   {
+      Toolkit toolkit = Toolkit.getDefaultToolkit();
+      
+      int size = (int)Math.min(Math.max(this.width, MIN_CURSOR_WIDTH), 
+                               MAX_CURSOR_WIDTH);
+      Dimension bestSize = toolkit.getBestCursorSize(size, size);
+      
+      BufferedImage image = new BufferedImage((int)bestSize.getWidth(), 
+                                              (int)bestSize.getHeight(), 
+                                              BufferedImage.TYPE_INT_ARGB);
+      Graphics2D g2d = (Graphics2D)image.createGraphics();
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+                                          RenderingHints.VALUE_ANTIALIAS_ON);
+      
+      g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
+                                          RenderingHints.VALUE_RENDER_QUALITY);
+      
+      g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+                                          RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+      
+      g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, 
+                                          RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+      
+      g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, 
+                                          RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+      
+      g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
+                                          RenderingHints.VALUE_STROKE_PURE);
+      
+      g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
+                                          RenderingHints.VALUE_DITHER_ENABLE);
+      g2d.setColor(this.color);
+      g2d.fillOval(0, 0, size, size);
+      
+      return toolkit.createCustomCursor(image, 
+                                        new Point(size/2, size/2), 
+                                        CURSOR_NAME);
    }
    
    private void invalidateCursor()
@@ -238,7 +269,7 @@ public class Pen implements Tool
     */
    public Pen getCopy()
    {
-      return new Pen(this.width, this.color, this.scaleLevel);
+      return new Pen(this);
    }
    
    /**

@@ -1,0 +1,44 @@
+NoteLab Version 0.1.2 Changelog
+-------------------------------
+Summary
+-------
+* New:  Added stroke smoothing
+* New:  Added cut/copy/paste functionality
+* New:  Added select all and unselect all icons for un/selecting all strokes
+* New:  Added a show current page icon
+* New:  Added a safety feature to prevent accidentally overwriting existing documents
+* New:  Now canvas toolbars are scrollable
+* New:  Completely redesigned NoteLab's logo
+
+* Improvement:  Greatly improved the performance of undoing/redoing actions
+* Improvement:  Added support for dynamically calculating the memory used (see 1)
+* Improvement:  The current page is not highlighted unless in page selection mode (see 2)
+* Improvement:  Improved error messages when opening/saving files
+* Improvement:  Changed the drawing icon from the crosshair cursor to the default cursor
+* Improvement:  Internal code design improvements
+
+* Bug fix:  NoteLab files are now truly system independent (see 3)
+* Bug fix:  An internet connection is not needed to open NoteLab 0.1rc1 files (see 4)
+* Bug fix:  Documents are now not printed/exported with the current page highlighted
+* Bug fix:  JPEG images are now exported correctly
+* Bug fix:  Now pen widths change to reflect how much the user has zoomed in on the document.
+* Bug fix:  Now NoteLab displays the filename of newly opened files
+* Bug fix:  The NoteLab file loader now reads strokes completely (see 5)
+
+Details
+-------
+1. Now when the memory settings graphical element is opened it determines and displays the 
+   current memory usage.
+
+2. Now the current page is not highlighted unless the user is in the page selection mode.  
+   This greatly improves performance while in writing mode.
+
+3. Now documents saved on one system but opened on another system adapt to the different 
+   screen resolutions so that the saved document looks the same if opened on any system.
+
+4. Previously NoteLab needed an internet connection to download the SVG specification.  
+   Now NoteLab has a copy of this specification internally and thus an internet connection 
+   is not needed.
+
+5. There was a bug with the NoteLab file loader in which it would always ignore one of the 
+   points at the start of a stroke.  Now this bug has been fixed.

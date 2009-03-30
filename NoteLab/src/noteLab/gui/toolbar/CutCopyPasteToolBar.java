@@ -37,9 +37,9 @@ import noteLab.util.copy.CopyStateListener;
 import noteLab.util.copy.CutCopyPasteReady;
 
 public class CutCopyPasteToolBar<E extends Object & CopyReady<E>> 
-                extends JToolBar implements ActionListener, 
-                                            GuiSettingsConstants, 
-                                            CopyStateListener
+                                      implements ActionListener, 
+                                                 GuiSettingsConstants, 
+                                                 CopyStateListener
 {
    private static final String CUT_CMMD = "Cut";
    private static final String COPY_CMMD = "Copy";
@@ -56,11 +56,6 @@ public class CutCopyPasteToolBar<E extends Object & CopyReady<E>>
    {
       if (handler == null)
          throw new NullPointerException();
-      
-      setFloatable(false);
-      
-      this.handler = handler;
-      this.handler.addCopyStateListener(this);
       
       this.cutButton = 
          new JButton(DefinedIcon.cut.getIcon(BUTTON_SIZE));
@@ -80,11 +75,31 @@ public class CutCopyPasteToolBar<E extends Object & CopyReady<E>>
       this.pasteButton.setActionCommand(PASTE_CMMD);
       this.pasteButton.setEnabled(false);
       
-      add(this.cutButton);
-      add(this.copyButton);
-      add(this.pasteButton);
+      this.handler = handler;
+      this.handler.addCopyStateListener(this);
+   }
+   
+   /**
+    * Returns the last item that was copied or 
+    * <code>null</code> if no item has been 
+    * copied yet.
+    * 
+    * @return The current copied item or 
+    *         <code>null</code> if non exists.
+    */
+   public E getCopiedItem()
+   {
+      return this.copiedItem;
+   }
+   
+   public void appendTo(JToolBar toolbar)
+   {
+      if (toolbar == null)
+         throw new NullPointerException();
       
-      setFloatable(false);
+      toolbar.add(this.cutButton);
+      toolbar.add(this.copyButton);
+      toolbar.add(this.pasteButton);
    }
    
    public void actionPerformed(ActionEvent e)
@@ -92,9 +107,17 @@ public class CutCopyPasteToolBar<E extends Object & CopyReady<E>>
       String cmmd = e.getActionCommand();
       
       if (cmmd.equals(CUT_CMMD))
-         this.copiedItem = this.handler.cut();
+      {
+         E copy = this.handler.cut();
+         if (copy != null)
+            this.copiedItem = copy;
+      }
       else if (cmmd.equals(COPY_CMMD))
-         this.copiedItem = this.handler.copy();
+      {
+         E copy = this.handler.copy();
+         if (copy != null)
+            this.copiedItem = copy;
+      }
       else if (cmmd.equals(PASTE_CMMD) && this.copiedItem != null)
          this.handler.paste(this.copiedItem.getCopy());
       

@@ -38,8 +38,8 @@ import noteLab.gui.GuiSettingsConstants;
 import noteLab.util.undoRedo.UndoRedoListener;
 import noteLab.util.undoRedo.UndoRedoManager;
 
-public class UndoRedoToolBar extends JToolBar implements UndoRedoListener, 
-                                                         GuiSettingsConstants
+public class UndoRedoToolBar implements UndoRedoListener, 
+                                        GuiSettingsConstants
 {
    private UndoRedoManager manager;
    
@@ -51,8 +51,6 @@ public class UndoRedoToolBar extends JToolBar implements UndoRedoListener,
       if (manager == null)
          throw new NullPointerException();
       
-      setFloatable(false);
-      
       this.manager = manager;
       this.manager.addUndoRedoListener(this);
       
@@ -62,10 +60,16 @@ public class UndoRedoToolBar extends JToolBar implements UndoRedoListener,
       this.redoButton = new JButton(DefinedIcon.redo.getIcon(BUTTON_SIZE));
       this.redoButton.addActionListener(new RedoListener());
       
-      add(this.undoButton);
-      add(this.redoButton);
-      
       undoRedoStackChanged(this.manager);
+   }
+   
+   public void appendTo(JToolBar toolbar)
+   {
+      if (toolbar == null)
+         throw new NullPointerException();
+      
+      toolbar.add(this.undoButton);
+      toolbar.add(this.redoButton);
    }
 
    public void undoRedoStackChanged(UndoRedoManager manager)

@@ -27,10 +27,7 @@ package noteLab.gui.settings.panel.base;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -39,12 +36,15 @@ import javax.swing.WindowConstants;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
-import noteLab.gui.control.drop.DropDownButton;
+import noteLab.gui.control.drop.ComboEvent;
+import noteLab.gui.control.drop.ComboListener;
+import noteLab.gui.control.drop.ImageComboButton;
+import noteLab.gui.control.drop.ComboEvent.ActionType;
 import noteLab.gui.settings.state.SettingsStateCapable;
 
 public abstract class PrimitiveSettingsPanel 
-                         extends JPanel implements ActionListener, 
-                                                   SettingsStateCapable
+                         extends JPanel implements SettingsStateCapable, 
+                                                   ComboListener
 {
    private static final DefinedIcon REVERT_TO_SAVED_ICON = 
                                        DefinedIcon.revert_to_saved;
@@ -66,30 +66,30 @@ public abstract class PrimitiveSettingsPanel
       this.title = title;
       
       DefinedIcon icon = REVERT_TO_SAVED_ICON;
-      JButton revertSavedButton = 
-                 new JButton(icon.getIcon(GuiSettingsConstants.
-                                             MEDIUM_BUTTON_SIZE));
+      ImageComboButton revertSavedButton = 
+                          new ImageComboButton(icon);
       revertSavedButton.setActionCommand(icon.name());
-      revertSavedButton.addActionListener(this);
+      revertSavedButton.addComboListener(this);
       
+      JWindow savedPopup = revertSavedButton.getPopupWindow();
+      savedPopup.setLayout(new FlowLayout());
+      savedPopup.add(new JLabel("Restores the saved value"));
       
       icon = RESTORE_DEFAULTS_ICON;
-      JButton restoreDefaultsButton = 
-                 new JButton(icon.getIcon(GuiSettingsConstants.
-                                             MEDIUM_BUTTON_SIZE));
+      ImageComboButton restoreDefaultsButton = 
+                          new ImageComboButton(icon);
       restoreDefaultsButton.setActionCommand(icon.name());
-      restoreDefaultsButton.addActionListener(this);
+      restoreDefaultsButton.addComboListener(this);
       
+      JWindow defaultsPopup = restoreDefaultsButton.getPopupWindow();
+      defaultsPopup.setLayout(new FlowLayout());
+      defaultsPopup.add(new JLabel("Restores the default value"));
       
-      icon = INFO_ICON;
-      DropDownButton infoButton = new DropDownButton();
-      infoButton.setDrawArrow(false);
-      infoButton.setIcon(icon.getIcon(GuiSettingsConstants.
-                                         MEDIUM_BUTTON_SIZE));
-      JWindow popupWindow = infoButton.getPopupWindow();
-      popupWindow.setLayout(new FlowLayout());
-      popupWindow.add(new JLabel(getInfo()));
+      ImageComboButton infoButton = new ImageComboButton(INFO_ICON);
       
+      JWindow infoPopup = infoButton.getPopupWindow();
+      infoPopup.setLayout(new FlowLayout());
+      infoPopup.add(new JLabel(getInfo()));
       
       JPanel buttonPanel = new JPanel(new FlowLayout());
       buttonPanel.add(infoButton);
@@ -131,14 +131,19 @@ public abstract class PrimitiveSettingsPanel
       return this.info;
    }
    
-   public void actionPerformed(ActionEvent e)
+   public void comboActionPerformed(ComboEvent event)
    {
-      String cmmd = e.getActionCommand();
-      
-      if (cmmd.equals(RESTORE_DEFAULTS_ICON.name()))
-         restoreDefaults();
-      else if (cmmd.equals(REVERT_TO_SAVED_ICON.name()))
-         revertToSaved();
+      // don't do anything if the arrow that opens the 
+      // popup window was pressed
+      if (event.getActionType().equals(ActionType.main_type))
+      {
+         String cmmd = event.getActionCommand();
+         
+         if (cmmd.equals(RESTORE_DEFAULTS_ICON.name()))
+            restoreDefaults();
+         else if (cmmd.equals(REVERT_TO_SAVED_ICON.name()))
+            revertToSaved();
+      }
    }
    
    public static void main(String[] args)

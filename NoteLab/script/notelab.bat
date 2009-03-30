@@ -20,7 +20,7 @@ REM Move to the installation directory
 cd "%INSTALL_DIR%"
 
 REM Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
-java %NOTELAB_VM_ARGS% -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;"%CLASSPATH%" noteLab.util.StartupUtilities %NOTELAB_ARGS% %*
+java %NOTELAB_VM_ARGS% -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;"%CLASSPATH%" noteLab.util.StartupUtilities --lookAndFeel Nimbus %NOTELAB_ARGS% %*
 
 REM The command 'IF NOT ERRORLEVEL 1' returns true if the variable ERRORLEVEL is not greater than or 
 REM equal to 1, i.e. is less than 1.

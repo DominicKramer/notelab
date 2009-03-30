@@ -32,10 +32,9 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import javax.swing.border.TitledBorder;
 
-import noteLab.gui.GuiSettingsConstants;
-import noteLab.gui.DecoratedButton.Style;
 import noteLab.gui.control.drop.ColorControl;
 import noteLab.gui.control.drop.SizeControl;
+import noteLab.gui.control.drop.pic.PrimitivePic.Style;
 import noteLab.gui.listener.ValueChangeEvent;
 import noteLab.gui.listener.ValueChangeListener;
 import noteLab.gui.settings.constants.PenSettingsConstants;
@@ -64,27 +63,26 @@ public class PenSettingsPanel
    {
       this.penNum = penNum;
       
-      this.colorControl = 
-                      new ColorControl(getColor(penNum), 
-                                       GuiSettingsConstants.BUTTON_SIZE);
+      this.colorControl = new ColorControl(getColor(penNum));
       this.colorControl.addValueChangeListener(new ColorListener());
       
       MValue curSize = getPenSize(penNum);
       Unit unit = curSize.getUnit();
       
       int res = Unit.getScreenResolution();
+      // Use a unitScaleFactor of 1 so that the numbers shown in the 
+      // settings dialog match those shown in the main gui.
       double min = Unit.getValue((float)PenSettingsConstants.MIN_SIZE_PX, 
-                                   Unit.PIXEL, unit, res);
+                                   Unit.PIXEL, unit, res, 1);
       double max = Unit.getValue((float)PenSettingsConstants.MAX_SIZE_PX, 
-                                   Unit.PIXEL, unit, res);
+                                   Unit.PIXEL, unit, res, 1);
       double step = Unit.getValue((float)PenSettingsConstants.STEP_SIZE_PX, 
-                                    Unit.PIXEL, unit, res);
+                                    Unit.PIXEL, unit, res, 1);
       
       this.sizeControl = 
                      new SizeControl("", curSize.getValue(unit), 
                                      min, max, step, unit, Style.Circle, 
-                                     true, Color.BLACK, 
-                                     GuiSettingsConstants.BUTTON_SIZE, 1);
+                                     true, Color.BLACK, 1);
       this.sizeControl.addValueChangeListener(new SizeListener());
       
       this.sizePanel = 

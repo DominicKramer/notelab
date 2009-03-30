@@ -199,9 +199,8 @@ public class PageSettingsPanel
    
    private class PaperColorPanel 
                     extends ManagedSettingsPanel 
-                               implements ActionListener, 
-                                          ValueChangeListener<Color, 
-                                                              ColorControl>
+                               implements ValueChangeListener<Color, 
+                                          ColorControl>
    {
       private ColorControl colorControl;
       
@@ -221,9 +220,7 @@ public class PageSettingsPanel
          if ( (colorOb != null) && (colorOb instanceof Color))
             color = (Color)colorOb;
          
-         this.colorControl = 
-            new ColorControl(color, 
-                             GuiSettingsConstants.BUTTON_SIZE);
+         this.colorControl = new ColorControl(color);
          this.colorControl.addValueChangeListener(this);
          
          getDisplayPanel().add(this.colorControl);

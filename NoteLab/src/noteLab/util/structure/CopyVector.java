@@ -29,7 +29,7 @@ import java.util.Vector;
 
 import noteLab.util.CopyReady;
 
-public class CopyVector<E> 
+public class CopyVector<E extends Object & CopyReady<E>> 
                 extends Vector<E> 
                            implements CopyReady<CopyVector<E>>
 {
@@ -55,6 +55,10 @@ public class CopyVector<E>
 
    public CopyVector<E> getCopy()
    {
-      return new CopyVector<E>(this);
+      CopyVector<E> copy = new CopyVector<E>();
+      for (E item : this)
+         copy.add(item.getCopy());
+      
+      return copy;
    }
 }

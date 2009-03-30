@@ -39,6 +39,7 @@ import javax.swing.JTabbedPane;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
+import noteLab.gui.fullscreen.FullScreenManager;
 import noteLab.gui.settings.panel.PageSettingsPanel;
 import noteLab.gui.settings.panel.TriPenSettingsPanel;
 import noteLab.gui.settings.panel.VMSettingsPanel;
@@ -54,6 +55,8 @@ public class SettingsFrame extends JFrame
    public SettingsFrame()
    {
       super("Settings");
+      
+      FullScreenManager.getSharedInstance().revokeFullScreenMode();
       
       this.tripPenPanel = new TriPenSettingsPanel();
       this.pagePanel = new PageSettingsPanel();

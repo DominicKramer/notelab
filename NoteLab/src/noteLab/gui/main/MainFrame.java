@@ -28,6 +28,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,17 +40,22 @@ import java.io.File;
 import java.util.List;
 import java.util.Vector;
 
-import javax.swing.BoxLayout;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JWindow;
 import javax.swing.WindowConstants;
 
 import noteLab.gui.DefinedIcon;
+import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.ToolBarButton;
+import noteLab.gui.button.IconToggleButton;
+import noteLab.gui.fullscreen.FullScreenListener;
+import noteLab.gui.fullscreen.FullScreenManager;
 import noteLab.gui.help.HelpMenu;
 import noteLab.gui.menu.DebugMenu;
 import noteLab.gui.menu.DynamicMenuBar;
@@ -71,7 +79,8 @@ import noteLab.util.undoRedo.UndoRedoManager;
 public class MainFrame extends JFrame implements Menued, 
                                                  ActionListener, 
                                                  ModListener, 
-                                                 ProgressListener
+                                                 ProgressListener, 
+                                                 FullScreenListener
 {
    private static final String TITLE_PREFIX = "  -  ";
    private static final String UNTITLED_NAME = "untitled";
@@ -80,16 +89,31 @@ public class MainFrame extends JFrame implements Menued,
    private static int NUM_OPEN = 0;
    
    private static final String EXIT = "exit";
+   private static final String VIEW_MAIN_TOOLBAR = "View Main Toolbar";
+   private static final String VIEW_TOOL_TOOLBAR = "View Tool Toolbar";
+   
+   private static final DefinedIcon FULLSCREEN_ICON = 
+                                       DefinedIcon.resize_stroke;
    
    private String baseTitle;
    
+   private CanvasControlToolBar canvasToolbar;
    private JPanel toolbarPanel;
+   private BinderToolBar binderToolBar;
    private CompositeCanvas canvas;
    private FileToolBar fileToolBar;
    private Vector<PathMenuItem> menuItemVec;
    private MainFrameCloseListener closeListener;
    private JProgressBar progressBar;
    private JLabel messageLabel;
+   
+   private JCheckBoxMenuItem viewMainToolbar;
+   private JCheckBoxMenuItem viewToolToolbar;
+   
+   private IconToggleButton fullScreenButton;
+   
+   private JWindow twinWindow;
+   private JPanel mainPanel;
    
    public MainFrame()
    {
@@ -100,6 +124,11 @@ public class MainFrame extends JFrame implements Menued,
    {
       if (canvas == null)
          throw new NullPointerException();
+      
+      this.twinWindow = new JWindow();
+      this.twinWindow.setLayout(new GridLayout(1,1));
+      
+      FullScreenManager.getSharedInstance().addFullScreenListener(this);
       
       setIconImage(DefinedIcon.feather.
                       getIcon(DefinedIcon.ORIGINAL_SIZE).
@@ -116,25 +145,44 @@ public class MainFrame extends JFrame implements Menued,
       this.menuItemVec.add(new PathMenuItem(exitItem, 
                                             MenuConstants.FILE_MENU_PATH));
       
+      this.viewMainToolbar = 
+         new JCheckBoxMenuItem(VIEW_MAIN_TOOLBAR);
+      this.viewMainToolbar.setActionCommand(VIEW_MAIN_TOOLBAR);
+      this.viewMainToolbar.addActionListener(this);
+      
+      this.viewToolToolbar = 
+         new JCheckBoxMenuItem(VIEW_TOOL_TOOLBAR);
+      this.viewToolToolbar.setActionCommand(VIEW_TOOL_TOOLBAR);
+      this.viewToolToolbar.addActionListener(this);
+      
+      this.menuItemVec.add(new PathMenuItem(this.viewMainToolbar, 
+                                            MenuConstants.VIEW_MENU_PATH));
+      this.menuItemVec.add(new PathMenuItem(this.viewToolToolbar, 
+                                            MenuConstants.VIEW_MENU_PATH));
+      
       this.canvas = canvas;
       this.canvas.addModListener(this);
       
-      JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        this.fileToolBar = new FileToolBar(this);
-        topPanel.add(fileToolBar);
-        
+      this.fileToolBar = new FileToolBar(this);
+      
         UndoRedoManager manager = this.canvas.getUndoRedoManager();
         UndoRedoToolBar undoRedoToolBar = new UndoRedoToolBar(manager);
-        topPanel.add(undoRedoToolBar);
+        undoRedoToolBar.appendTo(this.fileToolBar);
         
-        BinderToolBar binderToolBar = new BinderToolBar(this.canvas);
-        topPanel.add(binderToolBar);
+        this.binderToolBar = new BinderToolBar(this.canvas);
+        this.binderToolBar.appendTo(this.fileToolBar);
       
-      this.toolbarPanel = new JPanel();
-      this.toolbarPanel.setLayout(new BoxLayout(this.toolbarPanel, 
-                                                BoxLayout.Y_AXIS));
-      this.toolbarPanel.add(topPanel);
-      this.toolbarPanel.add(new CanvasControlToolBar(this.canvas));
+      this.fullScreenButton = 
+            new IconToggleButton(FULLSCREEN_ICON, 
+                                 GuiSettingsConstants.BUTTON_SIZE);
+      this.fullScreenButton.addActionListener(this);
+      this.fileToolBar.add(this.fullScreenButton);
+      
+      this.canvasToolbar = new CanvasControlToolBar(this.canvas);
+      
+      this.toolbarPanel = new JPanel(new BorderLayout());
+      this.toolbarPanel.add(this.fileToolBar, BorderLayout.NORTH);
+      this.toolbarPanel.add(this.canvasToolbar, BorderLayout.CENTER);
       
       this.progressBar = new JProgressBar(0,100);
       this.progressBar.setStringPainted(false);
@@ -144,10 +192,10 @@ public class MainFrame extends JFrame implements Menued,
       messagePanel.add(this.progressBar);
       messagePanel.add(this.messageLabel);
       
-      setLayout(new BorderLayout());
-      add(this.toolbarPanel, BorderLayout.NORTH);
-      add(new MainPanel(this.canvas), BorderLayout.CENTER);
-      add(messagePanel, BorderLayout.SOUTH);
+      this.mainPanel = new JPanel(new BorderLayout());
+      this.mainPanel.add(this.toolbarPanel, BorderLayout.NORTH);
+      this.mainPanel.add(new MainPanel(this.canvas), BorderLayout.CENTER);
+      this.mainPanel.add(messagePanel, BorderLayout.SOUTH);
       
       // now configure the menu bar
       DynamicMenuBar menuBar = new DynamicMenuBar();
@@ -180,7 +228,9 @@ public class MainFrame extends JFrame implements Menued,
       
       setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       
+      // Add the contents to the frame and 
       // pack the frame to its best size
+      add(this.mainPanel);
       pack();
       
       // Resize the frame if it is bigger than the screen.
@@ -197,6 +247,11 @@ public class MainFrame extends JFrame implements Menued,
       setSize(maxWidth, maxHeight);
       
       SettingsManager.getSharedInstance().notifyOfChanges();
+      
+      this.viewMainToolbar.doClick();
+      this.viewToolToolbar.doClick();
+      
+      FullScreenManager.getSharedInstance().revokeFullScreenMode();
    }
    
    public void setMessage(String message, Color color)
@@ -220,7 +275,61 @@ public class MainFrame extends JFrame implements Menued,
 
    public void actionPerformed(ActionEvent e)
    {
-      this.closeListener.processWindowClosing();
+      String cmmd = e.getActionCommand();
+      if (cmmd.equals(EXIT))
+      {
+         this.closeListener.processWindowClosing();
+      }
+      else if (cmmd.equals(VIEW_MAIN_TOOLBAR))
+      {
+         boolean show = this.viewMainToolbar.isSelected();
+         this.fileToolBar.setVisible(show);
+      }
+      else if (cmmd.equals(VIEW_TOOL_TOOLBAR))
+      {
+         boolean show = this.viewToolToolbar.isSelected();
+         this.canvasToolbar.setVisible(show);
+      }
+      else if (cmmd.equals(FULLSCREEN_ICON.toString()))
+      {
+         GraphicsDevice screen = GraphicsEnvironment.
+                                    getLocalGraphicsEnvironment().
+                                       getDefaultScreenDevice();
+         
+         try
+         {
+            if (this.fullScreenButton.isSelected())
+            {
+               remove(this.mainPanel);
+               this.twinWindow.add(this.mainPanel);
+               this.twinWindow.validate();
+               screen.setFullScreenWindow(this.twinWindow);
+            }
+            else
+            {
+               FullScreenManager.
+                  getSharedInstance().
+                     revokeFullScreenMode();
+            }
+         }
+         catch (Exception exception)
+         {
+            System.err.print("An error occured while trying to make " +
+            		           InfoCenter.getAppName());
+            if (this.fullScreenButton.isSelected())
+               System.err.print(" enter ");
+            else
+               System.err.print(" leave ");
+            System.err.println("fullscreen mode.  The error returned was:");
+            System.err.println(exception);
+            System.err.print("The system reports that it does ");
+            if (!screen.isFullScreenSupported())
+               System.err.print("not ");
+            System.err.println("support fullscreen mode.");
+            System.err.println("Stack trace:");
+            exception.printStackTrace();
+         }
+      }
    }
    
    private class MainFrameCloseListener extends WindowAdapter
@@ -310,5 +419,15 @@ public class MainFrame extends JFrame implements Menued,
          this.progressBar.setIndeterminate(false);
          this.progressBar.setValue(100);
       }
+   }
+
+   public void fullScreenRevoked()
+   {
+      this.fullScreenButton.setSelected(false);
+      
+      this.twinWindow.remove(this.mainPanel);
+      add(this.mainPanel);
+      validate();
+      repaint();
    }
 }

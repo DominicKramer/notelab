@@ -36,6 +36,8 @@ import javax.swing.WindowConstants;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
+import noteLab.gui.fullscreen.FullScreenManager;
+import noteLab.util.settings.SettingsUtilities;
 
 public class NoteLabFileChooser extends JFileChooser implements ActionListener
 {
@@ -45,7 +47,7 @@ public class NoteLabFileChooser extends JFileChooser implements ActionListener
    private static final String OVERWRITE_MESSAGE_POST = 
                                               "' already exists.  Overwrite?";
    
-   private static File lastDir;
+   private static File LAST_DIR;
    
    private String approveText;
    private boolean checkOverwrite;
@@ -56,7 +58,9 @@ public class NoteLabFileChooser extends JFileChooser implements ActionListener
                              boolean checkOverwrite, 
                              FileProcessor processor)
    {
-      this(approveText, multiSelection, checkOverwrite, processor, null);
+      this(approveText, multiSelection, 
+           checkOverwrite, processor, 
+           new File(SettingsUtilities.getCurrentDirectory()));
    }
    
    public NoteLabFileChooser(String approveText, 
@@ -65,10 +69,10 @@ public class NoteLabFileChooser extends JFileChooser implements ActionListener
                              FileProcessor processor, 
                              File curDir)
    {
-      if (curDir != null && lastDir == null)
+      if (curDir != null)
          setCurrentDirectory(curDir);
       else
-         setCurrentDirectory(lastDir);
+         setCurrentDirectory(LAST_DIR);
       
       if (approveText == null || processor == null)
          throw new NullPointerException();
@@ -89,19 +93,23 @@ public class NoteLabFileChooser extends JFileChooser implements ActionListener
    @Override
    public void setCurrentDirectory(File dir)
    {
+      if (dir == null)
+         dir = new File(SettingsUtilities.getCurrentDirectory());
+      
       super.setCurrentDirectory(dir);
-      lastDir = dir;
+      LAST_DIR = dir;
    }
    
    public void actionPerformed(ActionEvent e)
    {
-      lastDir = getCurrentDirectory();
+      LAST_DIR = getCurrentDirectory();
    }
    
    public void showFileChooser()
    {
       JFrame frame = new JFrame();
       frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+      FullScreenManager.getSharedInstance().revokeFullScreenMode();
       int returnVal = showDialog(frame, this.approveText);
       
       if (returnVal != JFileChooser.APPROVE_OPTION)

@@ -49,6 +49,8 @@ public class FloatPoint2D implements Transformable,
                                       ModBroadcaster, 
                                       Bounded
 {
+   private static final int LINE_OFFSET_DELTA = 2;
+   
    private Point2D.Float initPoint;
    private Point2D.Float srcPoint;
    
@@ -63,6 +65,24 @@ public class FloatPoint2D implements Transformable,
     * is modified.
     */
    private Vector<ModListener> modListenerVec;
+   
+   private FloatPoint2D(FloatPoint2D point)
+   {
+      if (point == null)
+         throw new NullPointerException();
+      
+      this.initPoint = new Point2D.Float(point.initPoint.x, 
+                                         point.initPoint.y);
+      this.srcPoint  = new Point2D.Float(point.srcPoint.x, 
+                                         point.srcPoint.y);
+      
+      this.xScaleLevel = point.xScaleLevel;
+      this.yScaleLevel = point.yScaleLevel;
+      
+      this.modListenerVec = new Vector<ModListener>();
+      for (ModListener listener : point.modListenerVec)
+         this.modListenerVec.add(listener);
+   }
    
    /**
     * Constructs a point at the given coordinates.
@@ -212,8 +232,7 @@ public class FloatPoint2D implements Transformable,
     */
    public FloatPoint2D getCopy()
    {
-      return new FloatPoint2D(this.srcPoint.x, this.srcPoint.y, 
-                              this.xScaleLevel, this.yScaleLevel);
+      return new FloatPoint2D(this);
    }
    
    /**
@@ -238,6 +257,11 @@ public class FloatPoint2D implements Transformable,
     * @param pt1 The first point of the line segment.
     * @param pt2 The second point of the line segment.
     * @param curPt The point that should be checked.
+    * @param delta The distance the point can be from the line 
+    *              and still be considered on the line.  This 
+    *              parameter exists since points probably do not 
+    *              exactly line on the line due to rounding errors.  
+    *              A good default value is 1.
     * 
     * @return <code>True</code> if <code>curPt</code> lies on the 
     *         line segment connecting <code>pt1</code> and 
@@ -250,14 +274,9 @@ public class FloatPoint2D implements Transformable,
       if (pt1 == null || pt2 == null || curPt == null)
          throw new NullPointerException();
       
-      if (pt1.equals(pt2))
-         return pt1.equals(curPt);
-      
       // these are labeled x1 and x2 because when proving this method 
       // mathematically, I used vectors in R^2 which are typically 
       // denoted X = x1*e1 + x2*e2 where e1 and e2 are basis elements
-      
-      final double delta = 1;
       
       double u1 = pt1.getX();
       double u2 = pt1.getY();
@@ -269,6 +288,11 @@ public class FloatPoint2D implements Transformable,
       // is treated as the origin
       double x1 = curPt.getX()-u1;
       double x2 = curPt.getY()-u2;
+      
+      // if the two points are equal see if the given 
+      // point is within 'delta' units of the common point.
+      if (pt1.equals(pt2))
+         return (x1*x1+x2*x2 < LINE_OFFSET_DELTA*LINE_OFFSET_DELTA);
       
       // W = V-U
       double w1 = v1-u1;
@@ -288,11 +312,11 @@ public class FloatPoint2D implements Transformable,
       double gamma = (wt1*x1+wt2*x2)/wnorm;
       gamma = Math.abs(gamma);
       
-      if (gamma > delta)
-      return false;
+      if (gamma > LINE_OFFSET_DELTA)
+         return false;
       
       if ( (lambda < 0) || (lambda > wnorm) )
-      return false;
+         return false;
       
       return true;
    }

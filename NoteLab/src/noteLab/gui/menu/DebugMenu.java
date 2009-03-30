@@ -24,15 +24,22 @@
 
 package noteLab.gui.menu;
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JTable;
+import javax.swing.WindowConstants;
 
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.settings.DebugSettings;
+import noteLab.util.settings.SettingsManager;
 
 public class DebugMenu implements Menued, MenuConstants, ActionListener
 {
@@ -43,6 +50,7 @@ public class DebugMenu implements Menued, MenuConstants, ActionListener
    private static final String USE_CACHE_NAME = "Use Cache";
    private static final String FORCE_GLOBAL_REPAINTS_NAME = "Force Global Repaints";
    private static final String DISPLAY_KNOTS_NAME = "Display Knots";
+   private static final String OPEN_SETTINGS_VALUES = "Open Settings Values";
    
    private JCheckBoxMenuItem boundingBoxItem;
    private JCheckBoxMenuItem updateBoxItem;
@@ -55,6 +63,8 @@ public class DebugMenu implements Menued, MenuConstants, ActionListener
    private Vector<PathMenuItem> menuItemVec;
    
    private CompositeCanvas canvas;
+   
+   private SettingsValuesFrame settingsFrame;
    
    public DebugMenu(CompositeCanvas canvas)
    {
@@ -81,6 +91,11 @@ public class DebugMenu implements Menued, MenuConstants, ActionListener
       this.forceGlobalRepaintsItem = new JCheckBoxMenuItem(FORCE_GLOBAL_REPAINTS_NAME);
       this.forceGlobalRepaintsItem.addActionListener(this);
       
+      this.settingsFrame = new SettingsValuesFrame();
+      
+      JMenuItem settingsValuesItem = new JMenuItem(OPEN_SETTINGS_VALUES);
+      settingsValuesItem.addActionListener(this);
+      
       this.knotsItem = new JCheckBoxMenuItem(DISPLAY_KNOTS_NAME);
       this.knotsItem.addActionListener(this);
       
@@ -92,6 +107,7 @@ public class DebugMenu implements Menued, MenuConstants, ActionListener
       this.menuItemVec.add(new PathMenuItem(this.useCacheItem, DEBUG_MENU_PATH));
       this.menuItemVec.add(new PathMenuItem(this.forceGlobalRepaintsItem, DEBUG_MENU_PATH));
       this.menuItemVec.add(new PathMenuItem(this.knotsItem, DEBUG_MENU_PATH));
+      this.menuItemVec.add(new PathMenuItem(settingsValuesItem, DEBUG_MENU_PATH));
       
       syncDisplay();
    }
@@ -140,7 +156,62 @@ public class DebugMenu implements Menued, MenuConstants, ActionListener
          settings.flipForceGlobalRepaints();
       else if (cmmd.equals(DISPLAY_KNOTS_NAME))
          settings.flipDisplayKnots();
+      else if (cmmd.equals(OPEN_SETTINGS_VALUES))
+         this.settingsFrame.setVisible(true);
       
-      canvas.doRepaint();
+      // The user can manually repaint the canvas if needed.
+      // Sometimes it may be useful for debugging purposes to 
+      // not have the canvas repainted.
+      //canvas.doRepaint();
+   }
+   
+   private class SettingsValuesFrame extends JFrame
+   {
+      private final String[] COLUMN_NAMES = {"Key", "Value"};
+      
+      private JTable table;
+      
+      public SettingsValuesFrame()
+      {
+         setLayout(new GridLayout(1,1));
+         setAlwaysOnTop(true);
+         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+         
+         constructTable();
+      }
+      
+      public void constructTable()
+      {
+         SettingsManager manager = SettingsManager.getSharedInstance();
+         Enumeration<String> keys = manager.getKeys();
+         
+         String[][] values = new String[manager.getSize()][2];
+         int index = 0;
+         String key;
+         while (keys.hasMoreElements())
+         {
+            key = keys.nextElement();
+            values[index][0] = key;
+            values[index][1] = manager.getValue(key).toString();
+            index++;
+         }
+         
+         if (this.table != null)
+            remove(this.table);
+         
+         this.table = new JTable(values, COLUMN_NAMES);
+         
+         add(this.table);
+         pack();
+      }
+      
+      @Override
+      public void setVisible(boolean visible)
+      {
+         if (visible)
+            constructTable();
+         
+         super.setVisible(visible);
+      }
    }
 }

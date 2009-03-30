@@ -34,6 +34,7 @@ import noteLab.util.geom.unit.Unit;
 
 public class SettingsUtilities implements SettingsKeys
 {
+   private static final String SYSTEM_CURRENT_DIR_KEY = "user.dir";
    private static final boolean DEFAULT_SHOW_DEBUG_MENU = false;
    
    private SettingsUtilities() {}
@@ -192,6 +193,15 @@ public class SettingsUtilities implements SettingsKeys
       return (Integer)val;
    }
    
+   public static int getCombFactor()
+   {
+      Object val = SettingsManager.getSharedInstance().getValue(COMB_FACTOR);
+      if (val == null || !(val instanceof Integer))
+         return PenSettingsConstants.COMB_FACTOR;
+      
+      return (Integer)val;
+   }
+   
    public static void setSmoothFactor(int factor)
    {
       if (factor < 0)
@@ -200,13 +210,29 @@ public class SettingsUtilities implements SettingsKeys
                                             "However, a smoothing factor of "+factor+
                                             " was given.");
       
+      /* With the new smoothing algorithm there is no upper limit for 
+       * the smoothing factor.
       if (factor > 5)
          throw new IllegalArgumentException("The smoothing factor "+factor+
                                             " is not valid since it must be an whole number " +
                                             "between 1 and 5.  However, a smoothing factor of "+
                                             factor+" was given.");
+       */
       
       SettingsManager.getSharedInstance().setValue(SMOOTH_FACTOR, factor);
+   }
+   
+   public static String getCurrentDirectory()
+   {
+      return System.getProperty(SYSTEM_CURRENT_DIR_KEY);
+   }
+   
+   public static void setCurrentDirectory(String dirname)
+   {
+      if (dirname == null)
+         throw new NullPointerException();
+      
+      System.setProperty(SYSTEM_CURRENT_DIR_KEY, dirname);
    }
    
    public static boolean getShowDebugMenu()

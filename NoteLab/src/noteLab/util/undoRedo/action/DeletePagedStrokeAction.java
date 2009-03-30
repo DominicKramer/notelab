@@ -60,20 +60,8 @@ public class DeletePagedStrokeAction extends CanvasAction
             continue;
          
          this.delStrokeActionVec.add(
-               new DeleteStrokeAction(canvas, makeCopy(strokeVec), page));
+               new DeleteStrokeAction(canvas, strokeVec, page));
       }
-   }
-   
-   private static Vector<Stroke> makeCopy(Vector<Stroke> vec)
-   {
-      if (vec == null)
-         throw new NullPointerException();
-      
-      Vector<Stroke> vecCopy = new Vector<Stroke>(vec.size());
-      for (Stroke s : vec)
-         vecCopy.add(s);
-      
-      return vecCopy;
    }
    
    public void run()

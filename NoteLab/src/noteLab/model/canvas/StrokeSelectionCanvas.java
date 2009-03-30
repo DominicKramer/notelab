@@ -25,28 +25,31 @@
 package noteLab.model.canvas;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.JWindow;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
-import noteLab.gui.SlidingPanel;
 import noteLab.gui.ToolBarButton;
-import noteLab.gui.DecoratedButton.Style;
+import noteLab.gui.button.IconButton;
+import noteLab.gui.button.IconToggleButton;
+import noteLab.gui.control.drop.ButtonComboButton;
 import noteLab.gui.control.drop.ColorControl;
 import noteLab.gui.control.drop.SizeControl;
+import noteLab.gui.control.drop.pic.PrimitivePic.Style;
 import noteLab.gui.listener.ValueChangeEvent;
 import noteLab.gui.listener.ValueChangeListener;
 import noteLab.gui.menu.MenuConstants;
@@ -68,8 +71,6 @@ import noteLab.util.geom.unit.Unit;
 import noteLab.util.render.Renderer2D;
 import noteLab.util.settings.SettingsUtilities;
 import noteLab.util.structure.CopyVector;
-import noteLab.util.undoRedo.action.DeletePagedStrokeAction;
-import noteLab.util.undoRedo.action.DrawPagedStrokeAction;
 
 public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
 {
@@ -90,7 +91,24 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       Box_Unselection,
       
       Move, 
-      Scale
+      Scale;
+      
+      private Mode getInverse()
+      {
+         switch (this)
+         {
+            case Single_Selection:
+                 return Single_Unselection;
+            case Box_Selection:
+                 return Box_Unselection;
+            case Single_Unselection:
+                 return Single_Selection;
+            case Box_Unselection:
+                 return Box_Selection;
+            default:
+                 return this;
+         }
+      }
    };
    
    private static final float SEL_BOX_LINE_WIDTH = 1;
@@ -105,6 +123,10 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
    
    private Vector<CopyStateListener> copyListenerVec;
    
+   // 'null' if there is no item to copy and 
+   // non-null if there is.
+   private CopyVector<Stroke> copiedItem;
+   
    public StrokeSelectionCanvas(CompositeCanvas canvas)
    {
       super(canvas, true);
@@ -115,6 +137,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       this.prevPoint = null;
       this.selRect = null;
       this.toolBar = new SelectionToolBar();
+      this.copiedItem = null;
       
       this.initScale = new Rectangle2D.Float();
    }
@@ -135,14 +158,22 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
    }
    
    @Override
-   public void pathStartedImpl(Path path, boolean newPage)
+   public void pathStartedImpl(Path path, MouseButton button, boolean newPage)
    {
    }
    
    @Override
-   public void pathFinishedImpl(Path path)
+   public void pathFinishedImpl(Path path, MouseButton button)
    {
       Mode curMode = this.toolBar.getCurrentMode();
+      
+      // If the right mouse button is being used, 
+      // use the opposite action.  This feature allows 
+      // the user to temporarily switch to the opposite 
+      // action without having to return to the toolbar.
+      if (button == MouseButton.Button3)
+         curMode = curMode.getInverse();
+      
       if (curMode == Mode.Box_Selection || curMode == Mode.Box_Unselection)
       {
          boolean isSelected = true;
@@ -164,14 +195,77 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
    }
    
    @Override
-   public void pathChangedImpl(Path path)
+   public void pathChangedImpl(Path path, MouseButton button)
    {
       FloatPoint2D lastPt = path.getLast();
       Binder binder = getCompositeCanvas().getBinder();
       Page curPage = binder.getCurrentPage();
-      Vector<Stroke> strokesAtPt = curPage.getStrokesAt(lastPt);
       
+      if (this.copiedItem != null)
+      {
+         RectangleUnioner unioner = new RectangleUnioner();
+         float maxWidth = 0;
+         
+         if (this.copiedItem.isEmpty())
+            return;
+         
+         float scaleLevel = getCompositeCanvas().getZoomLevel();
+         
+         Rectangle2D.Float bounds;
+         float minX = Float.MAX_VALUE;
+         float minY = Float.MAX_VALUE;
+         for (Stroke stroke : this.copiedItem)
+         {
+            // scale the strokes if the canvas has been scaled
+            stroke.scaleTo(scaleLevel, scaleLevel);
+            
+            bounds = stroke.getBounds2D();
+            minX = (float)Math.min(minX, bounds.getMinX());
+            minY = (float)Math.min(minY, bounds.getMinY());
+         }
+         
+         float xDiff = lastPt.getX()-minX;
+         float yDiff = lastPt.getY()-minY;
+         
+         for (Stroke stroke : this.copiedItem)
+         {
+            // move the stroke to its new position
+            stroke.translateBy(xDiff, yDiff);
+            
+            // the strokes have already been scaled above
+            
+            // add the stroke to the page
+            curPage.addStroke(stroke);
+            curPage.setStrokeSelected(stroke, true);
+            
+            // find the region of the canvas to repaint
+            // by getting the stroke's new bounds
+            // (the new bounds are needed since the stroke 
+            // has been translated).
+            unioner.union(stroke.getBounds2D());
+            maxWidth = Math.max(maxWidth, stroke.getPen().getWidth());
+         }
+         
+         Rectangle2D.Float union = unioner.getUnion();
+         doRepaint( curPage.getX()+(float)union.getX(), 
+                    curPage.getY()+(float)union.getY(), 
+                    (float)union.getWidth(), (float)union.getHeight(), 
+                    maxWidth);
+         
+         this.copiedItem = null;
+         this.toolBar.moveButton.doClick();
+         return;
+      }
+      
+      Vector<Stroke> strokesAtPt = curPage.getStrokesAt(lastPt);
       Mode curMode = this.toolBar.getCurrentMode();
+      
+      // If the right mouse button is being used, 
+      // use the opposite action.  This feature allows 
+      // the user to temporarily switch to the opposite 
+      // action without having to return to the toolbar.
+      if (button == MouseButton.Button3)
+         curMode = curMode.getInverse();
       
       if (curMode == Mode.Single_Selection)
       {
@@ -462,19 +556,19 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       private Mode mode;
       private Vector<PathMenuItem> menuItemVec;
       
-      private JToggleButton selButton;
-      private JToggleButton unselButton;
+      private IconToggleButton selButton;
+      private IconToggleButton unselButton;
       
-      private JToggleButton selBoxButton;
-      private JToggleButton unselBoxButton;
+      private IconToggleButton selBoxButton;
+      private IconToggleButton unselBoxButton;
       
-      private JButton selAllButton;
-      private JButton unselAllButton;
+      private IconButton selAllButton;
+      private IconButton unselAllButton;
       
-      private JButton removeButton;
-      private JButton combButton;
-      private JToggleButton moveButton;
-      private JToggleButton scaleButton;
+      private IconButton removeButton;
+      private IconButton combButton;
+      private IconToggleButton moveButton;
+      private IconToggleButton scaleButton;
       
       private SizeControl sizeControl;
       private ColorControl colorControl;
@@ -484,70 +578,82 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          super(DefinedIcon.select_stroke);
          
          this.selButton = 
-            new JToggleButton(DefinedIcon.select.getIcon(BUTTON_SIZE));
+                 new IconToggleButton(DefinedIcon.select, BUTTON_SIZE);
          this.selButton.setActionCommand(Mode.Single_Selection.toString());
          this.selButton.addActionListener(this);
          
          this.unselButton = 
-            new JToggleButton(DefinedIcon.unselect.getIcon(BUTTON_SIZE));
+                 new IconToggleButton(DefinedIcon.unselect, BUTTON_SIZE);
          this.unselButton.setActionCommand(Mode.Single_Unselection.toString());
          this.unselButton.addActionListener(this);
          
          this.selBoxButton = 
-            new JToggleButton(DefinedIcon.box_select.getIcon(BUTTON_SIZE));
+                 new IconToggleButton(DefinedIcon.box_select, BUTTON_SIZE);
          this.selBoxButton.setActionCommand(Mode.Box_Selection.toString());
          this.selBoxButton.addActionListener(this);
          
          this.unselBoxButton = 
-            new JToggleButton(DefinedIcon.box_unselect.getIcon(BUTTON_SIZE));
+                 new IconToggleButton(DefinedIcon.box_unselect, BUTTON_SIZE);
          this.unselBoxButton.setActionCommand(Mode.Box_Unselection.toString());
          this.unselBoxButton.addActionListener(this);
          
          this.removeButton = 
-            new JButton(DefinedIcon.delete_stroke.getIcon(BUTTON_SIZE));
-         this.removeButton.addActionListener(this);
+                 new IconButton(DefinedIcon.delete_stroke, BUTTON_SIZE);
          this.removeButton.setActionCommand(Action.Deletion.toString());
+         // Don't directly listen to this button.  Instead, listen to 
+         // the drop down button that contains this button.  That way if 
+         // the user selects this button from the drop down list, strokes 
+         // won't be deleted.  However, when he/she selects the drop down 
+         // button, strokes will then be deleted.
+         // However, we still must set the button's action command since 
+         // the drop down button sends this action command.
+         // this.removeButton.addActionListener(this);
          
          this.combButton = 
-            new JButton(DefinedIcon.paintbrush.getIcon(BUTTON_SIZE));
-         this.combButton.addActionListener(this);
+                 new IconButton(DefinedIcon.paintbrush, BUTTON_SIZE);
          this.combButton.setActionCommand(Action.Smooth.toString());
+         // Don't directly listen to this button.  Instead, listen to 
+         // the drop down button that contains this button.  That way if 
+         // the user selects this button from the drop down list, strokes 
+         // won't be smoothed.  However, when he/she selects the drop down 
+         // button, smoothed will then be deleted.
+         // However, we still must set the button's action command since 
+         // the drop down button sends this action command.
+         // this.combButton.addActionListener(this);
          
          this.moveButton = 
-            new JToggleButton(DefinedIcon.move_stroke.getIcon(BUTTON_SIZE));
+                 new IconToggleButton(DefinedIcon.move_stroke, BUTTON_SIZE);
          this.moveButton.addActionListener(this);
          this.moveButton.setActionCommand(Mode.Move.toString());
          
          this.scaleButton = 
-            new JToggleButton(DefinedIcon.resize_stroke.getIcon(BUTTON_SIZE));
+                 new IconToggleButton(DefinedIcon.resize_stroke, BUTTON_SIZE);
          this.scaleButton.addActionListener(this);
          this.scaleButton.setActionCommand(Mode.Scale.toString());
          
          this.selAllButton = 
-            new JButton(DefinedIcon.select_all.getIcon(BUTTON_SIZE));
+                 new IconButton(DefinedIcon.select_all, BUTTON_SIZE);
          this.selAllButton.addActionListener(this);
          this.selAllButton.setActionCommand(Action.Select_All.toString());
          
          this.unselAllButton = 
-            new JButton(DefinedIcon.unselect_all.getIcon(BUTTON_SIZE));
+                 new IconButton(DefinedIcon.unselect_all, BUTTON_SIZE);
          this.unselAllButton.addActionListener(this);
          this.unselAllButton.setActionCommand(Action.Unselect_All.toString());
          
          this.sizeControl = 
                         new SizeControl("Size", 1.2, 0, 20, 0.2, 
                                         Unit.PIXEL, Style.Circle, false, 
-                                        Color.BLACK, DUAL_BUTTON_SIZE, 1);
+                                        Color.BLACK, 1);
          SizeListener sizeListener = new SizeListener();
          this.sizeControl.addValueChangeListener(sizeListener);
-         this.sizeControl.getDecoratedButton().
-                             addActionListener(sizeListener);
+         this.sizeControl.addActionListener(sizeListener);
          
-         this.colorControl = new ColorControl(Color.BLACK, DUAL_BUTTON_SIZE);
+         this.colorControl = new ColorControl(Color.BLACK);
          
          ColorListener colorListener = new ColorListener();
          this.colorControl.addValueChangeListener(colorListener);
-         this.colorControl.getDecoratedButton().
-                              addActionListener(colorListener);
+         this.colorControl.addActionListener(colorListener);
          
          ButtonGroup selUnselGroup = new ButtonGroup();
          selUnselGroup.add(this.selButton);
@@ -557,37 +663,60 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          selUnselGroup.add(this.moveButton);
          selUnselGroup.add(this.scaleButton);
          
-         JToolBar selToolBar = new JToolBar();
-         selToolBar.setFloatable(false);
-         selToolBar.add(this.selButton);
-         selToolBar.add(this.selBoxButton);
-         selToolBar.add(this.selAllButton);
-         selToolBar.addSeparator();
+         ButtonComboButton selCombo = 
+                              new ButtonComboButton(DefinedIcon.select);
+         selCombo.addActionListener(this);
+         selCombo.registerButton(this.selButton);
+         selCombo.registerButton(this.selBoxButton);
+         selCombo.registerButton(this.selAllButton);
+         selCombo.registerButton(this.unselButton);
+         selCombo.registerButton(this.unselBoxButton);
+         selCombo.registerButton(this.unselAllButton);
+         selCombo.registerButton(this.moveButton);
+         selCombo.registerButton(this.scaleButton);
+         selCombo.registerButton(this.removeButton);
+         selCombo.registerButton(this.combButton);
          
-         selToolBar.add(this.unselButton);
-         selToolBar.add(this.unselBoxButton);
-         selToolBar.add(this.unselAllButton);
+         JPanel singlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+         singlePanel.add(this.selButton);
+         singlePanel.add(this.unselButton);
          
-         JToolBar editToolBar = new JToolBar();
-         editToolBar.setFloatable(false);
-         editToolBar.add(this.removeButton);
-         editToolBar.add(this.combButton);
-         editToolBar.add(this.moveButton);
-         editToolBar.add(this.scaleButton);
-         editToolBar.addSeparator();
+         JPanel boxPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+         boxPanel.add(this.selBoxButton);
+         boxPanel.add(this.unselBoxButton);
          
-         editToolBar.add(this.colorControl);
-         editToolBar.addSeparator();
-         editToolBar.add(this.sizeControl);
+         JPanel allPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+         allPanel.add(this.selAllButton);
+         allPanel.add(this.unselAllButton);
+         
+         JPanel transPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+         transPanel.add(this.moveButton);
+         transPanel.add(this.scaleButton);
+         
+         JPanel editPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+         editPanel.add(this.removeButton);
+         editPanel.add(this.combButton);
+         
+         JWindow selPopup = selCombo.getPopupWindow();
+         selPopup.setLayout(new GridLayout(5, 1));
+         selPopup.add(singlePanel);
+         selPopup.add(boxPanel);
+         selPopup.add(allPanel);
+         selPopup.add(transPanel);
+         selPopup.add(editPanel);
+         
+         JToolBar toolbar = getToolBar();
+         
+         toolbar.add(selCombo);
+         toolbar.addSeparator();
+         
+         toolbar.add(this.colorControl);
+         toolbar.addSeparator();
+         toolbar.add(this.sizeControl);
          
          CutCopyPasteToolBar<CopyVector<Stroke>> copyToolbar = 
-                                                    new CutCopyPasteToolBar(this);
-         copyToolbar.setFloatable(false);
-         
-         SlidingPanel slidePanel = getSlidingPanel();
-         slidePanel.append(selToolBar);
-         slidePanel.append(editToolBar);
-         slidePanel.append(copyToolbar);
+                               new CutCopyPasteToolBar(this);
+         copyToolbar.appendTo(toolbar);
          
          // set up the menus
          this.menuItemVec = new Vector<PathMenuItem>();
@@ -657,7 +786,10 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       
       public void start()
       {
-         this.selButton.doClick();
+         // Don't select any buttons since the previous button that 
+         // was used should still be active.  It is annoying if the 
+         // select button is always selected by default.
+         // this.selButton.doClick();
       }
       
       public void finish()
@@ -695,8 +827,22 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             // because the strokes in that region have been combed
             RectangleUnioner dirtyUnioner = new RectangleUnioner();
             
+            // Get the number that describes how to smooth the stroke.
+            // The larger the number the more the stroke is smoothed.
+            // This number is what the user has selected in the 
+            // settings dialog.
+            int smoothFactor = SettingsUtilities.getSmoothFactor();
+            
+            // If the smooth factor is 0 or negative, set it to 1.  
+            // That is if the user has selected in the settings 
+            // dialog not to smooth strokes, this button should 
+            // still slightly smooth strokes when pressed.
+            if (smoothFactor <= 0)
+               smoothFactor = 1;
+            
             Stroke curStroke;
             float maxWidth = 0;
+            Path path;
             for (Page page : canvas.getBinder())
             {
                for (int i=0; i<page.getNumSelectedStrokes(); i++)
@@ -708,7 +854,9 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                   // add the stroke's current bounding box to the dirty region
                   dirtyUnioner.union(curStroke.getBounds2D());
                   
-                  curStroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
+                  path = curStroke.getPath();
+                  path.simplify(curStroke.getPen().getWidth());
+                  path.smooth(smoothFactor);
                   maxWidth = Math.max(maxWidth, curStroke.getPen().getWidth());
                   
                   // add the stroke's new bounding box to the dirty region
@@ -737,57 +885,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          }
          else if (cmmd.equals(Action.Deletion.toString()))
          {
-            // record the strokes that are deleted for the 
-            // undo/redo manager
-            Hashtable<Page, Vector<Stroke>> deletedStrokeTable = 
-                               new Hashtable<Page, Vector<Stroke>>();
-            
-            CompositeCanvas canvas = getCompositeCanvas();
-            
-            // the region of the session that needs to be repainted 
-            // because the strokes in that region have been deleted
-            RectangleUnioner dirtyUnioner = new RectangleUnioner();
-            
-            for (Page page : canvas.getBinder())
-            {
-               Vector<Stroke> selStrokeVec = page.getSelectedStrokesCopy();
-               deletedStrokeTable.put(page, selStrokeVec);
-               
-               Stroke selStroke;
-               for (int i=selStrokeVec.size()-1; i>=0; i--)
-               {
-                  selStroke = selStrokeVec.elementAt(i);
-                  page.removeStroke(selStroke);
-                  
-                  // add the stroke's bounding box to the dirty region
-                  dirtyUnioner.union(selStroke.getBounds2D());
-               }
-            }
-            
-            DeletePagedStrokeAction actionDone = 
-               new DeletePagedStrokeAction(canvas, deletedStrokeTable);
-            DrawPagedStrokeAction undoAction = 
-               new DrawPagedStrokeAction(canvas, deletedStrokeTable);
-            canvas.getUndoRedoManager().actionDone(actionDone, undoAction);
-            
-            // repaint only the dirty region
-            Rectangle2D dirtyRect = dirtyUnioner.getUnion();
-            
-            // The dirty region is the region relative to the current page.
-            // Thus we have to shift the region as if the origin is at 
-            // the top left corner of the current page
-            Binder binder = getCompositeCanvas().getBinder();
-            Page curPage = binder.getCurrentPage();
-            
-            float x = (float)(dirtyRect.getX()+curPage.getX());
-            float y = (float)(dirtyRect.getY()+curPage.getY());
-            
-            // repaint the dirty region
-            doRepaint( x, 
-                       y, 
-                      (float)dirtyRect.getWidth(), 
-                      (float)dirtyRect.getHeight(), 0);
-            
+            deleteStrokes(getSelectedStrokeTable());
             notifyOfCopyState(checkCanCopy());
          }
          else if (cmmd.equals(Mode.Scale.toString()))
@@ -968,6 +1066,9 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          
          binder.setAllStrokeSelected(false);
          
+         if (selStrokes.isEmpty())
+            return null;
+         
          return selStrokes;
       }
 
@@ -1006,31 +1107,20 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                    (float)union.getHeight(), 
                    (float)maxWidth);
          
+         if (selStrokes.isEmpty())
+            return null;
+         
          return selStrokes;
       }
-
+      
+      // Called by the CutCopyPasteToolbar when the paste 
+      // button is pressed.
       public void paste(CopyVector<Stroke> item)
       {
          if (item == null)
             throw new NullPointerException();
          
-         Page curPage = getCompositeCanvas().getBinder().getCurrentPage();
-         RectangleUnioner unioner = new RectangleUnioner();
-         float maxWidth = 0;
-         
-         for (Stroke stroke : item)
-         {
-            curPage.addStroke(stroke);
-            curPage.setStrokeSelected(stroke, true);
-            unioner.union(stroke.getBounds2D());
-            maxWidth = Math.max(maxWidth, stroke.getPen().getWidth());
-         }
-         
-         Rectangle2D.Float union = unioner.getUnion();
-         doRepaint( curPage.getX()+(float)union.getX(), 
-                    curPage.getY()+(float)union.getY(), 
-                    (float)union.getWidth(), (float)union.getHeight(), 
-                    maxWidth);
+         copiedItem = item;
       }
 
       public void addCopyStateListener(CopyStateListener listener)

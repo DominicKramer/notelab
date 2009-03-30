@@ -25,21 +25,29 @@
 package noteLab.gui.toolbar;
 
 import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.Vector;
 
+import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 
 import noteLab.gui.ToolBarButton;
 import noteLab.model.canvas.CompositeCanvas;
 
-public class CanvasControlToolBar extends JToolBar implements ActionListener
+public class CanvasControlToolBar extends JPanel implements ActionListener, 
+                                                            ComponentListener
 {
+   private static final int HGAP = 2;
+   
    private CompositeCanvas canvas;
-   private JToolBar controlPanel;
+   private JPanel controlPanel;
+   private JToolBar buttonBar;
    
    private Vector<ToolBarButton> toolBarVec;
    
@@ -48,22 +56,18 @@ public class CanvasControlToolBar extends JToolBar implements ActionListener
       if (canvas == null)
          throw new NullPointerException();
       
-      setFloatable(false);
-      setLayout(new FlowLayout(FlowLayout.LEFT, 2, 0));
+      setLayout(new FlowLayout(FlowLayout.LEFT, HGAP, 0));
+      setBorder(new EmptyBorder(0,0,0,0));
       
       this.canvas = canvas;
       
-      this.controlPanel = new JToolBar();
-      this.controlPanel.setFloatable(false);
+      this.controlPanel = new JPanel();
       this.controlPanel.setLayout(new CardLayout());
       
       this.toolBarVec = this.canvas.getToolBars();
       
-      //FlowLayout mainLayout = new FlowLayout(FlowLayout.LEFT);
-      //mainLayout.setVgap(0);
-      // Constructor definition:  
-      // new EmptyBorder(int top, int left, int bottom, int right)
-      setBorder(new EmptyBorder(-10, 5, -10, 0));
+      this.buttonBar = new JToolBar();
+      this.buttonBar.setFloatable(false);
       
       ToolBarButton tempButton;
       String cmmd;
@@ -75,17 +79,22 @@ public class CanvasControlToolBar extends JToolBar implements ActionListener
          tempButton = toolBar;
          tempButton.setActionCommand(cmmd);
          tempButton.addActionListener(this);
-         add(tempButton);
+         this.buttonBar.add(tempButton);
          
-         this.controlPanel.add(toolBar.getSlidingPanel(), cmmd);
+         this.controlPanel.add(toolBar.getToolBar(), cmmd);
       }
       
-      //setLayout(mainLayout);
+      this.buttonBar.addSeparator();
+      
+      add(this.buttonBar);
       add(this.controlPanel);
       
       this.toolBarVec.firstElement().doClick();
+      
+      addComponentListener(this);
+      syncToolbarSize();
    }
-
+   
    public void actionPerformed(ActionEvent e)
    {
       Object source = e.getSource();
@@ -94,7 +103,8 @@ public class CanvasControlToolBar extends JToolBar implements ActionListener
       
       ToolBarButton toolButton = (ToolBarButton)source;
       ((CardLayout)this.controlPanel.getLayout()).
-                                        show(this.controlPanel, e.getActionCommand());
+                                        show(this.controlPanel, 
+                                             e.getActionCommand());
       
       for (ToolBarButton button : this.toolBarVec)
       {
@@ -108,5 +118,43 @@ public class CanvasControlToolBar extends JToolBar implements ActionListener
       
       this.canvas.setCurrentCanvas(toolButton.getCanvas());
       toolButton.start();
+   }
+   
+   public void componentHidden(ComponentEvent e)
+   {
+   }
+   
+   public void componentMoved(ComponentEvent e)
+   {
+   }
+   
+   public void componentResized(ComponentEvent e)
+   {
+      syncToolbarSize();
+   }
+   
+   public void componentShown(ComponentEvent e)
+   {
+   }
+   
+   private void syncToolbarSize()
+   {
+      JToolBar toolbar;
+      Dimension prefSize;
+      int width = getWidth()-this.buttonBar.getPreferredSize().width-2*HGAP;
+      if (width <= 0)
+         return;
+      
+      for (ToolBarButton button : this.toolBarVec)
+      {
+         toolbar = button.getToolBar();
+         prefSize = toolbar.getPreferredSize();
+         prefSize.width = width;
+         toolbar.setPreferredSize(prefSize);
+         toolbar.invalidate();
+      }
+      
+      invalidate();
+      revalidate();
    }
 }

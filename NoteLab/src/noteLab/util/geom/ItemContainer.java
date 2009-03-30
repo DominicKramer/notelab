@@ -85,12 +85,22 @@ public class ItemContainer<T extends Transformable & Bounded & ModBroadcaster>
       return this.itemList.getFirst();
    }
    
+   public void removeFirst()
+   {
+      this.itemList.removeFirst();
+   }
+   
    public T getLast()
    {
       if (getNumItems() == 0)
          return null;
       
       return this.itemList.getLast();
+   }
+   
+   public void removeLast()
+   {
+      this.itemList.removeLast();
    }
    
    protected void clear()
