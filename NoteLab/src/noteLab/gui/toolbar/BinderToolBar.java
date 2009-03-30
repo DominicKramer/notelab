@@ -37,9 +37,9 @@ import noteLab.model.binder.Binder;
 import noteLab.model.binder.BinderListener;
 import noteLab.model.canvas.CompositeCanvas;
 
-public class BinderToolBar extends JToolBar implements ActionListener, 
-                                                       BinderListener, 
-                                                       GuiSettingsConstants
+public class BinderToolBar implements ActionListener, 
+                                      BinderListener, 
+                                      GuiSettingsConstants
 {
    private static final String ZOOM_OUT = "ZoomOut";
    private static final String ZOOM_NORMAL = "ZoomNormal";
@@ -72,8 +72,6 @@ public class BinderToolBar extends JToolBar implements ActionListener,
    
    public BinderToolBar(CompositeCanvas canvas)
    {
-      setFloatable(false);
-      
       this.canvas = canvas;
       
       // construct the buttons for zooming
@@ -120,23 +118,29 @@ public class BinderToolBar extends JToolBar implements ActionListener,
       this.refreshButton.setActionCommand(REFRESH);
       this.refreshButton.addActionListener(this);
       
-      add(this.zoomOutButton);
-      add(this.zoomNormalButton);
-      add(this.zoomInButton);
-      addSeparator();
-      
-      add(this.prevButton);
-      add(this.currentButton);
-      add(this.nextButton);
-      addSeparator();
-      
-      add(this.newPageButton);
-      addSeparator();
-      
-      add(this.refreshButton);
-      
       this.canvas.getBinder().addBinderListener(this);
       adjustNextPrevButtons();
+   }
+   
+   public void appendTo(JToolBar toolbar)
+   {
+      if (toolbar == null)
+         throw new NullPointerException();
+      
+      toolbar.add(this.zoomOutButton);
+      toolbar.add(this.zoomNormalButton);
+      toolbar.add(this.zoomInButton);
+      toolbar.addSeparator();
+      
+      toolbar.add(this.prevButton);
+      toolbar.add(this.currentButton);
+      toolbar.add(this.nextButton);
+      toolbar.addSeparator();
+      
+      toolbar.add(this.newPageButton);
+      toolbar.addSeparator();
+      
+      toolbar.add(this.refreshButton);
    }
    
    public void actionPerformed(ActionEvent e)

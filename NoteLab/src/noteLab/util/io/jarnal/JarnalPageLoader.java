@@ -336,7 +336,6 @@ public class JarnalPageLoader extends ResolvableHandler implements Runnable
          }
          
          Stroke stroke = new Stroke(new Pen(width, color, this.scale), path);
-         stroke.setIsStable(true);
          this.strokeVec.add(stroke);
       }
    }

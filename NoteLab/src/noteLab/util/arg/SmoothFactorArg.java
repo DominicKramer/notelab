@@ -35,6 +35,8 @@ public class SmoothFactorArg extends Argument
                               new ParamInfo("factor", 
                                             "a nonnegative integer"), 
                            };
+   // TODO:  Change this description when the smoothing algorithm is 
+   //        finalized.
    private static final String DESC = "Specifies to what extent strokes drawn " +
                                       "are smoothed.  A value of zero specifies " +
                                       "strokes should not be smoothed and the " +
@@ -78,12 +80,23 @@ public class SmoothFactorArg extends Argument
       
       try
       {
+         /* With the new smoothing algorithm there is no upper limit for 
+          * the smoothing factor.
          if (size > 5)
          {
             System.out.println("The smooth factor "+size+
                                " is invalid since it must be a whole number between 1 and 5 " +
                                "inclusive.  The maximum value of 5 will be used.");
             size = 5;
+         }
+         */
+         
+         if (size < 0)
+         {
+            System.out.println("The smooth factor "+size+
+                  " is invalid since it must be a non-negative whole " +
+                  "number.  A value of 0 will be used.");
+            size = 0;
          }
          
          SettingsUtilities.setSmoothFactor(size);

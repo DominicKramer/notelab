@@ -81,6 +81,16 @@ public class SettingsManager
          listener.settingsChanged(event);
    }
    
+   public Enumeration<String> getKeys()
+   {
+      return this.settingsTable.keys();
+   }
+   
+   public int getSize()
+   {
+      return this.settingsTable.size();
+   }
+   
    public void notifyOfChanges()
    {
       Enumeration<String> keys = this.settingsTable.keys();

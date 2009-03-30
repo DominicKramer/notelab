@@ -28,11 +28,12 @@ import java.awt.Color;
 
 import javax.swing.JWindow;
 
-import noteLab.gui.DecoratedButton.Style;
 import noteLab.gui.control.NumberSpinner;
+import noteLab.gui.control.drop.pic.PrimitivePic;
+import noteLab.gui.control.drop.pic.PrimitivePic.Style;
 
 public class NumberControl 
-                extends DualDropButton<Double, NumberControl> 
+                extends ComboButton<Double, NumberControl> 
 {
    private NumberSpinner numSpinner;
    
@@ -40,13 +41,13 @@ public class NumberControl
                         double min, double max, double stepSize, 
                         int prefSize, float scaleFactor)
    {
-      super((int)(scaleFactor*val), Color.BLACK, false, 
-            Style.Circle, prefSize, scaleFactor);
+      super(new PrimitivePic((int)(scaleFactor*val), Color.BLACK, false, 
+                             Style.Circle, scaleFactor));
       
       this.numSpinner = 
          new NumberSpinner(title, label, val, min, max, stepSize);
       
-      JWindow window = getDropDownButton().getPopupWindow();
+      JWindow window = getPopupWindow();
       window.getContentPane().add(this.numSpinner);
    }
    

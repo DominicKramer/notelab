@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
@@ -35,16 +36,16 @@ import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
-import noteLab.gui.DecoratedButton;
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.ToolBarButton;
-import noteLab.gui.DecoratedButton.Style;
 import noteLab.gui.control.drop.ColorControl;
 import noteLab.gui.control.drop.SizeControl;
 import noteLab.gui.control.drop.TriControl;
+import noteLab.gui.control.drop.pic.PrimitivePic.Style;
 import noteLab.gui.listener.SelectionChangeEvent;
 import noteLab.gui.listener.SelectionChangeListener;
 import noteLab.gui.listener.ValueChangeEvent;
@@ -73,6 +74,12 @@ import noteLab.util.undoRedo.action.DrawStrokeAction;
 
 public class SrokeCanvas extends SubCanvas<Pen, Stroke>
 {
+   private enum Mode
+   {
+      Write, 
+      Delete
+   }
+   
    private Pen pen;
    private PenToolBar toolBar;
    private Stroke curStroke;
@@ -103,74 +110,105 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
    }
    
    @Override
-   public void pathStartedImpl(Path path, boolean newPage)
+   public void pathStartedImpl(Path path, MouseButton button, boolean newPage)
    {
+      //if (button == MouseButton.Button1)
+      //   this.toolBar.setCurrentMode(Mode.Write);
+      if (button == MouseButton.Button3)
+         this.toolBar.setCurrentMode(Mode.Delete);
    }
    
-   public void pathFinishedImpl(Path path)
+   @Override
+   public void pathFinishedImpl(Path path, MouseButton button)
    {
-      CompositeCanvas canvas = getCompositeCanvas();
-      final Page page = canvas.getBinder().getCurrentPage();
-      
-      DrawStrokeAction actionDone = 
-                  new DrawStrokeAction(canvas, this.curStroke, page);
-      DeleteStrokeAction undoAction = 
-                  new DeleteStrokeAction(canvas, this.curStroke, page);
-      canvas.getUndoRedoManager().actionDone(actionDone, undoAction);
-      
-      final Stroke rawCurStroke = this.curStroke;
-      this.curStroke = null;
-      
-      new Thread(new Runnable()
+      if (this.toolBar.getCurrentMode() == Mode.Write)
       {
-         public void run()
+         CompositeCanvas canvas = getCompositeCanvas();
+         final Page page = canvas.getBinder().getCurrentPage();
+         
+         DrawStrokeAction actionDone = 
+                     new DrawStrokeAction(canvas, this.curStroke, page);
+         DeleteStrokeAction undoAction = 
+                     new DeleteStrokeAction(canvas, this.curStroke, page);
+         canvas.getUndoRedoManager().actionDone(actionDone, undoAction);
+         
+         final Stroke rawCurStroke = this.curStroke;
+         this.curStroke = null;
+         
+         new Thread(new Runnable()
          {
-            RectangleUnioner unioner = new RectangleUnioner();
-            unioner.union(rawCurStroke.getBounds2D());
-            
-            rawCurStroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
-            rawCurStroke.setIsStable(true);
-            
-            unioner.union(rawCurStroke.getBounds2D());
-            
-            Rectangle2D bounds = unioner.getUnion();
-            
-            float x = (float)bounds.getX()+page.getX();
-            float y = (float)bounds.getY()+page.getY();
-            float width = (float)bounds.getWidth();
-            float height = (float)bounds.getHeight();
-            float delta = rawCurStroke.getPen().getWidth();
-            
-            doRepaint(x, y, width, height, delta);
-         }
-      }).start();
+            public void run()
+            {
+               RectangleUnioner unioner = new RectangleUnioner();
+               unioner.union(rawCurStroke.getBounds2D());
+               
+               Path path = rawCurStroke.getPath();
+               path.simplify(rawCurStroke.getPen().getWidth());
+               path.smooth(SettingsUtilities.getSmoothFactor());
+               
+               unioner.union(rawCurStroke.getBounds2D());
+               
+               Rectangle2D bounds = unioner.getUnion();
+               
+               float x = (float)bounds.getX()+page.getX();
+               float y = (float)bounds.getY()+page.getY();
+               float width = (float)bounds.getWidth();
+               float height = (float)bounds.getHeight();
+               float delta = rawCurStroke.getPen().getWidth();
+               
+               doRepaint(x, y, width, height, delta);
+            }
+         }).start();
+      }
+      
+      setRenderBinder(true);
+      this.toolBar.syncMode();
    }
    
-   public void pathChangedImpl(Path path)
+   @Override
+   public void pathChangedImpl(Path path, MouseButton button)
    {
+      Mode curMode = this.toolBar.getCurrentMode();
       Binder binder = getCompositeCanvas().getBinder();
       
-      if (this.curStroke == null)
+      if (curMode == Mode.Write)
       {
-         this.curStroke = new Stroke(this.pen.getCopy(), path);
-         binder.getCurrentPage().addStroke(this.curStroke);
+         if (this.curStroke == null)
+         {
+            this.curStroke = new Stroke(this.pen.getCopy(), path);
+            setRenderBinder(false);
+            binder.getCurrentPage().addStroke(this.curStroke);
+         }
+         
+         int numItems = path.getNumItems();
+         if (numItems < 2)
+         {
+            float delta = 1+this.pen.getWidth();
+            FloatPoint2D pt = path.getFirst();
+            Page page = binder.getCurrentPage();
+            doRepaint(pt.getX()+page.getX(), 
+                      pt.getY()+page.getY(), 0, 0, delta);
+            return;
+         }
+         
+         FloatPoint2D pt3 = path.getItemAt(numItems-2);
+         FloatPoint2D pt4 = path.getItemAt(numItems-1);
+         
+         doRepaintLine(pt3, pt4, binder);
       }
-      
-      int numItems = path.getNumItems();
-      if (numItems < 2)
+      else if (curMode == Mode.Delete)
       {
-         float delta = 1+this.pen.getWidth();
-         FloatPoint2D pt = path.getFirst();
-         Page page = binder.getCurrentPage();
-         doRepaint(pt.getX()+page.getX(), 
-                   pt.getY()+page.getY(), 0, 0, delta);
-         return;
+         Page curPage = binder.getCurrentPage();
+         Vector<Stroke> strokesAtPt = curPage.getStrokesAt(path.getLast());
+         if (strokesAtPt.size() == 0)
+            return;
+         
+         Hashtable<Page, Vector<Stroke>> strokeTable = 
+                            new Hashtable<Page, Vector<Stroke>>(1);
+         strokeTable.put(curPage, strokesAtPt);
+         
+         deleteStrokes(strokeTable);
       }
-      
-      FloatPoint2D pt3 = path.getItemAt(numItems-2);
-      FloatPoint2D pt4 = path.getItemAt(numItems-1);
-      
-      doRepaintLine(pt3, pt4, binder);
    }
    
    private void doRepaintLine(FloatPoint2D pt1, FloatPoint2D pt2, 
@@ -219,6 +257,19 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       
       mG2d.drawLine(pt1, pt2);
       */
+      
+      if (mG2d == null)
+         throw new NullPointerException();
+      
+      if (this.curStroke == null)
+         return;
+      
+      Binder binder = getCompositeCanvas().getBinder();
+      Page page = binder.getCurrentPage();
+      
+      mG2d.translate(page.getX(), page.getY());
+      this.curStroke.renderInto(mG2d);
+      mG2d.translate(-page.getX(), -page.getY());
    }
    
    public Pen getTool()
@@ -236,17 +287,35 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
                                          PenSettingsConstants, 
                                          GuiSettingsConstants
    {
+      private JToggleButton writeButton;
+      private JToggleButton deleteButton;
+      
       private TriControl<Color, ColorControl> colorControl;
       private TriControl<MValue, SizeControl> sizeControl;
       private List<PathMenuItem> menuItemVec;
+      private Mode curMode;
       
       public PenToolBar()
       {
          super(DefinedIcon.compose);
          
-         ColorControl color1 = new ColorControl(PEN_1_COLOR, DUAL_BUTTON_SIZE);
-         ColorControl color2 = new ColorControl(PEN_2_COLOR, DUAL_BUTTON_SIZE);
-         ColorControl color3 = new ColorControl(PEN_3_COLOR, DUAL_BUTTON_SIZE);
+         this.writeButton = new JToggleButton(DefinedIcon.pencil.getIcon(BUTTON_SIZE));
+         this.writeButton.setActionCommand(Mode.Write.toString());
+         this.writeButton.addActionListener(this);
+         
+         this.deleteButton = new JToggleButton(DefinedIcon.remove.getIcon(BUTTON_SIZE));
+         this.deleteButton.setActionCommand(Mode.Delete.toString());
+         this.deleteButton.addActionListener(this);
+         
+         ButtonGroup writeDelGroup = new ButtonGroup();
+         writeDelGroup.add(this.writeButton);
+         writeDelGroup.add(this.deleteButton);
+         
+         this.curMode = Mode.Write;
+         
+         ColorControl color1 = new ColorControl(PEN_1_COLOR);
+         ColorControl color2 = new ColorControl(PEN_2_COLOR);
+         ColorControl color3 = new ColorControl(PEN_3_COLOR);
          this.colorControl = 
             new TriControl<Color, ColorControl>(color1, color2, color3);
          
@@ -254,28 +323,34 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
             new SizeControl("", FINE_SIZE_PX, MIN_SIZE_PX, 
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, 
-                            Color.BLACK, DUAL_BUTTON_SIZE, 1);
+                            Color.BLACK, 1);
          SizeControl size2 = 
             new SizeControl("", MEDIUM_SIZE_PX, MIN_SIZE_PX, 
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, 
-                            Color.BLACK, DUAL_BUTTON_SIZE, 1);
+                            Color.BLACK, 1);
          SizeControl size3 = 
             new SizeControl("", THICK_SIZE_PX, MIN_SIZE_PX, 
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, Color.BLACK, 
-                            DUAL_BUTTON_SIZE, 1);
+                            1);
          
          this.sizeControl = 
             new TriControl<MValue, SizeControl>(size1, size2, size3);
          
          
-         JToolBar toolPanel = new JToolBar();
+         JToolBar toolPanel = getToolBar();
          toolPanel.setFloatable(false);
-         toolPanel.add(this.sizeControl);
+         toolPanel.add(this.writeButton);
+         toolPanel.add(this.deleteButton);
          toolPanel.addSeparator();
-         toolPanel.add(this.colorControl);
-         getSlidingPanel().append(toolPanel);
+         toolPanel.add(this.sizeControl.getControl1());
+         toolPanel.add(this.sizeControl.getControl2());
+         toolPanel.add(this.sizeControl.getControl3());
+         toolPanel.addSeparator();
+         toolPanel.add(this.colorControl.getControl1());
+         toolPanel.add(this.colorControl.getControl2());
+         toolPanel.add(this.colorControl.getControl3());
          
          this.colorControl.addValueChangeListener(this);
          this.colorControl.addSelectionChangeListener(this);
@@ -345,6 +420,8 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          size1Item.setSelected(true);
          color1Item.setSelected(true);
          
+         this.writeButton.doClick();
+         
          updatePen();
          
          float unitScaleLevel = SettingsUtilities.getUnitScaleFactor();
@@ -354,6 +431,27 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          scaleControlsTo(zoomLevel);
          
          SettingsManager.getSharedInstance().addSettingsListener(this);
+      }
+      
+      public Mode getCurrentMode()
+      {
+         return this.curMode;
+      }
+      
+      public void setCurrentMode(Mode mode)
+      {
+         if (mode == null)
+            throw new NullPointerException();
+         
+         this.curMode = mode;
+      }
+      
+      private void syncMode()
+      {
+         if (this.deleteButton.isSelected())
+            setCurrentMode(Mode.Delete);
+         else if (this.writeButton.isSelected())
+            setCurrentMode(Mode.Write);
       }
       
       public List<PathMenuItem> getPathMenuItems()
@@ -451,6 +549,17 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
             this.colorControl.getControl2().doClick();
          else if (cmmd.equals(PEN_3_COLOR_KEY))
             this.colorControl.getControl3().doClick();
+         else
+         {
+            for (Mode mode : Mode.values())
+            {
+               if (cmmd.equals(mode.toString()))
+               {
+                  this.curMode = mode;
+                  break;
+               }
+            }
+         }
       }
       
       private void resizeControlsTo(float factor)
@@ -488,9 +597,8 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          if (control == null)
             throw new NullPointerException();
          
-         DecoratedButton button = control.getDecoratedButton();
-         button.resizeTo(factor);
-         button.repaint();
+         control.getButtonPic().resizeTo(factor);
+         control.repaint();
       }
       
       private void scaleSizeControlTo(SizeControl control, float factor)
@@ -498,9 +606,8 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          if (control == null)
             throw new NullPointerException();
          
-         DecoratedButton button = control.getDecoratedButton();
-         button.scaleTo(factor);
-         button.repaint();
+         control.getButtonPic().scaleTo(factor);
+         control.repaint();
       }
       
       private void scaleSizeControlBy(SizeControl control, float factor)
@@ -508,9 +615,8 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          if (control == null)
             throw new NullPointerException();
          
-         DecoratedButton button = control.getDecoratedButton();
-         button.scaleBy(factor);
-         button.repaint();
+         control.getButtonPic().scaleBy(factor);
+         control.repaint();
       }
    }
    

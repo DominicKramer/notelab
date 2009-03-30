@@ -35,11 +35,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import noteLab.gui.fullscreen.FullScreenManager;
+
 public class NotificationFrame extends JFrame
 {
    public NotificationFrame(String message, String title)
    {
       super(title);
+      
+      FullScreenManager.getSharedInstance().revokeFullScreenMode();
       
       JButton closeButton = new JButton("Close");
       closeButton.addActionListener(new ActionListener()

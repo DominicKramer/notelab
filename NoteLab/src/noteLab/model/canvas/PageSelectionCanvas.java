@@ -25,6 +25,7 @@
 package noteLab.model.canvas;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
@@ -36,23 +37,25 @@ import java.util.Vector;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.JWindow;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
-import noteLab.gui.SlidingPanel;
 import noteLab.gui.ToolBarButton;
+import noteLab.gui.button.IconToggleButton;
 import noteLab.gui.chooser.NoteLabFileChooser;
 import noteLab.gui.chooser.filter.JarnalFileFilter;
 import noteLab.gui.chooser.filter.NoteLabFileFilter;
 import noteLab.gui.chooser.filter.SupportedFileFilter;
+import noteLab.gui.control.drop.ButtonComboButton;
 import noteLab.gui.control.drop.ColorControl;
 import noteLab.gui.listener.ValueChangeEvent;
 import noteLab.gui.listener.ValueChangeListener;
@@ -213,19 +216,19 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
    }
    
    @Override
-   public void pathStartedImpl(Path path, boolean newPage)
+   public void pathStartedImpl(Path path, MouseButton button, boolean newPage)
    {
-      pathChangedImpl(path);
+      pathChangedImpl(path, button);
    }
    
    @Override
-   public void pathFinishedImpl(Path path)
+   public void pathFinishedImpl(Path path, MouseButton button)
    {
       
    }
    
    @Override
-   public void pathChangedImpl(Path path)
+   public void pathChangedImpl(Path path, MouseButton button)
    {
       Mode mode = this.toolBar.getCurrentMode();
       
@@ -426,10 +429,10 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       private final String CANCEL_PASTE = "CANCEL_PASTE";
       private final String CANCEL_IMPORT = "CANCEL_IMPORT";
       
-      private JToggleButton plainButton;
-      private JToggleButton graphButton;
-      private JToggleButton collegeButton;
-      private JToggleButton wideButton;
+      private IconToggleButton plainButton;
+      private IconToggleButton graphButton;
+      private IconToggleButton collegeButton;
+      private IconToggleButton wideButton;
       
       private JToggleButton selButton;
       private JButton selAllButton;
@@ -498,50 +501,59 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          
          ButtonGroup selGroup = new ButtonGroup();
          
-         this.selButton = new JToggleButton(DefinedIcon.select.getIcon(size));
+         this.selButton = new JToggleButton(DefinedIcon.select_page.getIcon(size));
          this.selButton.setActionCommand(Mode.Selection.toString());
          this.selButton.addActionListener(this);
          selGroup.add(this.selButton);
          
-         this.unSelButton = new JToggleButton(DefinedIcon.unselect.getIcon(size));
+         this.unSelButton = new JToggleButton(DefinedIcon.unselect_page.getIcon(size));
          this.unSelButton.setActionCommand(Mode.Unselection.toString());
          this.unSelButton.addActionListener(this);
          selGroup.add(this.unSelButton);
          
-         this.selAllButton = new JButton(DefinedIcon.select_all.getIcon(size));
-         this.selAllButton.setActionCommand(DefinedIcon.select_all.toString());
+         this.selAllButton = new JButton(DefinedIcon.select_all_page.getIcon(size));
+         this.selAllButton.setActionCommand(DefinedIcon.select_all_page.toString());
          this.selAllButton.addActionListener(this);
          
-         this.unSelAllButton = new JButton(DefinedIcon.unselect_all.getIcon(size));
-         this.unSelAllButton.setActionCommand(DefinedIcon.unselect_all.toString());
+         this.unSelAllButton = new JButton(DefinedIcon.unselect_all_page.getIcon(size));
+         this.unSelAllButton.setActionCommand(DefinedIcon.unselect_all_page.toString());
          this.unSelAllButton.addActionListener(this);
-         
-         ButtonGroup pageTypeGroup = new ButtonGroup();
          
          //construct the buttons that control the page type
          this.plainButton = 
-            new JToggleButton(DefinedIcon.page.getIcon(BUTTON_SIZE));
+            new IconToggleButton(DefinedIcon.page, BUTTON_SIZE);
          this.plainButton.setActionCommand(PaperType.Plain.toString());
          this.plainButton.addActionListener(this);
-         pageTypeGroup.add(this.plainButton);
          
          this.graphButton = 
-            new JToggleButton(DefinedIcon.graph.getIcon(BUTTON_SIZE));
+            new IconToggleButton(DefinedIcon.graph, BUTTON_SIZE);
          this.graphButton.setActionCommand(PaperType.Graph.toString());
          this.graphButton.addActionListener(this);
-         pageTypeGroup.add(this.graphButton);
          
          this.collegeButton = 
-            new JToggleButton(DefinedIcon.college_rule.getIcon(BUTTON_SIZE));
+            new IconToggleButton(DefinedIcon.college_rule, BUTTON_SIZE);
          this.collegeButton.setActionCommand(PaperType.CollegeRuled.toString());
          this.collegeButton.addActionListener(this);
-         pageTypeGroup.add(this.collegeButton);
          
          this.wideButton = 
-            new JToggleButton(DefinedIcon.wide_rule.getIcon(BUTTON_SIZE));
+            new IconToggleButton(DefinedIcon.wide_rule, BUTTON_SIZE);
          this.wideButton.setActionCommand(PaperType.WideRuled.toString());
          this.wideButton.addActionListener(this);
-         pageTypeGroup.add(this.wideButton);
+         
+         ButtonComboButton typeCombo = 
+                              new ButtonComboButton(DefinedIcon.page);
+         typeCombo.addActionListener(this);
+         typeCombo.registerButton(this.plainButton);
+         typeCombo.registerButton(this.graphButton);
+         typeCombo.registerButton(this.collegeButton);
+         typeCombo.registerButton(this.wideButton);
+         
+         JWindow typePopup = typeCombo.getPopupWindow();
+         typePopup.setLayout(new FlowLayout(FlowLayout.LEFT));
+         typePopup.add(this.plainButton);
+         typePopup.add(this.graphButton);
+         typePopup.add(this.collegeButton);
+         typePopup.add(this.wideButton);
          
          this.delPageButton = 
             new JButton(DefinedIcon.delete_page.getIcon(BUTTON_SIZE));
@@ -550,11 +562,9 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          
          Page curPage = getCompositeCanvas().getBinder().getCurrentPage();
          this.bgColorButton = 
-            new ColorControl(curPage.getPaper().getBackgroundColor(), 
-                             DUAL_BUTTON_SIZE);
-         JButton colorButton = this.bgColorButton.getDecoratedButton();
-         colorButton.setActionCommand(Action.ChangeBGColor.toString());
-         colorButton.addActionListener(this);
+            new ColorControl(curPage.getPaper().getBackgroundColor());
+         this.bgColorButton.setActionCommand(Action.ChangeBGColor.toString());
+         this.bgColorButton.addActionListener(this);
          this.bgColorButton.addValueChangeListener(this);
          
          this.clearPageButton = 
@@ -562,20 +572,16 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.clearPageButton.setActionCommand(Action.ClearPage.toString());
          this.clearPageButton.addActionListener(this);
          
-         JToolBar selBar = new JToolBar();
-         selBar.setFloatable(false);
-         selBar.add(this.selButton);
-         selBar.add(this.selAllButton);
-         selBar.addSeparator();
-         selBar.add(this.unSelButton);
-         selBar.add(this.unSelAllButton);
-         selBar.addSeparator();
-         selBar.add(this.plainButton);
-         selBar.add(this.graphButton);
-         selBar.add(this.collegeButton);
-         selBar.add(this.wideButton);
-         selBar.addSeparator();
-         selBar.add(this.bgColorButton);
+         JToolBar toolbar = getToolBar();
+         toolbar.add(this.selButton);
+         toolbar.add(this.selAllButton);
+         toolbar.addSeparator();
+         toolbar.add(this.unSelButton);
+         toolbar.add(this.unSelAllButton);
+         toolbar.addSeparator();
+         toolbar.add(typeCombo);
+         toolbar.addSeparator();
+         toolbar.add(this.bgColorButton);
          
          this.cutToolbar = 
                   new CutCopyPasteToolBar<CopyVector<Page>>(this);
@@ -593,23 +599,14 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.dropButton.addActionListener(this);
          this.dropButton.setEnabled(false);
          
-         JToolBar editBar = new JToolBar();
-         editBar.setFloatable(false);
-         editBar.add(this.delPageButton);
-         editBar.add(this.clearPageButton);
-         editBar.addSeparator();
-         editBar.add(this.cutToolbar);
+         toolbar.add(this.delPageButton);
+         toolbar.add(this.clearPageButton);
+         toolbar.addSeparator();
+         this.cutToolbar.appendTo(toolbar);
          
-         JToolBar importBar = new JToolBar();
-         importBar.setFloatable(false);
-         importBar.add(this.openButton);
-         importBar.add(this.fileField);
-         importBar.add(this.dropButton);
-         
-         SlidingPanel slidePanel = getSlidingPanel();
-         slidePanel.append(selBar);
-         slidePanel.append(editBar);
-         slidePanel.append(importBar);
+         toolbar.add(this.openButton);
+         toolbar.add(this.fileField);
+         toolbar.add(this.dropButton);
          
          //set up the menu items
          this.menuItemVec = new Vector<PathMenuItem>();
@@ -752,11 +749,11 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
              cmmd.equals(Mode.Unselection.toString()))
             return;
          
-         if (cmmd.equals(DefinedIcon.select_all.toString()))
+         if (cmmd.equals(DefinedIcon.select_all_page.toString()))
          {
             selectAllPages();
          }
-         else if (cmmd.equals(DefinedIcon.unselect_all.toString()))
+         else if (cmmd.equals(DefinedIcon.unselect_all_page.toString()))
          {
             unselectAllPages();
             doRepaint();
@@ -883,7 +880,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          float x = rightPoint.getX();
          float y = rightPoint.getY();
          
-         JPanel panel = getCompositeCanvas().getDisplayPanel();
+         JComponent panel = getCompositeCanvas().getDisplayPanel();
          if (panel == null)
             return;
          
@@ -896,7 +893,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          float x = rightPoint.getX();
          float y = rightPoint.getY();
          
-         JPanel panel = getCompositeCanvas().getDisplayPanel();
+         JComponent panel = getCompositeCanvas().getDisplayPanel();
          if (panel == null)
             return;
          

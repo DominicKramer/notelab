@@ -62,13 +62,17 @@ public class Paper extends TransformRectangle2D
     * The color of the lines drawn on a grid or college or wide ruled 
     * piece of paper.
     */
+   // This is the default
    private static final Color LINE_COLOR = new Color(159, 167, 255);
+   //private static final Color LINE_COLOR = new Color(205, 205, 205);
    
    /**
     * The color of the margin line on a college or wide ruled 
     * piece of paper.
     */
+   // This is the default
    private static final Color MARGIN_COLOR = new Color(78, 248, 137);
+   //private static final Color MARGIN_COLOR = new Color(205, 205, 205);
    
    /**
     * Represents a type of paper.
@@ -383,7 +387,12 @@ public class Paper extends TransformRectangle2D
       
       //For debugging purposes
       if (DebugSettings.getSharedInstance().disablePaper())
+      {
+         renderer.setLineWidth(1);
+         renderer.setColor(Color.BLACK);
+         renderer.drawRectangle(0, 0, getWidth(), getHeight());
          return;
+      }
       
       renderer.beginGroup(Paper.this, this.type.name(), 
                           getXScaleLevel(), getYScaleLevel());

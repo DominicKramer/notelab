@@ -195,6 +195,7 @@ public class Page extends TransformRectangle2D
       
       mG2d.beginGroup(this, this.paper.getPaperType().name(), 
                       getXScaleLevel(), getYScaleLevel());
+      
       mG2d.tryRenderBoundingBox(this);
       this.paper.renderInto(mG2d);
       
@@ -231,10 +232,14 @@ public class Page extends TransformRectangle2D
       Color bgColor = this.paper.getBackgroundColor();
       copy.paper.setBackgroundColor(new Color(bgColor.getRed(), 
                                               bgColor.getGreen(), 
-                                              bgColor.getBlue()));
+                                              bgColor.getBlue(), 
+                                              bgColor.getAlpha()));
       
       for (Stroke stroke : this.strokeList)
-         copy.strokeList.add(stroke.getCopy());
+         copy.addStroke(stroke.getCopy());
+      
+      for (ModListener listener : super.modListenerVec)
+         copy.addModListener(listener);
       
       return copy;
    }

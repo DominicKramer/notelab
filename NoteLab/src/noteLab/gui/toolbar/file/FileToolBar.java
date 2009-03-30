@@ -30,6 +30,8 @@ import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
+import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Vector;
 
@@ -46,6 +48,7 @@ import noteLab.gui.chooser.filter.ImageFileFilter;
 import noteLab.gui.chooser.filter.JarnalFileFilter;
 import noteLab.gui.chooser.filter.NoteLabFileFilter;
 import noteLab.gui.chooser.filter.SupportedFileFilter;
+import noteLab.gui.fullscreen.FullScreenManager;
 import noteLab.gui.main.MainFrame;
 import noteLab.gui.menu.MenuConstants;
 import noteLab.gui.menu.Menued;
@@ -254,6 +257,7 @@ public class FileToolBar
          final PrinterJob printerJob = PrinterJob.getPrinterJob();
          printerJob.setPageable(canvas.getBinder());
          
+         FullScreenManager.getSharedInstance().revokeFullScreenMode();
          boolean notCancelled = printerJob.printDialog();
          if (notCancelled)
          {
@@ -320,9 +324,33 @@ public class FileToolBar
       
       SaveFileProcessor processor = new SaveFileProcessor(this.mainFrame);
       NoteLabFileChooser saveChooser = 
-                            new NoteLabFileChooser("Save", false, true, processor, file);
+                            new NoteLabFileChooser("Save", false, true, 
+                                                   processor, file);
       saveChooser.setAcceptAllFileFilterUsed(false);
       saveChooser.setFileFilter(new NoteLabFileFilter());
+      if (file == null || forceSaveAs)
+         saveChooser.setSelectedFile(getDateFile());
+      
       saveChooser.showFileChooser();
+   }
+   
+   private static File getDateFile()
+   {
+      Calendar cal = Calendar.getInstance();
+      DecimalFormat formatter = new DecimalFormat("00");
+      
+      StringBuffer timeBuffer = new StringBuffer();
+      timeBuffer.append(formatter.format(cal.get(Calendar.MONTH)+1));
+      timeBuffer.append("-");
+      timeBuffer.append(formatter.format(cal.get(Calendar.DAY_OF_MONTH)));
+      timeBuffer.append("-");
+      timeBuffer.append(cal.get(Calendar.YEAR));
+      timeBuffer.append("_");
+      timeBuffer.append(formatter.format(cal.get(Calendar.HOUR_OF_DAY)));
+      timeBuffer.append("-");
+      timeBuffer.append(formatter.format(cal.get(Calendar.MINUTE)));
+      
+      return new File(timeBuffer.toString()+""+
+                         InfoCenter.getFileExtension());
    }
 }

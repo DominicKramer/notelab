@@ -24,27 +24,19 @@
 
 package noteLab.gui.control.drop;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
-import javax.swing.JFrame;
-import javax.swing.JToolBar;
-import javax.swing.WindowConstants;
-
-import noteLab.gui.DecoratedButton.Style;
 import noteLab.gui.control.ValueControl;
 import noteLab.gui.listener.SelectionChangeEvent;
 import noteLab.gui.listener.SelectionChangeListener;
 import noteLab.gui.listener.ValueChangeEvent;
 import noteLab.gui.listener.ValueChangeListener;
-import noteLab.util.geom.unit.MValue;
-import noteLab.util.geom.unit.Unit;
 
-public class TriControl<V, T extends DualDropButton<V, T>> 
-                extends JToolBar implements ValueControl<V, T>, 
-                                            ValueChangeListener<V, T>
+public class TriControl<V, T extends ComboButton<V, T>> 
+                                implements ValueControl<V, T>, 
+                                           ValueChangeListener<V, T>
 {
    private T drop1;
    private T drop2;
@@ -58,8 +50,6 @@ public class TriControl<V, T extends DualDropButton<V, T>>
       if (givenDrop1 == null || givenDrop2 == null || givenDrop3 == null)
          throw new NullPointerException();
       
-      setFloatable(false);
-      
       this.changeListenerVec = new Vector<ValueChangeListener<V, T>>();
       this.selListenerVec = 
          new Vector<SelectionChangeListener<T, TriControl>>();
@@ -72,8 +62,7 @@ public class TriControl<V, T extends DualDropButton<V, T>>
             updateSelection(drop1);
          }
       };
-      this.drop1.getDropDownButton().addActionListener(drop1Listener);
-      this.drop1.getDecoratedButton().addActionListener(drop1Listener);
+      this.drop1.addActionListener(drop1Listener);
       this.drop1.addValueChangeListener(this);
       
       this.drop2 = givenDrop2;
@@ -84,8 +73,7 @@ public class TriControl<V, T extends DualDropButton<V, T>>
             updateSelection(drop2);
          }
       };
-      this.drop2.getDropDownButton().addActionListener(drop2Listener);
-      this.drop2.getDecoratedButton().addActionListener(drop2Listener);
+      this.drop2.addActionListener(drop2Listener);
       this.drop2.addValueChangeListener(this);
       
       this.drop3 = givenDrop3;
@@ -96,13 +84,8 @@ public class TriControl<V, T extends DualDropButton<V, T>>
             updateSelection(drop3);
          }
       };
-      this.drop3.getDropDownButton().addActionListener(drop3Listener);
-      this.drop3.getDecoratedButton().addActionListener(drop3Listener);
+      this.drop3.addActionListener(drop3Listener);
       this.drop3.addValueChangeListener(this);
-      
-      add(this.drop1);
-      add(this.drop2);
-      add(this.drop3);
       
       updateSelection(this.drop1);
    }
@@ -235,6 +218,7 @@ public class TriControl<V, T extends DualDropButton<V, T>>
                                                           event.getSource()));
    }
    
+   /*
    public static void main(String[] args)
    {
       SizeControl control1 = 
@@ -256,4 +240,5 @@ public class TriControl<V, T extends DualDropButton<V, T>>
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       frame.setVisible(true);
    }
+   */
 }

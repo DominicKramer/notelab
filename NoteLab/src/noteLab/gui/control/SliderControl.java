@@ -53,22 +53,26 @@ public class SliderControl
    private JSlider slider;
    private Vector<ValueChangeListener<Integer, SliderControl>> listenerVec;
    private int prevValue;
+   private int disableValue;
    
    public SliderControl(String title, String desc, 
-                        int min, int max, int value, int spacing, boolean selected)
+                        int min, int max, int value,  
+                        int disableValue)
    {
       this.label = new JLabel(desc);
       
-      this.enableBox = new JCheckBox(title, selected);
+      this.enableBox = new JCheckBox(title, value > disableValue);
       this.enableBox.setHorizontalTextPosition(SwingConstants.LEFT);
       
       this.slider = new JSlider(min, max, value);
-      this.slider.setMajorTickSpacing(spacing);
       this.slider.setSnapToTicks(true);
       this.slider.setPaintLabels(true);
+      this.slider.setPaintTicks(true);
       this.slider.addChangeListener(this);
       
       this.prevValue = value;
+      
+      this.disableValue = disableValue;
       
       this.listenerVec = new Vector<ValueChangeListener<Integer,SliderControl>>();
       
@@ -110,6 +114,9 @@ public class SliderControl
    
    public Integer getControlValue()
    {
+      if (!isSelected())
+         return this.disableValue;
+      
       return this.slider.getValue();
    }
    
@@ -118,24 +125,52 @@ public class SliderControl
       if (val == null)
          throw new NullPointerException();
       
+      // Invoking the setValue() method dispatches 
+      // a ChangeEvent and thus this class's 
+      // stateChanged() method is called as a 
+      // consequence of invoking the following method.
       this.slider.setValue(val);
+      
+      // There appears to be a bug in the JSlider in 
+      // the Java 1.5 and Java 6 builds, at least on 
+      // Linux systems.  Specifically, the setValue() 
+      // method does not update the GUI to reflect the 
+      // correct value.  Inverting the display forces 
+      // the correct value to be shown.
+      this.slider.setInverted(!this.slider.getInverted());
+      this.slider.setInverted(!this.slider.getInverted());
+      
+      syncDisplay();
    }
-
+   
    public void actionPerformed(ActionEvent e)
    {
+      if (this.enableBox.isSelected())
+         setControlValue(this.prevValue);
+      else
+         setControlValue(0);
+      
+      //if (this.slider.getValue() <= this.disableValue)
+      //   setControlValue(this.disableValue+1);
+      
       syncDisplay();
-      notifyOfValueChange(0);
+      notifyOfValueChange(getControlValue());
    }
    
    private void syncDisplay()
    {
-      this.slider.setEnabled(this.enableBox.isSelected());
+      //boolean selected = this.enableBox.isSelected() && 
+      //                      this.slider.getValue() > this.disableValue;
+      boolean selected = this.slider.getValue() > this.disableValue;
+      this.slider.setEnabled(selected);
+      this.enableBox.setSelected(selected);
+      this.slider.setToolTipText(""+getControlValue());
    }
    
    public static void main(String[] args)
    {
       JFrame frame = new JFrame(SliderControl.class.getSimpleName()+" Demo");
-      frame.add(new SliderControl("Smooth Strokes: ","Smoothing Factor:",1,10,2,1,true));
+      frame.add(new SliderControl("Smooth Strokes: ","Smoothing Factor:",1,10,2,1));
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       frame.pack();
       frame.setVisible(true);
@@ -144,8 +179,10 @@ public class SliderControl
    public void stateChanged(ChangeEvent e)
    {
       int curVal = this.slider.getValue();
-      notifyOfValueChange(curVal);
-      this.prevValue = curVal;
+      if (curVal > this.disableValue)
+         this.prevValue = curVal;
+      syncDisplay();
+      notifyOfValueChange(getControlValue());
    }
    
    private void notifyOfValueChange(int curVal)
@@ -154,5 +191,20 @@ public class SliderControl
          listener.valueChanged(new ValueChangeEvent<Integer, SliderControl>(this.prevValue, 
                                                                             curVal, 
                                                                             this));
+   }
+   
+   public void setSnapToTicks(boolean snap)
+   {
+      this.slider.setSnapToTicks(snap);
+   }
+   
+   public void setMajorTickSpacing(int majorTicks)
+   {
+      this.slider.setMajorTickSpacing(majorTicks);
+   }
+   
+   public void setMinorTickSpacing(int minorTicks)
+   {
+      this.slider.setMinorTickSpacing(minorTicks);
    }
 }

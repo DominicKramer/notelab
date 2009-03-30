@@ -67,7 +67,7 @@ public enum DefinedIcon
    copy_stroke,
    graph,
    floppy,
-   black_arrow,
+//   black_arrow,
    about,
    un,
    select_stroke,
@@ -100,7 +100,10 @@ public enum DefinedIcon
    forward, 
    backward, 
    up, 
-   down;
+   down, 
+   unselect_page, 
+   select_all_page, 
+   unselect_all_page;
    
    private static final ImageIcon EMPTY_ICON = 
                                     new ImageIcon(

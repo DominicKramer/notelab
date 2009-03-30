@@ -29,6 +29,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.text.DecimalFormat;
 
 import javax.swing.BoxLayout;
@@ -46,7 +48,9 @@ import noteLab.util.InfoCenter;
 
 public class AboutFrame 
                 extends JFrame 
-                           implements ActionListener, HelpConstants
+                           implements ActionListener, 
+                                      HelpConstants, 
+                                      WindowListener
 {
    private static final String CLOSE_TEXT = "Close";
    private static final String VIEW_LICENSE_TEXT = "View License";
@@ -152,6 +156,8 @@ public class AboutFrame
       add(mainPanel, BorderLayout.CENTER);
       add(buttonPanel, BorderLayout.SOUTH);
       
+      addWindowListener(this);
+      
       pack();
    }
    
@@ -230,5 +236,34 @@ public class AboutFrame
       {
          setVisible(false);
       }
+   }
+   
+   public void windowActivated(WindowEvent e)
+   {
+   }
+   
+   public void windowClosed(WindowEvent e)
+   {
+      this.textFrame.getTextPanel().clear();
+   }
+   
+   public void windowClosing(WindowEvent e)
+   {
+   }
+   
+   public void windowDeactivated(WindowEvent e)
+   {
+   }
+   
+   public void windowDeiconified(WindowEvent e)
+   {
+   }
+   
+   public void windowIconified(WindowEvent e)
+   {
+   }
+   
+   public void windowOpened(WindowEvent e)
+   {
    }
 }

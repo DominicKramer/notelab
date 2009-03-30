@@ -27,15 +27,22 @@ package noteLab.gui.toolbar.file;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.event.IIOWriteProgressListener;
 import javax.imageio.stream.ImageOutputStream;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
+import noteLab.gui.DefinedIcon;
+import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.chooser.filter.ImageFileFilter;
 import noteLab.gui.main.MainFrame;
+import noteLab.model.Page;
 import noteLab.model.binder.Binder;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.InfoCenter;
@@ -44,6 +51,18 @@ import noteLab.util.render.ImageRenderer2D;
 
 public class ExportFileProcessor extends CanvasFileProcessor implements IIOWriteProgressListener
 {
+   private static final String[] OVERWRITE_OPTIONS 
+                                    = new String[]{"Never Overwrite", 
+                                                   "Don't Overwrite Now", 
+                                                   "Always Overwrite", 
+                                                   "Overwrite Now"
+                                                   };
+   
+   private static final int NEVER_OVERWRITE_OPTION = 0;
+   private static final int DONT_OVERWRITE_NOW_OPTION = 1;
+   private static final int OVERWRITE_ALWAYS_OPTION = 2;
+   private static final int OVERWRITE_NOW_OPTION = 3;
+   
    public ExportFileProcessor(MainFrame frame)
    {
       super(frame);
@@ -53,29 +72,6 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
    {
       if (file == null)
          throw new NullPointerException();
-      
-      MainFrame mainFrame = getMainFrame();
-      CompositeCanvas canvas = mainFrame.getCompositeCanvas();
-      
-      Binder binder = canvas.getBinder();
-      float width = binder.getWidth();
-      float height = binder.getHeight();
-      
-      BufferedImage image = 
-         new BufferedImage( (int)width, (int)height, 
-                            BufferedImage.TYPE_INT_RGB );
-      ImageRenderer2D image2D = new ImageRenderer2D(image);
-      image2D.setColor(Color.WHITE);
-      image2D.fillRectangle(0, 0, width, height);
-      
-      synchronized(canvas)
-      {
-         mainFrame.setMessage("Exporting the session requires momentarily disabling the canvas.", 
-                              Color.BLACK);
-         canvas.setEnabled(false);
-         canvas.renderInto(image2D);
-         canvas.setEnabled(true);
-      }
       
       String ext = getExtension(file);
       File formatFile = getFormattedName(file);
@@ -103,6 +99,9 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
       StringBuffer messageBuffer = new StringBuffer("Exporting to the file '");
       messageBuffer.append(formatFile.getAbsolutePath());
       
+      MainFrame mainFrame = getMainFrame();
+      CompositeCanvas canvas = mainFrame.getCompositeCanvas();
+      
       try
       {
          String errorText = "There are no writers available to write images with " +
@@ -116,10 +115,60 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
          if (writer == null)
             throw new NullPointerException(errorText);
          
-         ImageOutputStream output = ImageIO.createImageOutputStream(formatFile);
-         writer.setOutput(output);
          writer.addIIOWriteProgressListener(this);
-         writer.write(image);
+         
+         synchronized(canvas)
+         {
+            mainFrame.setMessage("Exporting the session requires momentarily disabling the canvas.", 
+                                 Color.BLACK);
+            canvas.setEnabled(false);
+            
+            Binder binder = canvas.getBinder();
+            
+            try
+            {
+               float width = binder.getWidth();
+               float height = binder.getHeight();
+               
+               BufferedImage image = 
+                  new BufferedImage( (int)width, (int)height, 
+                                     BufferedImage.TYPE_INT_RGB );
+               ImageRenderer2D image2D = new ImageRenderer2D(image);
+               image2D.setColor(Color.WHITE);
+               image2D.fillRectangle(0, 0, width, height);
+               
+               canvas.renderInto(image2D);
+               
+               ImageOutputStream output = ImageIO.createImageOutputStream(formatFile);
+               writer.setOutput(output);
+               writer.write(image);
+            }
+            catch (Throwable t)
+            {
+               int size = GuiSettingsConstants.BUTTON_SIZE;
+               ImageIcon icon = DefinedIcon.dialog_error.getIcon(size);
+               
+               String title = "Warning";
+               String message = "There is not enough memory to export to " +
+               		           "a single image.  Export each page to a " +
+               		           "separate image?";
+               
+               int result = JOptionPane.showConfirmDialog(new JFrame(), 
+                                                          message, 
+                                                          title, 
+                                                          JOptionPane.YES_NO_OPTION, 
+                                                          JOptionPane.INFORMATION_MESSAGE, 
+                                                          icon);
+               
+               if (result == JOptionPane.YES_OPTION)
+                  writePages(binder, writer, mainFrame, formatFile);
+            }
+            
+            writer.dispose();
+            canvas.setEnabled(true);
+         }
+         
+         
          writer.removeIIOWriteProgressListener(this);
          writer.dispose();
          
@@ -134,7 +183,84 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
          mainFrame.setMessage(messageBuffer.toString(), Color.RED);
       }
    }
-
+   
+   private void writePages(Binder binder, 
+                           ImageWriter writer, 
+                           MainFrame mainFrame, 
+                           File file) throws IOException
+   {
+      String path = file.getAbsolutePath();
+      String ext = getExtension(file);
+      path = path.substring(0, path.length()-ext.length()-1);
+      
+      float width;
+      float height;
+      BufferedImage image;
+      ImageRenderer2D image2D;
+      File pageFile;
+      
+      boolean alwaysOverwrite = false;
+      boolean neverOverwrite = false;
+      int result;
+      
+      int size = GuiSettingsConstants.BUTTON_SIZE;
+      ImageIcon icon = DefinedIcon.dialog_question.getIcon(size);
+      
+      int pageNum = 1;
+      int numPages = binder.getNumberOfPages();
+      
+      for (Page page : binder)
+      {
+         width = page.getWidth();
+         height = page.getHeight();
+         
+         image = new BufferedImage( (int)width, (int)height, 
+                                    BufferedImage.TYPE_INT_RGB );
+         image2D = new ImageRenderer2D(image);
+         image2D.setColor(Color.WHITE);
+         image2D.fillRectangle(0, 0, width, height);
+         
+         page.renderInto(image2D);
+         
+         mainFrame.setMessage("Exporting page "+
+                              pageNum+" of "+numPages, Color.BLACK);
+         
+         pageFile = new File(path+"_page"+pageNum+"."+ext);
+         
+         result = OVERWRITE_NOW_OPTION;
+         if (!neverOverwrite && !alwaysOverwrite && pageFile.exists())
+         {
+            result = 
+                JOptionPane.showOptionDialog(new JFrame(), 
+                                             "The file "+
+                                             pageFile.getAbsolutePath()+
+                                             " already exists.  Overwrite?", 
+                                             "Overwrite", 
+                                             JOptionPane.YES_NO_CANCEL_OPTION, 
+                                             JOptionPane.QUESTION_MESSAGE, 
+                                             icon, 
+                                             OVERWRITE_OPTIONS, 
+                                             null);
+         }
+         
+         if (result == NEVER_OVERWRITE_OPTION)
+            neverOverwrite = true;
+         else if (result == OVERWRITE_ALWAYS_OPTION)
+            alwaysOverwrite = true;
+         
+         if (!neverOverwrite || result == DONT_OVERWRITE_NOW_OPTION)
+         {
+            if (alwaysOverwrite || result == OVERWRITE_NOW_OPTION)
+            {
+               writer.setOutput(ImageIO.createImageOutputStream(pageFile));
+               writer.write(image);
+            }
+         }
+         
+         pageNum++;
+      }
+   }
+   
    public File getFormattedName(File file)
    {
       if (file == null)

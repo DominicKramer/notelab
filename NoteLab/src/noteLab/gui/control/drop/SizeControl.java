@@ -25,12 +25,12 @@
 package noteLab.gui.control.drop;
 
 import java.awt.Color;
-import java.awt.Dimension;
 
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
-import noteLab.gui.DecoratedButton.Style;
+import noteLab.gui.control.drop.pic.PrimitivePic;
+import noteLab.gui.control.drop.pic.PrimitivePic.Style;
 import noteLab.gui.control.geom.MValueControl;
 import noteLab.gui.listener.ValueChangeEvent;
 import noteLab.gui.listener.ValueChangeListener;
@@ -38,7 +38,7 @@ import noteLab.util.geom.unit.MValue;
 import noteLab.util.geom.unit.Unit;
 
 public class SizeControl 
-                extends DualDropButton<MValue, SizeControl> 
+                extends ComboButton<MValue, SizeControl> 
                            implements ValueChangeListener<MValue, 
                                                           MValueControl>
 {
@@ -47,9 +47,9 @@ public class SizeControl
    public SizeControl(String text, double value, double min, double max, 
                       double stepSize, Unit unit, 
                       Style style, boolean fill, Color color, 
-                      int prefSize, float scaleFactor)
+                      float scaleFactor)
    {
-      super((int)value, color, true, style, prefSize, scaleFactor);
+      super(new PrimitivePic((int)value, color, true, style, scaleFactor));
       
       if (text == null || unit == null || style == null || color == null)
          throw new NullPointerException();
@@ -58,10 +58,13 @@ public class SizeControl
                                             stepSize, unit);
       this.valueControl.addValueChangeListener(this);
       
-      getDropDownButton().setPreferredSize(new Dimension(12, prefSize+4));
-      
-      getDropDownButton().getPopupWindow().
-         getContentPane().add(this.valueControl);
+      getPopupWindow().add(this.valueControl);
+   }
+   
+   @Override
+   public PrimitivePic getButtonPic()
+   {
+      return (PrimitivePic)super.getButtonPic();
    }
    
    public MValue getControlValue()
@@ -81,9 +84,8 @@ public class SizeControl
          throw new NullPointerException();
       
       this.valueControl.setControlValue(val);
-      getDecoratedButton().
-         setValue((int)this.valueControl.getControlValue().
-                                         getValue(Unit.PIXEL));
+      getButtonPic().setValue((int)this.valueControl.getControlValue().
+                                                     getValue(Unit.PIXEL));
       
       notifyListeners();
    }
@@ -92,7 +94,7 @@ public class SizeControl
                                              MValueControl> event)
    {
       notifyListeners();
-      getDecoratedButton().
+      getButtonPic().
          setValue((int)event.getCurrentValue().getValue(Unit.PIXEL));
    }
    
@@ -101,7 +103,7 @@ public class SizeControl
       MValue prevVal;
       MValue curVal;
       for (ValueChangeListener<MValue, SizeControl> listener : 
-              this.listenerVec)
+              this.valueListenerVec)
       {
          prevVal = this.valueControl.getPreviousValue();
          curVal = this.valueControl.getControlValue();
@@ -123,12 +125,11 @@ public class SizeControl
       Unit unit = Unit.PIXEL;
       Color color = Color.BLUE;
       Style type = Style.Circle;
-      int prefSize = 32;
       boolean fill = true;
       
       SizeControl control = 
                      new SizeControl(text, value, min, max, step, unit, 
-                                     type, fill, color, prefSize, 0.5f);
+                                     type, fill, color, 0.5f);
       ValueChangeListener<MValue, SizeControl> listener = 
                              new ValueChangeListener<MValue, SizeControl>()
       {

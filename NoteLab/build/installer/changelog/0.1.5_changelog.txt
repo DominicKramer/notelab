@@ -1,0 +1,12 @@
+NoteLab Version 0.1.5 Changelog
+-------------------------------
+Summary
+-------
+* Improvement:  Greatly improved the performance of scrolling the canvas.
+* Improvement:  Improved the way strokes are rendered when they are selected.
+* Improvement:  Changed the toolbar icon size from 20 pixels by 20 pixels 
+                to 16 pixels by 16 pixels.
+
+* Bug fix:  Fixed a bug in the rendering system.  Now strokes are rendered 
+            much smoother than in previous versions.
+* Bug fix:  Fixed a bug where strokes would not be resized correctly

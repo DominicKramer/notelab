@@ -26,11 +26,13 @@ package noteLab.gui.main;
 
 import java.awt.AWTEvent;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
@@ -47,7 +49,7 @@ public class MainPanel
                                   RepaintListener, AdjustmentListener
 {
    private CompositeCanvas canvas;
-   private JPanel paintPanel;
+   private JComponent paintPanel;
    private JScrollPane scrollPane;
    
    public MainPanel(CompositeCanvas canvas)
@@ -66,7 +68,10 @@ public class MainPanel
       this.paintPanel.addMouseListener(inputListener);
       this.paintPanel.addMouseMotionListener(inputListener);
       
-      this.scrollPane = new JScrollPane(this.paintPanel);
+      JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+      centerPanel.add(this.paintPanel);
+      
+      this.scrollPane = new JScrollPane(centerPanel);
       this.scrollPane.getVerticalScrollBar().addAdjustmentListener(this);
       this.scrollPane.getHorizontalScrollBar().addAdjustmentListener(this);
       this.scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
@@ -80,6 +85,11 @@ public class MainPanel
       
       setLayout(new GridLayout(1, 1));
       add(this.scrollPane);
+   }
+   
+   public JViewport getViewport()
+   {
+      return this.scrollPane.getViewport();
    }
    
    public CompositeCanvas getCanvas()
@@ -162,7 +172,7 @@ public class MainPanel
    }
    
    /**
-    * Overriden so that multiple mouse dragged events are not coalesced into 
+    * Overridden so that multiple mouse dragged events are not coalesced into 
     * one.  If this were done, drawing would look choppy.  By disabling 
     * coalescing, drawing looks smooth.
     * 

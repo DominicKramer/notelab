@@ -52,23 +52,26 @@ public class StrokeSmoothingPanel
    public StrokeSmoothingPanel()
    {
       int smoothFactor = SettingsUtilities.getSmoothFactor();
-      boolean smoothingEnabled = (smoothFactor > 0);
       
-      int min = 1;
-      int max = 5;
-      int space = 1;
+      int min = 0;
+      int max = 25;
+      int majorSpace = 5;
+      int minorSpace = 1;
+      int disableValue = 0;
       if (smoothFactor < min)
          smoothFactor = min;
       else if (smoothFactor > max)
          smoothFactor = max;
       
-      this.smoothControl = new SliderControl("Smooth Strokes: ","Smoothing Factor:",
+      this.smoothControl = new SliderControl("Smooth Strokes: ", 
+                                             "Smoothing Factor:",
                                              min,     // min value
                                              max,     // max value
                                              smoothFactor, // current value
-                                             space,   // spacing
-                                             smoothingEnabled); // enable smoothing
+                                             disableValue);
       this.smoothControl.addValueChangeListener(this);
+      this.smoothControl.setMajorTickSpacing(majorSpace);
+      this.smoothControl.setMinorTickSpacing(minorSpace);
       
       this.smoothPanel = 
          new ManagedSettingsPanel("", 
@@ -85,16 +88,7 @@ public class StrokeSmoothingPanel
                throw new NullPointerException();
             
             if (curVal instanceof Integer)
-            {
-               int smoothFactor = (Integer)curVal;
-               if (smoothFactor <= 0)
-                  smoothControl.setSelected(false);
-               else
-               {
-                  smoothControl.setSelected(true);
-                  smoothControl.setControlValue(smoothFactor);
-               }
-            }
+               smoothControl.setControlValue((Integer)curVal);
          }
       };
       this.smoothPanel.getDisplayPanel().add(this.smoothControl);
@@ -102,6 +96,13 @@ public class StrokeSmoothingPanel
       setBorder(new TitledBorder("Stroke Settings"));
       setLayout(new GridLayout(1,1));
       add(this.smoothPanel);
+      
+      // TODO:  The line below fixes a bug where the GUI doesn't display 
+      //        the correct control value.  To force the correct value 
+      //        to be displayed, the setControlValue() is called with 
+      //        the correct smoothFactor as determined at the start of 
+      //        this constructor.
+      this.smoothControl.setControlValue(smoothFactor);
    }
    
    private void sync()
@@ -139,9 +140,7 @@ public class StrokeSmoothingPanel
       if (length > 0 && buffer.charAt(length-1) != ' ')
          buffer.append(' ');
       
-      Integer smoothFactor = 0;
-      if (this.smoothControl.isSelected())
-         smoothFactor = this.smoothControl.getControlValue();
+      Integer smoothFactor = this.smoothControl.getControlValue();
       
       String smoothEncodeStr = 
                 new SmoothFactorArg().encode(smoothFactor);
@@ -157,10 +156,9 @@ public class StrokeSmoothingPanel
    
    public void valueChanged(ValueChangeEvent<Integer, SliderControl> event)
    {
-      Integer smoothFactor = 0;
-      if (this.smoothControl.isSelected())
-         smoothFactor = this.smoothControl.getControlValue();
+      Integer smoothFactor = this.smoothControl.getControlValue();
       
-      smoothPanel.setCurrentValue(smoothFactor);
+      if (this.smoothPanel != null)
+         this.smoothPanel.setCurrentValue(smoothFactor);
    }
 }

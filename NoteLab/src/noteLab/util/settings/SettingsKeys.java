@@ -55,6 +55,8 @@ public interface SettingsKeys
    
    public static final String ZOOM_LEVEL = "zoom";
    
+   public static final String CURRENT_DIR = "currentDirectory";
+   
    public static final String DISPLAY_BOUNDING_BOX = "displayBounds";
    public static final String DISPLAY_UPDATE_BOX = "displayUpdates";
    public static final String DISABLE_PAPER = "disablePaper";

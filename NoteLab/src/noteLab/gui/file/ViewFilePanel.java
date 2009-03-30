@@ -90,4 +90,9 @@ public class ViewFilePanel extends JPanel
       
       this.textArea.setText(textBuffer.toString());
    }
+   
+   public void clear()
+   {
+      this.textArea.setText("");
+   }
 }

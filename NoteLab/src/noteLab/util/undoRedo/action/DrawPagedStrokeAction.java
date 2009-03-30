@@ -60,20 +60,8 @@ public class DrawPagedStrokeAction extends CanvasAction
             continue;
          
          this.drawStrokeActionVec.add(
-               new DrawStrokeAction(canvas, makeCopy(strokeVec), page));
+               new DrawStrokeAction(canvas, strokeVec, page));
       }
-   }
-   
-   private static Vector<Stroke> makeCopy(Vector<Stroke> vec)
-   {
-      if (vec == null)
-         throw new NullPointerException();
-      
-      Vector<Stroke> vecCopy = new Vector<Stroke>(vec.size());
-      for (Stroke s : vec)
-         vecCopy.add(s);
-      
-      return new Vector<Stroke>(vec);
    }
    
    public void run()

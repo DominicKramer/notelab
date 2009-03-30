@@ -30,12 +30,14 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Vector;
 
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
@@ -50,6 +52,7 @@ import noteLab.model.Path;
 import noteLab.model.Paper.PaperType;
 import noteLab.model.binder.Binder;
 import noteLab.model.binder.FlowBinder;
+import noteLab.model.canvas.SubCanvas.MouseButton;
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.tool.Tool;
 import noteLab.util.CopyReady;
@@ -79,12 +82,17 @@ public class CompositeCanvas
                                       SettingsChangedListener, 
                                       UnitScaleDependent
 {
+   private enum EventType
+   {
+      MousePressed, 
+      MouseReleased, 
+      MouseDragged
+   }
+   
    private Binder binder;
    private SubCanvas curCanvas;
    
    private File file;
-   
-   private Path curPath;
    
    private SrokeCanvas printCanvas;
    private StrokeSelectionCanvas selCanvas;
@@ -101,7 +109,9 @@ public class CompositeCanvas
    
    private boolean isEnabled;
    
-   private JPanel displayPanel;
+   private JComponent displayPanel;
+   
+   private Queue<StylusEvent> pointQueue;
    
    public CompositeCanvas(float scaleLevel)
    {
@@ -112,6 +122,8 @@ public class CompositeCanvas
    {
       if (binder == null)
          throw new NullPointerException();
+      
+      this.pointQueue = new LinkedList<StylusEvent>();
       
       this.displayPanel = null;
       
@@ -142,8 +154,6 @@ public class CompositeCanvas
       this.pageSelCanvas.addRepaintListener(this);
       this.pageSelCanvas.addModListener(this);
       
-      this.curPath = null;
-      
       new Thread()
       {
          public void run()
@@ -151,6 +161,8 @@ public class CompositeCanvas
             mouseListener = new CanvasMouseListener();
          }
       }.start();
+      
+      new PointProcessor().start();
       
       this.hasBeenModified = false;
       this.isEnabled = true;
@@ -173,12 +185,12 @@ public class CompositeCanvas
       return this.printCanvas;
    }
    
-   public JPanel getDisplayPanel()
+   public JComponent getDisplayPanel()
    {
       return this.displayPanel;
    }
    
-   public void setDisplayPanel(JPanel displayPanel)
+   public void setDisplayPanel(JComponent displayPanel)
    {
       this.displayPanel = displayPanel;
    }
@@ -327,11 +339,14 @@ public class CompositeCanvas
       if (mDisplay2D == null)
          throw new NullPointerException();
       
-      // render the binder
-      this.binder.renderInto(mDisplay2D);
+      SubCanvas subCanvas = getCurrentCanvas();
+      
+      // render the binder if the SubCanvas want's it rendered
+      if (subCanvas.getRenderBinder())
+         this.binder.renderInto(mDisplay2D);
       
       // render the current canvas
-      getCurrentCanvas().renderInto(mDisplay2D);
+      subCanvas.renderInto(mDisplay2D);
       
       // tell the renderer that rendering is complete
       mDisplay2D.finish();
@@ -452,8 +467,128 @@ public class CompositeCanvas
          listener.modOccured(this, type);
    }
    
+   private class StylusEvent
+   {
+      public EventType type;
+      public MouseEvent event;
+      public MouseButton button;
+      
+      public StylusEvent(EventType type, MouseEvent event, MouseButton button)
+      {
+         this.type = type;
+         this.event = event;
+         this.button = button;
+      }
+   }
+   
    private class CanvasMouseListener implements MouseInputListener
    {
+      private MouseButton curMouseButton;
+      
+      private CanvasMouseListener()
+      {
+         this.curMouseButton = MouseButton.Unknown;
+      }
+      
+      public void mouseClicked(MouseEvent e)
+      {
+      }
+      
+      public void mousePressed(final MouseEvent e)
+      {
+         if (!isEnabled)
+            return;
+         
+         this.curMouseButton = MouseButton.getMouseButton(e.getButton());
+         
+         synchronized(pointQueue)
+         {
+            pointQueue.add(new StylusEvent(EventType.MousePressed, 
+                                           e, 
+                                           this.curMouseButton));
+            pointQueue.notify();
+         }
+      }
+
+      public void mouseReleased(final MouseEvent e)
+      {
+         if (!isEnabled)
+            return;
+         
+         synchronized(pointQueue)
+         {
+            pointQueue.add(new StylusEvent(EventType.MouseReleased, 
+                                           e, 
+                                           this.curMouseButton));
+            pointQueue.notify();
+         }
+      }
+
+      public void mouseEntered(MouseEvent e)
+      {
+      }
+
+      public void mouseExited(MouseEvent e)
+      {
+      }
+      
+      public void mouseDragged(final MouseEvent e)
+      {
+         if (!isEnabled)
+            return;
+         
+         synchronized(pointQueue)
+         {
+            pointQueue.add(new StylusEvent(EventType.MouseDragged, 
+                                           e, 
+                                           this.curMouseButton));
+            pointQueue.notify();
+         }
+      }
+
+      public void mouseMoved(MouseEvent e)
+      {
+      }
+   }
+   
+   private class PointProcessor extends Thread
+   {
+      private Path curPath;
+      
+      public PointProcessor()
+      {
+         this.curPath = null;
+      }
+      
+      public void run()
+      {
+         StylusEvent event;
+         while (true)
+         {
+            synchronized (pointQueue)
+            {
+               while ( (event = pointQueue.poll()) == null)
+               {
+                  try
+                  {
+                     pointQueue.wait();
+                  }
+                  catch (InterruptedException e)
+                  {
+                     continue;
+                  }
+               }
+            }
+            
+            if (event.type == EventType.MouseDragged)
+               processMouseDragged(event.event, event.button);
+            else if (event.type == EventType.MousePressed)
+               processMousePressed(event.event, event.button);
+            else if (event.type == EventType.MouseReleased)
+               processMouseReleased(event.event, event.button);
+         }
+      }
+      
       // returns the 'real' point relative to the current page
       // that is the point is not what is displayed on the 
       // screen which may be different depending on the zoom factor.  
@@ -467,7 +602,8 @@ public class CompositeCanvas
          Page curPage = binder.getCurrentPage();
          FloatPoint2D newPt = null;
          if (getCurrentCanvas().clipPoints())
-            newPt = binder.clipPoint(point.x-curPage.getX(), point.y-curPage.getY());
+            newPt = binder.clipPoint(point.x-curPage.getX(), 
+                                     point.y-curPage.getY());
          else
             newPt = new FloatPoint2D(point, 
                                      getZoomLevel(), 
@@ -476,15 +612,43 @@ public class CompositeCanvas
          return newPt;
       }
       
-      public void mouseClicked(MouseEvent e)
+      private void processMouseDragged(final MouseEvent e, 
+                                       final MouseButton button)
       {
+         SwingUtilities.invokeLater(new Runnable()
+         {
+            public void run()
+            {
+               if (curPath == null)
+                  return;
+               
+               FloatPoint2D point = getClippedPoint(e.getPoint());
+               curPath.addItem(point);
+               getCurrentCanvas().pathChanged(curPath, button);
+            }
+         });
       }
       
-      public void mousePressed(final MouseEvent e)
+      private void processMouseReleased(final MouseEvent e, 
+                                        final MouseButton button)
       {
-         if (!isEnabled)
-            return;
-         
+         SwingUtilities.invokeLater(new Runnable()
+         {
+            public void run()
+            {
+               if (curPath == null)
+                  return;
+               
+               curPath.addItem(getClippedPoint(e.getPoint()));
+               getCurrentCanvas().pathFinished(curPath, button);
+               curPath = null;
+            }
+         });
+      }
+      
+      private void processMousePressed(final MouseEvent e, 
+                                       final MouseButton button)
+      {
          SwingUtilities.invokeLater(new Runnable()
          {
             public void run()
@@ -501,61 +665,11 @@ public class CompositeCanvas
                curPath.addItem(getClippedPoint(point));
                SubCanvas subcanvas = getCurrentCanvas();
                if (firstTime)
-                  subcanvas.pathStarted(curPath, newCur);
+                  subcanvas.pathStarted(curPath, button, newCur);
                
-               subcanvas.pathChanged(curPath);
+               subcanvas.pathChanged(curPath, button);
             }
          });
-      }
-
-      public void mouseReleased(final MouseEvent e)
-      {
-         if (!isEnabled)
-            return;
-         
-         SwingUtilities.invokeLater(new Runnable()
-         {
-            public void run()
-            {
-               if (curPath == null)
-                  return;
-               
-               curPath.addItem(getClippedPoint(e.getPoint()));
-               getCurrentCanvas().pathFinished(curPath);
-               curPath = null;
-            }
-         });
-      }
-
-      public void mouseEntered(MouseEvent e)
-      {
-      }
-
-      public void mouseExited(MouseEvent e)
-      {
-      }
-      
-      public void mouseDragged(final MouseEvent e)
-      {
-         if (!isEnabled)
-            return;
-         
-         SwingUtilities.invokeLater(new Runnable()
-         {
-            public void run()
-            {
-               if (curPath == null)
-                  return;
-               
-               FloatPoint2D point = getClippedPoint(e.getPoint());
-               curPath.addItem(point);
-               getCurrentCanvas().pathChanged(curPath);
-            }
-         });
-      }
-
-      public void mouseMoved(MouseEvent e)
-      {
       }
    }
 

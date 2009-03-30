@@ -25,7 +25,6 @@
 package noteLab.gui.control.drop;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,8 +36,8 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import javax.swing.border.TitledBorder;
 
-import noteLab.gui.GuiSettingsConstants;
-import noteLab.gui.DecoratedButton.Style;
+import noteLab.gui.control.drop.pic.PrimitivePic;
+import noteLab.gui.control.drop.pic.PrimitivePic.Style;
 import noteLab.gui.listener.ValueChangeEvent;
 import noteLab.gui.listener.ValueChangeListener;
 
@@ -46,22 +45,16 @@ import noteLab.gui.listener.ValueChangeListener;
 /**
  * @author Dominic Kramer
  */
-public class ColorControl extends DualDropButton<Color, ColorControl> 
+public class ColorControl extends ComboButton<Color, ColorControl> 
 {
    private JColorChooser colorChooser;
    private Color prevColor;
    
    public ColorControl(Color col)
    {
-      this(col, GuiSettingsConstants.BUTTON_SIZE);
-   }
-   
-   public ColorControl(Color col, int prefSize)
-   {
-      super((int)(0.8*prefSize), col, true, Style.Square, prefSize, 1);
+      super(new PrimitivePic(-1, col, true, Style.Square, 1));
       
       this.colorChooser = new JColorChooser(col);
-      getDropDownButton().setPreferredSize(new Dimension(12, prefSize+4));
       
       this.prevColor = getControlValue();
       
@@ -70,31 +63,7 @@ public class ColorControl extends DualDropButton<Color, ColorControl>
                                     true, colorChooser, new OkListener(),
                                     new CancelListener());
       
-      getDropDownButton().getPopupWindow().
-      getContentPane().add(chooserDialog.getContentPane());
-   }
-
-   public void setColor(Color col)
-   {
-      if (col == null)
-         throw new NullPointerException();
-      
-      this.prevColor = this.colorChooser.getColor();
-      
-      this.colorChooser.setColor(col);
-      getDecoratedButton().setColor(col);
-      
-      for (ValueChangeListener<Color, ColorControl> listener : 
-              this.listenerVec)
-         listener.valueChanged(
-                     new ValueChangeEvent<Color, ColorControl>(this.prevColor, 
-                                                               col, 
-                                                               this));
-   }
-
-   public Color getColor()
-   {
-      return this.colorChooser.getColor();
+      getPopupWindow().add(chooserDialog.getContentPane());
    }
    
    public Color getPreviousValue()
@@ -106,8 +75,8 @@ public class ColorControl extends DualDropButton<Color, ColorControl>
    {
       public void actionPerformed(ActionEvent event)
       {
-         setColor(colorChooser.getColor());
-         getDropDownButton().setSelected(false);
+         setControlValue(colorChooser.getColor());
+         getPopupWindow().setVisible(false);
       }
    }
 
@@ -123,24 +92,47 @@ public class ColorControl extends DualDropButton<Color, ColorControl>
        */
       public void actionPerformed(ActionEvent event)
       {
-         colorChooser.setColor(getColor());
-         getDropDownButton().setSelected(false);
+         colorChooser.setColor(getControlValue());
+         getPopupWindow().setVisible(false);
       }
    }
-
+   
+   @Override
+   public PrimitivePic getButtonPic()
+   {
+      return (PrimitivePic)super.getButtonPic();
+   }
+   
    public Color getControlValue()
    {
-      return getColor();
+      return getButtonPic().getColor();
    }
 
-   public void setControlValue(Color val)
+   public void setControlValue(Color col)
    {
-      setColor(val);
+      if (col == null)
+         throw new NullPointerException();
+      
+      getButtonPic().setColor(col);
+      repaint();
+      
+      if (this.colorChooser != null)
+      {
+         this.prevColor = this.colorChooser.getColor();
+         this.colorChooser.setColor(col);
+      }
+      
+      for (ValueChangeListener<Color, ColorControl> listener : 
+              this.valueListenerVec)
+         listener.valueChanged(
+                     new ValueChangeEvent<Color, ColorControl>(this.prevColor, 
+                                                               col, 
+                                                               this));
    }
    
    public static void main(String[] args)
    {
-      ColorControl control = new ColorControl(Color.BLUE, 20);
+      ColorControl control = new ColorControl(Color.BLUE);
       control.setBorder(new TitledBorder(""));
       ValueChangeListener<Color, ColorControl> listener = 
                new ValueChangeListener<Color, ColorControl>()

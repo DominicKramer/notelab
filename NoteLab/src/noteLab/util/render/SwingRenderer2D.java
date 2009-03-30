@@ -47,7 +47,22 @@ public class SwingRenderer2D extends Renderer2D
       Performance
    };
    
-   private static final float SCALE_FACTOR = 100000;
+   // After comparing the quality of the graphics constructed 
+   // using SCALE_FACTOR values of 1, 10, 100, and 1000, I have 
+   // found that the difference between 1 and 10 is substantial.  
+   // The difference between 10 and 100 is only noticeable if the 
+   // user has zoomed out many times.  Finally, the difference 
+   // between 100 and 1000 is hardly ever noticeable.  Thus 
+   // a value greater than 1000 probably isn't necessary.
+   // 
+   // If too large of value is used, errors are produced which 
+   // culminate from the computer not having enough precision 
+   // to differentiate close numbers.
+   // 
+   // Thus, 1000 isn't a very large number and thus shouldn't cause 
+   // any such errors.  On the other hand, it should never cause 
+   // a noticeable degradation in graphics quality.
+   private static final float SCALE_FACTOR = 1000;
    
    private Graphics2D g2d;
    private float width;
@@ -124,6 +139,35 @@ public class SwingRenderer2D extends Renderer2D
       }
    }
    
+   private boolean hitsClip(FloatPoint2D pt1, FloatPoint2D pt2)
+   {
+      float pt1x = pt1.getX();
+      float pt1y = pt1.getY();
+      
+      float pt2x = pt2.getX();
+      float pt2y = pt2.getY();
+      
+      return hitsClip(Math.min(pt1x, pt2x), 
+                      Math.min(pt1y, pt2y), 
+                      Math.abs(pt1x-pt2x), 
+                      Math.abs(pt1y-pt2y));
+   }
+   
+   private boolean hitsClip(float x, float y, float width, float height)
+   {
+      float twoWidth = 2*this.width;
+      
+      x -= this.width;
+      y -= this.width;
+      width = Math.max(width+twoWidth,1);
+      height = Math.max(height+twoWidth,1);
+      
+      return this.g2d.hitClip((int)(x*SCALE_FACTOR), 
+                              (int)(y*SCALE_FACTOR), 
+                              (int)(width*SCALE_FACTOR), 
+                              (int)(height*SCALE_FACTOR));
+   }
+   
    @Override
    public void drawPath(final Path path)
    {
@@ -156,13 +200,16 @@ public class SwingRenderer2D extends Renderer2D
       if (pt1 == null || pt2 == null)
          throw new NullPointerException();
       
-      int pt1x = (int)(SCALE_FACTOR*pt1.getX());
-      int pt1y = (int)(SCALE_FACTOR*pt1.getY());
-      
-      int pt2x = (int)(SCALE_FACTOR*pt2.getX());
-      int pt2y = (int)(SCALE_FACTOR*pt2.getY());
-      
-      this.g2d.drawLine( pt1x, pt1y, pt2x, pt2y );
+      if (hitsClip(pt1, pt2))
+      {
+         int pt1x = (int)(SCALE_FACTOR*pt1.getX());
+         int pt1y = (int)(SCALE_FACTOR*pt1.getY());
+         
+         int pt2x = (int)(SCALE_FACTOR*pt2.getX());
+         int pt2y = (int)(SCALE_FACTOR*pt2.getY());
+         
+         this.g2d.drawLine( pt1x, pt1y, pt2x, pt2y );
+      }
       
       if (DebugSettings.getSharedInstance().displayKnots())
       {
@@ -173,11 +220,14 @@ public class SwingRenderer2D extends Renderer2D
    
    private void drawKnot(FloatPoint2D pt)
    {
-      int width = (int)(4*getLineWidth());
+      int x = (int)(pt.getX()*SCALE_FACTOR);
+      int y = (int)(pt.getY()*SCALE_FACTOR);
+      
+      int width = (int)(4*getLineWidth()*SCALE_FACTOR);
       int widthHalf = width/2;
       
-      this.g2d.fillOval((int)pt.getX()-widthHalf, 
-                        (int)pt.getY()-widthHalf, 
+      this.g2d.fillOval(x-widthHalf, 
+                        y-widthHalf, 
                         width, 
                         width);
    }
@@ -186,20 +236,40 @@ public class SwingRenderer2D extends Renderer2D
    public void drawRectangle(final float x, final float y, 
                              final float width, final float height)
    {
-      this.g2d.drawRect( (int)(SCALE_FACTOR*x), 
-                         (int)(SCALE_FACTOR*y), 
-                         (int)(SCALE_FACTOR*width), 
-                         (int)(SCALE_FACTOR*height) );
+      if (hitsClip(x, y, width, height))
+         this.g2d.drawRect( (int)(SCALE_FACTOR*x), 
+                            (int)(SCALE_FACTOR*y), 
+                            (int)(SCALE_FACTOR*width), 
+                            (int)(SCALE_FACTOR*height) );
    }
    
    @Override
    public void fillRectangle(final float x, final float y, 
                              final float width, final float height)
    {
-      this.g2d.fillRect( (int)(SCALE_FACTOR*x), 
-                         (int)(SCALE_FACTOR*y), 
-                         (int)(SCALE_FACTOR*width), 
-                         (int)(SCALE_FACTOR*height) );
+      if (!hitsClip(x, y, width, height))
+         return;
+      
+      Rectangle clip = this.g2d.getClipBounds();
+      
+      if (clip == null)
+      {
+         this.g2d.fillRect( (int)(SCALE_FACTOR*x), 
+                            (int)(SCALE_FACTOR*y), 
+                            (int)(SCALE_FACTOR*width), 
+                            (int)(SCALE_FACTOR*height) );
+      }
+      else if (clip != null)
+      {
+         Rectangle rect = new Rectangle((int)(x*SCALE_FACTOR), 
+                                        (int)(y*SCALE_FACTOR), 
+                                        (int)(width*SCALE_FACTOR), 
+                                        (int)(height*SCALE_FACTOR));
+         Rectangle.intersect(rect, clip, rect);
+         
+         if (!rect.isEmpty())
+            this.g2d.fillRect(rect.x, rect.y, rect.width, rect.height);
+      }
    }
    
    @Override
@@ -274,28 +344,20 @@ public class SwingRenderer2D extends Renderer2D
    {
       this.g2d.translate( (int)(SCALE_FACTOR*x), (int)(SCALE_FACTOR*y) );
    }
-
+   
    @Override
    public boolean isInClipRegion(Bounded bounded)
    {
       if (bounded == null)
          throw new NullPointerException();
       
-      Rectangle clipBounds = this.g2d.getClipBounds();
-      if (clipBounds == null)
-         return true;
-      
-      clipBounds.x /= SCALE_FACTOR;
-      clipBounds.y /= SCALE_FACTOR;
-      clipBounds.width /= SCALE_FACTOR;
-      clipBounds.height /= SCALE_FACTOR;
-      
       Rectangle2D bounds = bounded.getBounds2D();
+      int x = (int)(bounds.getMinX() * SCALE_FACTOR);
+      int y = (int)(bounds.getMinY() * SCALE_FACTOR);
+      int w = (int)(bounds.getWidth() * SCALE_FACTOR);
+      int h = (int)(bounds.getHeight() * SCALE_FACTOR);
       
-      Rectangle2D intersection = new Rectangle2D.Double();
-      Rectangle.intersect(clipBounds, bounds, intersection);
-      
-      return !intersection.isEmpty();
+      return this.g2d.hitClip(x, y, w, h);
    }
    
    private static class SelectedStroke implements Stroke

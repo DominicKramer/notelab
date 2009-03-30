@@ -44,7 +44,7 @@ public class CombFactorArg extends Argument
       super(SettingsKeys.COMB_FACTOR, 1, PARAM_DESCS, DESC, true);
    }
    
-   public String encode(float combFactor)
+   public String encode(int combFactor)
    {
       return PREFIX+getIdentifier()+" "+combFactor;
    }
@@ -53,10 +53,10 @@ public class CombFactorArg extends Argument
    public ArgResult decode(String[] args)
    {
       String strVal = args[0];
-      Float size = null;
+      Integer size = null;
       try
       {
-         size = Float.parseFloat(strVal);
+         size = Integer.parseInt(strVal);
       }
       catch (NumberFormatException e)
       {
@@ -66,7 +66,7 @@ public class CombFactorArg extends Argument
       if (size == null)
       {
          System.out.println("Error:  The string '"+strVal+"' does not " +
-                            "correspond to a floating point number.");
+                            "correspond to an integer valued number.");
          return ArgResult.ERROR;
       }
       

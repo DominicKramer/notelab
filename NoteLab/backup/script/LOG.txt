@@ -1,0 +1,20 @@
+12-22-2006_05-16-02_script.jar
+---------------------------------
+This build contains a working copy of both the basic and advanced startup scripts for Unix systems.  Only the basic startup script has been tested on Windows based systems.  The advanced scripts are those that load the users preferences, set VM properties, and then start NoteLab.
+
+12-22-2006_09-42-27_script.jar
+---------------------------------
+Now the scripts are fully document, have been tested both in Linux and Windows, use relative locations for the classpath, and load all of the parameters specified at the command line.  The scripts in this backup at this point are marked safe for release.
+
+12-31-2006_05-26-55_script.jar
+---------------------------------
+The scripts in this backup have been adjusted to work with the installer.  That is, they set the current working directory to the installation directory before starting NoteLab.
+
+01-01-2007_04-34-34_script.jar
+---------------------------------
+This script backup contains the uninstall scripts for both Unix and Windows based systems.
+
+02-09-2007_01-04-52_script.jar
+---------------------------------
+This backup has a change in that the uninstall scripts are now responsible for removing the installation directory.
+

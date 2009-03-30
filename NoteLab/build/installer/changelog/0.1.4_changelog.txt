@@ -1,0 +1,32 @@
+NoteLab Version 0.1.4 Changelog
+-------------------------------
+Summary
+-------
+* New:  Added cut, copy, and paste functionality for entire pages.
+* New:  Added the ability to edit page properties for many pages at a time. (see 1)
+* New:  Added the ability to import NoteLab or Jarnal documents into the current session.
+* New:  Now the extent to which stroke smoothing is done can be edited graphically.
+* New:  Added progress bars which show the progress of saving, exporting, printing, and 
+        opening sessions.
+* New:  Added .command scripts for Mac OS X systems.
+* New:  Now the startup scripts for Mac OS X systems set the dock icon and name. (see 2)
+
+* Improvement:  Greatly improved the speed of stroke smoothing.
+* Improvement:  Now the NoteLab startup scripts dynamically determine the location 
+                of the NoteLab installation directory.  As such this directory can 
+                be moved after NoteLab is installed and NoteLab will still work fine.
+
+* Bug fix:  Fixed a bug where pages would not be copied correctly.  This would cause 
+            printed sessions to look differently on paper copared to their look in 
+            NoteLab.
+
+Details
+-------
+1.  In previous versions of NoteLab, if the user wanted to change the background color of a 
+    page or its paper type, he/she would have to select one page at a time and modify these 
+    settings.  Now multiply pages can be selected, and the settings will be applied to 
+    all of the pages selected.
+
+2.  Now in Mac OS X when NoteLab is started, the icon placed in the system dock has the 
+    NoteLab feather icon and the name of the application shown in the menu at the top of 
+    the screen is not "NoteLab".

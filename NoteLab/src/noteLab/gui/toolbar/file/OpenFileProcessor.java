@@ -133,7 +133,9 @@ public class OpenFileProcessor
    
    protected void processCanvasLoaded(CompositeCanvas canvas)
    {
-      new MainFrame(canvas).setVisible(true);
+      MainFrame frame = new MainFrame(canvas);
+      frame.setVisible(true);
+      frame.hasBeenSaved();
    }
 
    public File getFormattedName(File file)

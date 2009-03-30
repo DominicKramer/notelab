@@ -39,6 +39,7 @@ import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.arg.Argument;
 import noteLab.util.arg.CombFactorArg;
 import noteLab.util.arg.CommandInterpretor;
+import noteLab.util.arg.CurrentDirectoryArg;
 import noteLab.util.arg.DebugArgGenerator;
 import noteLab.util.arg.DebugMenuArg;
 import noteLab.util.arg.HistorySizeArg;
@@ -47,6 +48,7 @@ import noteLab.util.arg.PaperColorArg;
 import noteLab.util.arg.PaperTypeArg;
 import noteLab.util.arg.PenColorArg;
 import noteLab.util.arg.PenSizeArg;
+import noteLab.util.arg.PrintArg;
 import noteLab.util.arg.SmoothFactorArg;
 import noteLab.util.arg.UnitScaleArg;
 import noteLab.util.arg.VersionArg;
@@ -107,7 +109,11 @@ public class StartupUtilities implements SettingsKeys
       
       interpretor.registerArgument(new UnitScaleArg());
       
+      interpretor.registerArgument(new CurrentDirectoryArg());
+      
       interpretor.registerArgument(new DebugMenuArg());
+      
+      interpretor.registerArgument(new PrintArg());
       
       Argument[] debugArgs = DebugArgGenerator.generateDebugArgs();
       for (Argument arg : debugArgs)
@@ -225,10 +231,20 @@ public class StartupUtilities implements SettingsKeys
          {
             public void run()
             {
+               MainFrame frame = null;
                if (canvas == null)
-                  (new MainFrame()).setVisible(true);
+               {
+                  frame = new MainFrame();
+                  frame.setVisible(true);
+               }
                else
-                  (new MainFrame(canvas)).setVisible(true);
+               {
+                  frame = new MainFrame(canvas);
+                  frame.setVisible(true);
+               }
+               
+               if (frame != null)
+                  frame.hasBeenSaved();
             }
          });
       }

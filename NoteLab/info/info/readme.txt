@@ -12,12 +12,18 @@ projects to new open-source projects to add to the open-source software base.  T
 helps the development of new software, and also helps improve existing software.
 
 With that in mind I, Dominic Kramer, NoteLab's lead software developer, would like 
-to thank Silvestre Herrera for his wonderful icon collection Dropline Neu, which 
-serves as the custom icon set for NoteLab.  Most of the icons used in NoteLab were 
-created by Silvestre.  However, I did occasionally modify some of his icons so that 
-they were customized for NoteLab.  For more information about the Dropline Neu, icon 
-set, see Silvestre's website at http://www.silvestre.com.ar.   The Dropline Neu icon 
-set used in NoteLab is licensed under the GNU GPL.
+to thank Silvestre Herrera for his wonderful icon collection Dropline Neu, which, 
+prior to NoteLab version 0.2, served as the main icon set for NoteLab.  Most of 
+the icons used in NoteLab were created by Silvestre.  However, I did occasionally 
+modify some of his icons so that they were customized for NoteLab.  For more 
+information about the Dropline Neu, icon set, see Silvestre's website at 
+http://www.silvestre.com.ar.   The Dropline Neu icon set used in NoteLab is 
+licensed under the GNU GPL.
+
+Also, as of NoteLab version 0.2, the Tango Desktop Project's Tango icon set formed 
+the basis for NoteLab's new icon set.  Without the hard work of the developers of 
+the Tango icon set, it would have been impossible for me to provide such a nice icons 
+for NoteLab.  The Tango Desktop Project's homepage is http://tango.freedesktop.org.
 
 Next I would like to note that although I designed, developed, and wrote the entire 
 NoteLab application myself I would like to thank several open-source projects.  That 
