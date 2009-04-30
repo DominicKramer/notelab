@@ -20,7 +20,7 @@ REM Move to the installation directory
 cd "%INSTALL_DIR%"
 
 REM Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
-java %NOTELAB_VM_ARGS% -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;"%CLASSPATH%" noteLab.util.StartupUtilities --lookAndFeel Nimbus %NOTELAB_ARGS% %*
+java %NOTELAB_VM_ARGS% -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;./jar/PDFRenderer.jar;./jar/iText.jar;"%CLASSPATH%" noteLab.util.StartupUtilities --lookAndFeel Nimbus %NOTELAB_ARGS% %*
 
 REM The command 'IF NOT ERRORLEVEL 1' returns true if the variable ERRORLEVEL is not greater than or 
 REM equal to 1, i.e. is less than 1.
@@ -39,7 +39,7 @@ ECHO The system would not allow NoteLab to start with its requested amount of ma
 ECHO The most likely cause is that there is not enough memory available.
 ECHO NoteLab will now start without requiring any special amount of memory.
 
-java -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;"%CLASSPATH%" noteLab.util.StartupUtilities %NOTELAB_ARGS% %*
+java -DNOTELAB_SETTINGS_FILENAME="%INIT_FILE%" -cp .;./info;./jar/PDFRenderer.jar;./jar/iText.jar;"%CLASSPATH%" noteLab.util.StartupUtilities --lookAndFeel Nimbus %NOTELAB_ARGS% %*
 
 REM If the errorlevel is set to 0 then this invocation of 'java' was successful and the script should 
 REM just finish.  Otherwise a message should be printed stating that NoteLab could not be started.
