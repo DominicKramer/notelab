@@ -40,12 +40,16 @@ import noteLab.gui.chooser.FileProcessor;
 import noteLab.gui.main.MainFrame;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.InfoCenter;
+import noteLab.util.render.EmptyRenderer2D;
 import noteLab.util.render.RenderProgressManager;
 import noteLab.util.render.SVGRenderer2D;
 import noteLab.util.settings.SettingsUtilities;
 
 public abstract class CanvasFileProcessor implements FileProcessor
 {
+   private static final EmptyRenderer2D OVERLAY_RENDERER = 
+                                           new EmptyRenderer2D();
+   
    private MainFrame mainFrame;
    private File file;
    
@@ -143,7 +147,7 @@ public abstract class CanvasFileProcessor implements FileProcessor
                
                manager.addProgressListener(mainFrame);
             }
-            canvas.renderInto(msvg2D);
+            canvas.renderInto(OVERLAY_RENDERER, msvg2D, false);
             
             Exception error = msvg2D.getError();
             if (error != null)
@@ -203,6 +207,9 @@ public abstract class CanvasFileProcessor implements FileProcessor
                                     title, 
                                     JOptionPane.ERROR_MESSAGE, 
                                     icon);
+      
+      // TODO:  REMOVE THIS
+      throwable.printStackTrace();
    }
    
    public abstract void processFileImpl(File file);

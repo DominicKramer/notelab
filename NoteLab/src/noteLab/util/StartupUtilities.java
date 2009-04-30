@@ -52,9 +52,13 @@ import noteLab.util.arg.PrintArg;
 import noteLab.util.arg.SmoothFactorArg;
 import noteLab.util.arg.UnitScaleArg;
 import noteLab.util.arg.VersionArg;
+import noteLab.util.io.jarnal.JarnalFileLoader;
 import noteLab.util.io.noteLab.NoteLabFileLoadedListener;
 import noteLab.util.io.noteLab.NoteLabFileLoader;
+import noteLab.util.io.pdf.PDFFileLoader;
 import noteLab.util.settings.SettingsKeys;
+import noteLab.util.settings.SettingsManager;
+import noteLab.util.settings.SettingsUtilities;
 
 /**
  * This class serves as the launchpad which starts the application.
@@ -119,8 +123,13 @@ public class StartupUtilities implements SettingsKeys
       for (Argument arg : debugArgs)
          interpretor.registerArgument(arg);
       
+      // Set default values 
+      SettingsUtilities.setCurrentDirectory(InfoCenter.getUserHome());
+      
       //interpret the command line arguments
       boolean success = interpretor.processCommands(args);
+      //notify everything of changes to the settings
+      SettingsManager.getSharedInstance().notifyOfChanges();
       
       //if there aren't any problems start the gui
       if (success)
@@ -129,8 +138,19 @@ public class StartupUtilities implements SettingsKeys
          if (files.isEmpty())
             new MainFrameLoader();
          else
+         {
+            File first = files.firstElement();
+            if (first != null)
+            {
+               File parent = first.getParentFile();
+               if (parent != null)
+                  SettingsUtilities.
+                     setCurrentDirectory(parent.getAbsolutePath());
+            }
+            
             for (File file : files)
                new MainFrameLoader(file);
+         }
       }
    }
    
@@ -170,7 +190,16 @@ public class StartupUtilities implements SettingsKeys
          {
             try
             {
-               new NoteLabFileLoader(file, this).loadFile();
+               String jarnalExt = InfoCenter.getJarnalExtension().toLowerCase();
+               String pdfExt = InfoCenter.getPDFExtension().toLowerCase();
+               String path = file.getAbsolutePath().toLowerCase();
+               
+               if (path.endsWith(jarnalExt))
+                  new JarnalFileLoader(file, this).loadFile();
+               else if (path.endsWith(pdfExt))
+                  new PDFFileLoader(file, this).loadFile();
+               else
+                  new NoteLabFileLoader(file, this).loadFile();
             }
             catch (Exception e)
             {

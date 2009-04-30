@@ -41,13 +41,13 @@ import noteLab.util.geom.RectangleUnioner;
 import noteLab.util.mod.ModBroadcaster;
 import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
-import noteLab.util.render.Renderable;
+import noteLab.util.render.DualRenderable;
 import noteLab.util.undoRedo.action.DeletePagedStrokeAction;
 import noteLab.util.undoRedo.action.DrawPagedStrokeAction;
 
 public abstract class SubCanvas<T extends Tool, S> 
                          extends RepaintBroadcaster 
-                                    implements Renderable, 
+                                    implements DualRenderable, 
                                                ModBroadcaster, 
                                                ModListener
 {
@@ -78,7 +78,6 @@ public abstract class SubCanvas<T extends Tool, S>
    private Vector<ModListener> modListenerVec;
    private boolean isPathInProgress;
    private boolean clipPoints;
-   private boolean renderBinder;
    
    public SubCanvas(CompositeCanvas canvas, boolean clipPoints)
    {
@@ -89,7 +88,6 @@ public abstract class SubCanvas<T extends Tool, S>
       this.modListenerVec = new Vector<ModListener>();
       this.isPathInProgress = false;
       this.clipPoints = clipPoints;
-      this.renderBinder = true;
    }
    
    protected void setClipPoints(boolean clipPoints)
@@ -100,16 +98,6 @@ public abstract class SubCanvas<T extends Tool, S>
    public boolean clipPoints()
    {
       return this.clipPoints;
-   }
-   
-   public boolean getRenderBinder()
-   {
-      return this.renderBinder;
-   }
-   
-   protected void setRenderBinder(boolean renderBinder)
-   {
-      this.renderBinder = renderBinder;
    }
    
    public CompositeCanvas getCompositeCanvas()
@@ -195,6 +183,8 @@ public abstract class SubCanvas<T extends Tool, S>
    
    public abstract void start();
    public abstract void finish();
+   
+   public abstract boolean getRenderBinder();
    
    public abstract void pathFinishedImpl(Path path, MouseButton button);
    public abstract void pathChangedImpl(Path path, MouseButton button);

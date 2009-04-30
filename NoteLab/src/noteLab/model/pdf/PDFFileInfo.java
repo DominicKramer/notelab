@@ -22,35 +22,41 @@
  *    kramerd@iastate.edu
  */
 
-package noteLab.gui;
+package noteLab.model.pdf;
 
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
-import noteLab.gui.menu.Menued;
-import noteLab.model.canvas.SubCanvas;
+import com.sun.pdfview.PDFFile;
 
-public abstract class ToolBarButton 
-                        extends JToggleButton 
-                                   implements Menued, GuiSettingsConstants
+public class PDFFileInfo
 {
-   private JToolBar toolbar;
+   private File source;
+   private PDFFile pdfFile;
    
-   public ToolBarButton(DefinedIcon icon)
+   public PDFFileInfo(File source) throws IOException
    {
-      super(icon.getIcon(BUTTON_SIZE));
+      if (source == null)
+         throw new NullPointerException();
       
-      this.toolbar = new JToolBar();
-      this.toolbar.setFloatable(false);
+      this.source = source;
+      RandomAccessFile randAccess = new RandomAccessFile(this.source, "r");
+      FileChannel channel = randAccess.getChannel();
+      ByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY,
+                                         0, channel.size());
+      this.pdfFile = new PDFFile(buffer);
    }
    
-   public JToolBar getToolBar()
+   public File getSource()
    {
-      return this.toolbar;
+      return this.source;
    }
    
-   public abstract SubCanvas getCanvas();
-   
-   public abstract void start();
-   public abstract void finish();
+   public PDFFile getPDFFile()
+   {
+      return this.pdfFile;
+   }
 }

@@ -50,6 +50,8 @@ public class NoteLabFileView extends FileView
                                      DefinedIcon.college_rule.getIcon(SIZE);
    private static final ImageIcon DRIVE_ICON = 
                                      DefinedIcon.server.getIcon(SIZE);
+   private static final ImageIcon PDF_ICON = 
+                                     DefinedIcon.document.getIcon(SIZE);
    
    public NoteLabFileView()
    {
@@ -76,12 +78,15 @@ public class NoteLabFileView extends FileView
       
       String nativeExt = InfoCenter.getFileExtension().toLowerCase();
       String jarnalExt = InfoCenter.getJarnalExtension().toLowerCase();
+      String pdfExt = InfoCenter.getPDFExtension().toLowerCase();
       
       String name = f.getName().toLowerCase();
       if (name.endsWith(nativeExt))
          return NTLB_ICON;
       else if (name.endsWith(jarnalExt))
          return JARNAL_ICON;
+      else if (name.endsWith(pdfExt))
+         return PDF_ICON;
       else if (name.endsWith(".svg") || isImage(name))
          return IMAGE_ICON;
       

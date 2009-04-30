@@ -66,7 +66,7 @@ public class InfoCenter
    private static final String NAME = "NoteLab";
    
    /** The application's version. */
-   private static final String VERSION = "0.2";
+   private static final String VERSION = "0.2.1b";
    
    /** The file extension for this application's native file. */
    private static final String NATIVE_EXT = ".ntlb";
@@ -81,7 +81,7 @@ public class InfoCenter
    private static final String HOMEPAGE = "java-notelab.sourceforge.net";
    
    /** The application's copyright statement. */
-   private static final String COPYRIGHT = "Copyright (C) 2006-2007 "+AUTHOR;
+   private static final String COPYRIGHT = "Copyright (C) 2006-2009 "+AUTHOR;
    
    /** A description of this application. */
    private static final String DESCRIPTION;
@@ -157,6 +157,9 @@ public class InfoCenter
    /** The file extension of Jarnal files. */
    private static final String JARNAL_EXT = ".jaj";
    
+   /** The file extension of PDF files. */
+   private static final String PDF_EXT = ".pdf";
+   
    /** The array of file extensions that NoteLab supports opening. */
    private static final String[] SUPPORTED_EXT_ARR = 
                                     new String[] {
@@ -167,8 +170,9 @@ public class InfoCenter
    /** The initial amount of memory given to the application. */
    private static final double INIT_MEMORY_MB = getTotalUsedMemoryMb();
    
-   private static final String SVG_EXT = "svg";
-   private static final String SVGZ_EXT = "svgz";
+   private static final String SVG_EXT = ".svg";
+   private static final String SVGZ_EXT = ".svgz";
+   private static final String PNG_EXT = ".png";
    
    /** Private to enforce static access to this class's members. */
    private InfoCenter()
@@ -523,6 +527,16 @@ public class InfoCenter
    }
    
    /**
+    * Used to get the file extension of PDF files.
+    * 
+    * @return The file extension of PDF files.
+    */
+   public static String getPDFExtension()
+   {
+      return PDF_EXT;
+   }
+   
+   /**
     * Used to get the file extensions of the files that NoteLab supports opening.
     * 
     * @return The array of file extensions that NoteLab supports opening.
@@ -540,6 +554,11 @@ public class InfoCenter
    public static String getZippedSVGExt()
    {
       return SVGZ_EXT;
+   }
+   
+   public static String getPNGExt()
+   {
+      return PNG_EXT;
    }
    
    /**

@@ -79,6 +79,7 @@ import noteLab.util.settings.SettingsChangedEvent;
 import noteLab.util.settings.SettingsChangedListener;
 import noteLab.util.settings.SettingsKeys;
 import noteLab.util.settings.SettingsManager;
+import noteLab.util.settings.SettingsUtilities;
 import noteLab.util.structure.CopyVector;
 
 public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
@@ -147,6 +148,12 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          page.setSelectionEnabled(false);
       
       doPaintDirtyRectangle();
+   }
+   
+   @Override
+   public boolean getRenderBinder()
+   {
+      return true;
    }
    
    private void selectPage(Page page)
@@ -280,7 +287,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       }
    }
    
-   public void renderInto(Renderer2D mG2d)
+   public void renderInto(Renderer2D overlayDisplay, Renderer2D mG2d)
    {
       Mode curMode = this.toolBar.getCurrentMode();
       if (curMode.equals(Mode.SelectDropLocation) || 
@@ -560,9 +567,10 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.delPageButton.setActionCommand(Action.DeletePage.toString());
          this.delPageButton.addActionListener(this);
          
+         Color defaultColor = SettingsUtilities.getPaperColor();
+         
          Page curPage = getCompositeCanvas().getBinder().getCurrentPage();
-         this.bgColorButton = 
-            new ColorControl(curPage.getPaper().getBackgroundColor());
+         this.bgColorButton = new ColorControl(defaultColor);
          this.bgColorButton.setActionCommand(Action.ChangeBGColor.toString());
          this.bgColorButton.addActionListener(this);
          this.bgColorButton.addValueChangeListener(this);
@@ -697,6 +705,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       @Override
       public void finish()
       {
+         selPageVec.clear();
       }
 
       @Override

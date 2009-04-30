@@ -22,35 +22,36 @@
  *    kramerd@iastate.edu
  */
 
-package noteLab.gui;
 
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
+package noteLab.gui.chooser.filter;
 
-import noteLab.gui.menu.Menued;
-import noteLab.model.canvas.SubCanvas;
+import java.io.File;
 
-public abstract class ToolBarButton 
-                        extends JToggleButton 
-                                   implements Menued, GuiSettingsConstants
+import javax.swing.filechooser.FileFilter;
+
+import noteLab.util.InfoCenter;
+
+public class PDFFileFilter extends FileFilter
 {
-   private JToolBar toolbar;
-   
-   public ToolBarButton(DefinedIcon icon)
+   private final String DESC = "PDF files (*"+
+                                  InfoCenter.getPDFExtension()+")";
+
+   public boolean accept(File pathname)
    {
-      super(icon.getIcon(BUTTON_SIZE));
+      if (pathname == null)
+         return false;
       
-      this.toolbar = new JToolBar();
-      this.toolbar.setFloatable(false);
+      if (pathname.isDirectory())
+         return true;
+      
+      String path = pathname.getPath().toLowerCase();
+      String suffix = InfoCenter.getPDFExtension().toLowerCase();
+      return path.endsWith(suffix);
    }
    
-   public JToolBar getToolBar()
+   @Override
+   public String getDescription()
    {
-      return this.toolbar;
+      return this.DESC;
    }
-   
-   public abstract SubCanvas getCanvas();
-   
-   public abstract void start();
-   public abstract void finish();
 }

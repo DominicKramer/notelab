@@ -89,6 +89,7 @@ public class FinishedTile extends SequenceTile
       htmlPane.setEditorKit(new HTMLEditorKit());
       htmlPane.setText(buffer.toString());
       htmlPane.setBackground(bgColor);
+      htmlPane.setEditable(false);
       
       JPanel welcomePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
       welcomePanel.add(new JScrollPane(htmlPane));
@@ -123,7 +124,9 @@ public class FinishedTile extends SequenceTile
             String command = this.execFile.getAbsolutePath();
             File workingDir = this.execFile.getParentFile();
             
-            Runtime.getRuntime().exec(new String[]{command}, 
+            Runtime.getRuntime().exec(new String[]{command, 
+                                                   "--lookAndFeel", 
+                                                   "Nimbus"}, 
                                       null, 
                                       workingDir);
          }

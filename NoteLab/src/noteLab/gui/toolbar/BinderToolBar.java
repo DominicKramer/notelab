@@ -150,7 +150,7 @@ public class BinderToolBar implements ActionListener,
       if (cmmd.equals(NEW_PAGE))
       {
          Binder binder = this.canvas.getBinder();
-         binder.addNewPage();
+         binder.addNewPageAfterCurrent();
          // from a usability perspective moving the current 
          // new page is not needed
          //binder.showCurrent();

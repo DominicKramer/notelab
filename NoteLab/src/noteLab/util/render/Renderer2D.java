@@ -47,6 +47,7 @@ public abstract class Renderer2D implements Selectable
 {
    private Stack<String> groupIDStack;
    private boolean selected;
+   private boolean isScrolling;
    
    private Vector<RenderListener> listenerVec;
    
@@ -55,6 +56,17 @@ public abstract class Renderer2D implements Selectable
       this.groupIDStack = new Stack<String>();
       this.listenerVec = new Vector<RenderListener>();
       setSelected(false);
+      setScrolling(false);
+   }
+   
+   public boolean isScrolling()
+   {
+      return this.isScrolling;
+   }
+   
+   public void setScrolling(boolean isScrolling)
+   {
+      this.isScrolling = isScrolling;
    }
    
    public boolean isSelected()

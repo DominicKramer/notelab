@@ -25,10 +25,18 @@
 package noteLab.model;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.model.geom.TransformRectangle2D;
+import noteLab.model.pdf.PDFFileInfo;
+import noteLab.model.pdf.PDFPageInfo;
 import noteLab.util.CopyReady;
 import noteLab.util.Selectable;
 import noteLab.util.UnitScaleDependent;
@@ -43,6 +51,9 @@ import noteLab.util.render.SVGRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.settings.DebugSettings;
 
+import com.sun.pdfview.PDFPage;
+import com.sun.pdfview.PDFRenderer;
+
 /**
  * This class represents a piece of paper.
  * 
@@ -52,6 +63,8 @@ public class Paper extends TransformRectangle2D
                       implements Renderable, CopyReady<Paper>, Bounded, 
                                  Selectable, UnitScaleDependent
 {
+   private static final String DESC_DELIM = ";";
+   
    /**
     * The color that a paper will be outlined with if it is currently 
     * selected.
@@ -157,6 +170,8 @@ public class Paper extends TransformRectangle2D
    
    private float unitScaleFactor;
    
+   private PDFPageInfo pdfPageInfo;
+   
    /**
     * Constructs a paper with the given parameters.
     * 
@@ -201,6 +216,24 @@ public class Paper extends TransformRectangle2D
       setBackgroundColor(Color.WHITE);
       setPaperType(paperType);
       setSelected(false);
+   }
+   
+   public void setPDFPageInfo(PDFPageInfo pageInfo)
+   {
+      if (pageInfo == null)
+         throw new NullPointerException();
+      
+      this.pdfPageInfo = pageInfo;
+   }
+   
+   public PDFPageInfo getPDFPageInfo()
+   {
+      return this.pdfPageInfo;
+   }
+   
+   public void removePDFPageInfo()
+   {
+      this.pdfPageInfo = null;
    }
    
    public float getUnitScaleFactor()
@@ -374,6 +407,73 @@ public class Paper extends TransformRectangle2D
       }
    }
    
+   private String getGroupDesc()
+   {
+      String desc = this.type.name();
+      if (this.pdfPageInfo != null)
+      {
+         desc += DESC_DELIM;
+         desc += this.pdfPageInfo.getFileInfo().getSource().getName();
+         desc += DESC_DELIM;
+         desc += this.pdfPageInfo.getPageNum();
+      }
+      
+      return desc;
+   }
+   
+   public static PaperType decodePaperType(String groupDesc)
+   {
+      if (groupDesc == null)
+         throw new NullPointerException();
+      
+      int index = groupDesc.indexOf(DESC_DELIM);
+      
+      String nameDesc = (index == -1)?
+                           (groupDesc):(groupDesc.substring(0, index));
+      
+      System.out.println(nameDesc);
+      System.out.println();
+      
+      PaperType type = PaperType.Plain;
+      if (nameDesc.equals(PaperType.Plain.name()))
+         type = PaperType.Plain;
+      else if (nameDesc.equals(PaperType.CollegeRuled.name()))
+         type = PaperType.CollegeRuled;
+      else if (nameDesc.equals(PaperType.WideRuled.name()))
+         type = PaperType.WideRuled;
+      else if (nameDesc.equals(PaperType.Graph.name()))
+         type = PaperType.Graph;
+      
+      return type;
+   }
+   
+   public static PDFPageInfo decodePDFPageInfo(File savedFile, 
+                                               String groupDesc) 
+                                                  throws NumberFormatException, 
+                                                         IOException
+   {
+      if (savedFile == null || groupDesc == null)
+         throw new NullPointerException();
+      
+      File dir = (savedFile.isDirectory())?
+                    (savedFile):(savedFile.getParentFile());
+      
+      int firstIndex = groupDesc.indexOf(DESC_DELIM);
+      int lastIndex = groupDesc.lastIndexOf(DESC_DELIM);
+      
+      if (firstIndex == -1 || lastIndex == -1)
+         return null;
+      
+      String filename = groupDesc.substring(firstIndex+1, lastIndex);
+      String numStr = groupDesc.substring(lastIndex+1, groupDesc.length());
+      
+      int pageNum = Integer.parseInt(numStr);
+      
+      File source = new File(dir, filename);
+      PDFFileInfo pdfFileInfo = new PDFFileInfo(source);
+      return new PDFPageInfo(pdfFileInfo, pageNum);
+   }
+   
    /**
     * Implementation method that does the actual work of rendering 
     * this paper.
@@ -394,11 +494,54 @@ public class Paper extends TransformRectangle2D
          return;
       }
       
-      renderer.beginGroup(Paper.this, this.type.name(), 
+      renderer.beginGroup(Paper.this, getGroupDesc(), 
                           getXScaleLevel(), getYScaleLevel());
       
-      renderer.setColor(this.bgColor);
-      renderer.fillRectangle(0, 0, getWidth(), getHeight());
+      if (this.pdfPageInfo != null 
+            && renderer instanceof SwingRenderer2D)
+      {
+         // We need a Graphics2D object which only SwingRenderer2D 
+         // objects have
+         int pageNum = this.pdfPageInfo.getPageNum();
+         
+         // The following uses PDFRenderer to render the paper.
+         final PDFPage pdfPage = this.pdfPageInfo.
+                                    getFileInfo().
+                                       getPDFFile().
+                                          getPage(pageNum);
+         
+         Rectangle2D.Float bounds = getBounds2D();
+         Rectangle rect = new Rectangle(0, 
+                                        0, 
+                                        (int)(bounds.width), 
+                                        (int)(bounds.height));
+         
+         Graphics2D g2d = ((SwingRenderer2D)renderer).createGraphics();
+         if (renderer.isScrolling())
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
+                                 RenderingHints.VALUE_RENDER_SPEED);
+         
+         PDFRenderer pdfRenderer = new PDFRenderer(pdfPage, 
+                                                   g2d, 
+                                                   rect, 
+                                                   null, 
+                                                   getBackgroundColor());
+         
+         try
+         {
+            pdfPage.waitForFinish();
+            pdfRenderer.run();
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
+      else
+      {
+         renderer.setColor(this.bgColor);
+         renderer.fillRectangle(0, 0, getWidth(), getHeight());
+      }
       
       renderer.setLineWidth(1);
       renderer.tryRenderBoundingBox(Paper.this);

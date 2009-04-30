@@ -37,21 +37,27 @@ public class SupportedFileFilter extends FileFilter
                                       " ["+InfoCenter.getAppName()+
                                       " files], *"+
                                       InfoCenter.getJarnalExtension()+
-                                      " [Jarnal files])";
+                                      " [Jarnal files]), *"+
+                                      InfoCenter.getPDFExtension()+
+                                      " [PDF files])";
    
    private NoteLabFileFilter nativeFilter;
    private JarnalFileFilter  jarnalFilter;
+   private PDFFileFilter     pdfFilter;
    
    public SupportedFileFilter()
    {
       this.nativeFilter = new NoteLabFileFilter();
       this.jarnalFilter = new JarnalFileFilter();
+      this.pdfFilter = new PDFFileFilter();
    }
    
    @Override
    public boolean accept(File f)
    {
-      return (this.nativeFilter.accept(f) || this.jarnalFilter.accept(f));
+      return (this.nativeFilter.accept(f) || 
+                 this.jarnalFilter.accept(f) || 
+                    this.pdfFilter.accept(f));
    }
 
    @Override

@@ -29,7 +29,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
@@ -63,6 +65,7 @@ import noteLab.model.tool.Pen;
 import noteLab.util.geom.RectangleUnioner;
 import noteLab.util.geom.unit.MValue;
 import noteLab.util.geom.unit.Unit;
+import noteLab.util.render.EmptyRenderer2D;
 import noteLab.util.render.Renderer2D;
 import noteLab.util.settings.SettingsChangedEvent;
 import noteLab.util.settings.SettingsChangedListener;
@@ -72,25 +75,43 @@ import noteLab.util.settings.SettingsUtilities;
 import noteLab.util.undoRedo.action.DeleteStrokeAction;
 import noteLab.util.undoRedo.action.DrawStrokeAction;
 
-public class SrokeCanvas extends SubCanvas<Pen, Stroke>
+public class StrokeCanvas extends SubCanvas<Pen, Stroke>
 {
    private enum Mode
    {
       Write, 
-      Delete
+      Delete;
+      
+      public Mode invert()
+      {
+         if (this.equals(Mode.Delete))
+            return Mode.Write;
+         
+         return Mode.Delete;
+      }
    }
    
    private Pen pen;
    private PenToolBar toolBar;
+   
+//   private Object curStrokeLock;
    private Stroke curStroke;
    
-   public SrokeCanvas(CompositeCanvas canvas)
+//   private final Object queueLock;
+   private Queue<Stroke> strokeQueue;
+   
+   public StrokeCanvas(CompositeCanvas canvas)
    {
       super(canvas, true);
       
       this.pen = new Pen(canvas.getZoomLevel());
       
+//      this.curStrokeLock = new Object();
       this.curStroke = null;
+      
+//      this.queueLock = new Object();
+      this.strokeQueue = new LinkedList<Stroke>();
+      
       this.toolBar = new PenToolBar();
    }
    
@@ -109,13 +130,16 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
    {
    }
    
+   public boolean getRenderBinder()
+   {
+      return this.toolBar.getCurrentMode().equals(Mode.Delete);
+   }
+   
    @Override
    public void pathStartedImpl(Path path, MouseButton button, boolean newPage)
    {
-      //if (button == MouseButton.Button1)
-      //   this.toolBar.setCurrentMode(Mode.Write);
       if (button == MouseButton.Button3)
-         this.toolBar.setCurrentMode(Mode.Delete);
+         this.toolBar.setCurrentMode(this.toolBar.getCurrentMode().invert());
    }
    
    @Override
@@ -133,7 +157,10 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          canvas.getUndoRedoManager().actionDone(actionDone, undoAction);
          
          final Stroke rawCurStroke = this.curStroke;
-         this.curStroke = null;
+//         synchronized (this.curStrokeLock)
+//         {
+            this.curStroke = null;
+//         }
          
          new Thread(new Runnable()
          {
@@ -145,6 +172,11 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
                Path path = rawCurStroke.getPath();
                path.simplify(rawCurStroke.getPen().getWidth());
                path.smooth(SettingsUtilities.getSmoothFactor());
+               
+//               synchronized (queueLock)
+//               {
+                  strokeQueue.add(rawCurStroke);
+//               }
                
                unioner.union(rawCurStroke.getBounds2D());
                
@@ -161,7 +193,6 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          }).start();
       }
       
-      setRenderBinder(true);
       this.toolBar.syncMode();
    }
    
@@ -176,7 +207,6 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          if (this.curStroke == null)
          {
             this.curStroke = new Stroke(this.pen.getCopy(), path);
-            setRenderBinder(false);
             binder.getCurrentPage().addStroke(this.curStroke);
          }
          
@@ -230,46 +260,66 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       doRepaint( x, y, width, height, delta );
    }
    
-   public void renderInto(Renderer2D mG2d)
+   public void renderInto(Renderer2D overlayDisplay, Renderer2D mainDisplay)
    {
-      /*
-      if (mG2d == null)
+      if (overlayDisplay == null || mainDisplay == null)
          throw new NullPointerException();
       
-      if (this.curStroke == null)
-         return;
-      
-      Path path = this.curStroke.getPath();
-      int numPts = path.getNumItems();
-      
-      if (numPts < 2)
-         return;
-      
-      FloatPoint2D pt1 = path.getItemAt(numPts-2).getCopy();
-      FloatPoint2D pt2 = path.getItemAt(numPts-1).getCopy();
-      
-      Binder binder = getCompositeCanvas().getBinder();
-      float xOffset = binder.getX();
-      float yOffset = binder.getY();
-      
-      pt1.translateBy(xOffset, yOffset);
-      pt2.translateBy(xOffset, yOffset);
-      
-      mG2d.drawLine(pt1, pt2);
-      */
-      
-      if (mG2d == null)
-         throw new NullPointerException();
-      
-      if (this.curStroke == null)
+      if (getRenderBinder())
          return;
       
       Binder binder = getCompositeCanvas().getBinder();
       Page page = binder.getCurrentPage();
       
-      mG2d.translate(page.getX(), page.getY());
-      this.curStroke.renderInto(mG2d);
-      mG2d.translate(-page.getX(), -page.getY());
+      float pageX = page.getX();
+      float pageY = page.getY();
+      overlayDisplay.translate(pageX, pageY);
+      mainDisplay.translate(pageX, pageY);
+      
+      // If something only wants the overlay rendered, it will 
+      // invoke this method and supply and EmptyRenderer2D as 
+      // the renderer for the main display since an EmptyRenderer2D 
+      // just absorbs rendering commands and does not render 
+      // anything.
+      // 
+      // Since the Strokes in the stroke queue are rendered 
+      // one time and then removed from the queue, it is important 
+      // to verify that they are actually rendered and not 
+      // just rendered with an EmptyRenderer2D.
+      // 
+      // This is necessary since the SwingDrawingBoard asks 
+      // the CompositeCanvas to render the main display and then 
+      // asks it to render the overlay.  In this way, the SwingDrawingBoard 
+      // can have a volatile overlay without using a buffer.  The 
+      // disadvantage is that SubCanvases must verify that important 
+      // information is not being rendered with an EmptyRenderer2D.
+      if ( !(mainDisplay instanceof EmptyRenderer2D) )
+      {
+         Stroke stroke = null;
+         do
+         {
+//            synchronized(queueLock)
+//            {
+               stroke = this.strokeQueue.poll();
+//            }
+            
+            if (stroke != null)
+               stroke.renderInto(mainDisplay);
+               
+         } while (stroke != null);
+      }
+      
+      Stroke currentStroke = null;
+//      synchronized (this.curStrokeLock)
+//      {
+         currentStroke = this.curStroke;
+//      }
+      
+      if (currentStroke != null)
+         currentStroke.renderInto(overlayDisplay);
+      
+      mainDisplay.translate(-pageX, -pageY);
+      overlayDisplay.translate(-pageX, -pageY);
    }
    
    public Pen getTool()
@@ -313,11 +363,18 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          
          this.curMode = Mode.Write;
          
-         ColorControl color1 = new ColorControl(PEN_1_COLOR);
-         ColorControl color2 = new ColorControl(PEN_2_COLOR);
-         ColorControl color3 = new ColorControl(PEN_3_COLOR);
+         Color color1 = SettingsUtilities.getPen1Color();
+         Color color2 = SettingsUtilities.getPen2Color();
+         Color color3 = SettingsUtilities.getPen3Color();
+         
+         ColorControl colorControl1 = new ColorControl(color1);
+         ColorControl colorControl2 = new ColorControl(color2);
+         ColorControl colorControl3 = new ColorControl(color3);
+         
          this.colorControl = 
-            new TriControl<Color, ColorControl>(color1, color2, color3);
+            new TriControl<Color, ColorControl>(colorControl1, 
+                                                colorControl2, 
+                                                colorControl3);
          
          SizeControl size1 = 
             new SizeControl("", FINE_SIZE_PX, MIN_SIZE_PX, 
@@ -334,6 +391,14 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, Color.BLACK, 
                             1);
+         
+         MValue pen1Size = SettingsUtilities.getPen1Size();
+         MValue pen2Size = SettingsUtilities.getPen2Size();
+         MValue pen3Size = SettingsUtilities.getPen3Size();
+         
+         size1.setControlValue(pen1Size);
+         size2.setControlValue(pen2Size);
+         size3.setControlValue(pen3Size);
          
          this.sizeControl = 
             new TriControl<MValue, SizeControl>(size1, size2, size3);
@@ -422,13 +487,13 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
          
          this.writeButton.doClick();
          
-         updatePen();
-         
          float unitScaleLevel = SettingsUtilities.getUnitScaleFactor();
          float zoomLevel = getCompositeCanvas().getZoomLevel();
          
          resizeControlsTo(unitScaleLevel);
          scaleControlsTo(zoomLevel);
+         
+         updatePen();
          
          SettingsManager.getSharedInstance().addSettingsListener(this);
       }
@@ -489,7 +554,7 @@ public class SrokeCanvas extends SubCanvas<Pen, Stroke>
       @Override
       public SubCanvas getCanvas()
       {
-         return SrokeCanvas.this;
+         return StrokeCanvas.this;
       }
       
       public void start()

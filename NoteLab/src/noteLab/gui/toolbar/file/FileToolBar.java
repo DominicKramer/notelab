@@ -47,6 +47,7 @@ import noteLab.gui.chooser.NoteLabFileChooser;
 import noteLab.gui.chooser.filter.ImageFileFilter;
 import noteLab.gui.chooser.filter.JarnalFileFilter;
 import noteLab.gui.chooser.filter.NoteLabFileFilter;
+import noteLab.gui.chooser.filter.PDFFileFilter;
 import noteLab.gui.chooser.filter.SupportedFileFilter;
 import noteLab.gui.fullscreen.FullScreenManager;
 import noteLab.gui.main.MainFrame;
@@ -54,7 +55,9 @@ import noteLab.gui.menu.MenuConstants;
 import noteLab.gui.menu.Menued;
 import noteLab.gui.menu.PathMenuItem;
 import noteLab.gui.settings.SettingsFrame;
+import noteLab.model.Page;
 import noteLab.model.canvas.CompositeCanvas;
+import noteLab.model.pdf.PDFPageInfo;
 import noteLab.util.InfoCenter;
 import noteLab.util.progress.ProgressEvent;
 
@@ -65,10 +68,12 @@ public class FileToolBar
                                       GuiSettingsConstants
 {
    private static final String NEW = "new";
+   private static final String ANNOTATE_PDF = "annotate pdf";
    private static final String SAVE = "save";
    private static final String SAVE_AS = "save as";
    private static final String OPEN = "open";
    private static final String EXPORT = "export";
+   private static final String EXPORT_PDF = "export PDF";
    private static final String PRINT = "print";
    private static final String SETTINGS = "settings";
    
@@ -119,6 +124,7 @@ public class FileToolBar
       this.menuItemVec = new Vector<PathMenuItem>();
       
       ImageIcon newIcon = DefinedIcon.page.getIcon(16);
+      ImageIcon pdfIcon = DefinedIcon.document.getIcon(16);
       ImageIcon openIcon = DefinedIcon.directory.getIcon(16);
       ImageIcon saveIcon = DefinedIcon.floppy.getIcon(16);
       ImageIcon saveAsIcon = DefinedIcon.save_as.getIcon(16);
@@ -135,6 +141,10 @@ public class FileToolBar
       openItem.setActionCommand(OPEN);
       openItem.addActionListener(this);
       
+      JMenuItem pdfItem = new JMenuItem("Annotate PDF", pdfIcon);
+      pdfItem.setActionCommand(ANNOTATE_PDF);
+      pdfItem.addActionListener(this);
+      
       JMenuItem saveItem = new JMenuItem("Save", saveIcon);
       saveItem.setActionCommand(SAVE);
       saveItem.addActionListener(this);
@@ -146,6 +156,10 @@ public class FileToolBar
       JMenuItem exportItem = new JMenuItem("Export", exportIcon);
       exportItem.setActionCommand(EXPORT);
       exportItem.addActionListener(this);
+      
+      JMenuItem exportPdfItem = new JMenuItem("Export PDF", pdfIcon);
+      exportPdfItem.setActionCommand(EXPORT_PDF);
+      exportPdfItem.addActionListener(this);
       
       JMenuItem printItem = new JMenuItem("Print", printIcon);
       printItem.setActionCommand(PRINT);
@@ -162,6 +176,10 @@ public class FileToolBar
                                             MenuConstants.FILE_MENU_PATH));
       this.menuItemVec.add(new PathMenuItem(new JSeparator(), 
                                             MenuConstants.FILE_MENU_PATH));
+      this.menuItemVec.add(new PathMenuItem(pdfItem, 
+                                            MenuConstants.FILE_MENU_PATH));
+      this.menuItemVec.add(new PathMenuItem(new JSeparator(), 
+                                            MenuConstants.FILE_MENU_PATH));
       this.menuItemVec.add(new PathMenuItem(saveItem, 
                                             MenuConstants.FILE_MENU_PATH));
       this.menuItemVec.add(new PathMenuItem(saveAsItem, 
@@ -169,6 +187,8 @@ public class FileToolBar
       this.menuItemVec.add(new PathMenuItem(new JSeparator(), 
                                             MenuConstants.FILE_MENU_PATH));
       this.menuItemVec.add(new PathMenuItem(exportItem, 
+                                            MenuConstants.FILE_MENU_PATH));
+      this.menuItemVec.add(new PathMenuItem(exportPdfItem, 
                                             MenuConstants.FILE_MENU_PATH));
       this.menuItemVec.add(new PathMenuItem(new JSeparator(), 
                                             MenuConstants.FILE_MENU_PATH));
@@ -208,6 +228,15 @@ public class FileToolBar
          openChooser.addChoosableFileFilter(new SupportedFileFilter());
          openChooser.showFileChooser();
       }
+      else if (cmmd.equals(ANNOTATE_PDF))
+      {
+         OpenFileProcessor processor = new OpenFileProcessor();
+         NoteLabFileChooser openChooser = 
+                           new NoteLabFileChooser("Annotate PDF", true, false, processor, file);
+         openChooser.setAcceptAllFileFilterUsed(false);
+         openChooser.addChoosableFileFilter(new PDFFileFilter());
+         openChooser.showFileChooser();
+      }
       else if (cmmd.equals(SAVE))
       {
          // the boolean argument is false so that saving doesn't force 
@@ -220,15 +249,28 @@ public class FileToolBar
          // the "save as" option
          save(true, false);
       }
-      else if (cmmd.equals(EXPORT))
+      else if (cmmd.equals(EXPORT) || cmmd.equals(EXPORT_PDF))
       {
+         boolean exportPDF = cmmd.equals(EXPORT_PDF);
+         
+         String defaultExt = InfoCenter.getPNGExt();
+         if (exportPDF)
+            defaultExt = InfoCenter.getPDFExtension();
+         
          ExportFileProcessor processor = 
-                  new ExportFileProcessor(this.mainFrame);
+                  new ExportFileProcessor(this.mainFrame, defaultExt);
          NoteLabFileChooser exportChooser = 
                   new NoteLabFileChooser("Export", false, true, processor, file);
          exportChooser.setAcceptAllFileFilterUsed(false);
-         exportChooser.addChoosableFileFilter(new NoteLabFileFilter());
-         exportChooser.setFileFilter(new ImageFileFilter());
+         // PDF files can always be selected.
+         exportChooser.addChoosableFileFilter(new PDFFileFilter());
+         // If the user did not select "Export PDF", then also allow 
+         // native files and image files.
+         if (!exportPDF)
+         {
+            exportChooser.addChoosableFileFilter(new NoteLabFileFilter());
+            exportChooser.setFileFilter(new ImageFileFilter());
+         }
          
          File savedFile = canvas.getFile();
          // If the file has the same name as the file to 
@@ -329,7 +371,27 @@ public class FileToolBar
       saveChooser.setAcceptAllFileFilterUsed(false);
       saveChooser.setFileFilter(new NoteLabFileFilter());
       if (file == null || forceSaveAs)
-         saveChooser.setSelectedFile(getDateFile());
+      {
+         PDFPageInfo pageInfo = null;
+         for (Page page : this.mainFrame.getCompositeCanvas().getBinder())
+         {
+            pageInfo = page.getPaper().getPDFPageInfo();
+            if (pageInfo != null)
+               break;
+         }
+         
+         if (pageInfo == null)
+            saveChooser.setSelectedFile(getDateFile());
+         else
+         {
+            String name = pageInfo.getFileInfo().getSource().getName();
+            int index = name.lastIndexOf(InfoCenter.getPDFExtension());
+            name = name.substring(0, index);
+            saveChooser.
+               setSelectedFile(new File(name+
+                                        InfoCenter.getFileExtension()));
+         }
+      }
       
       saveChooser.showFileChooser();
    }
@@ -350,7 +412,7 @@ public class FileToolBar
       timeBuffer.append("-");
       timeBuffer.append(formatter.format(cal.get(Calendar.MINUTE)));
       
-      return new File(timeBuffer.toString()+""+
+      return new File(timeBuffer.toString()+
                          InfoCenter.getFileExtension());
    }
 }
