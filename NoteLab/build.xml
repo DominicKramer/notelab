@@ -9,6 +9,7 @@
    <property name="dir.backup.ant" value="${dir.backup}/ant"/>
    <property name="dir.backup.script" value="${dir.backup}/script"/>
    <property name="dir.jar" value="jar"/>
+   <property name="dir.lib" value="lib"/>
    <property name="dir.doc" value="doc"/>
    <property name="dir.build.jar" value="build/jar"/>
    <property name="dir.build.zip" value="build/zip"/>
@@ -314,6 +315,8 @@
         <fileset dir="${dir.bin}"/>
         <fileset dir="${dir.info}"/>
         <fileset dir="${dir.script}"/>
+     	<fileset dir="${dir.jar}"/>
+     	<fileset dir="${dir.lib}"/>
         <fileset file="${dir.build.installer.change}/${version.number}_changelog.txt"/>
         <manifest>
            <attribute name="Built-By" value="${devel.name}"/>
