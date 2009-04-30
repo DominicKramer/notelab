@@ -1,0 +1,3 @@
+Authors:  joshy@dev.java.net, rbair@dev.java.net, and tomoke@dev.java.net
+Homepage:  https://pdf-renderer.dev.java.net/
+License:  LGPL
