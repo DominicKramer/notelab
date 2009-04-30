@@ -157,6 +157,18 @@ public abstract class Binder implements Renderable, Bounded,
       addPage(new Page(getCurrentPage()));
    }
    
+   public void addNewPageAfterCurrent()
+   {
+      Page curPage = getCurrentPage();
+      addPageAfter(curPage, new Page(curPage));
+   }
+   
+   public void addNewPageBeforeCurrent()
+   {
+      Page curPage = getCurrentPage();
+      addPageBefore(curPage, new Page(curPage));
+   }
+   
    /**
     * Adds the given page to the edge of the binder.
     * 

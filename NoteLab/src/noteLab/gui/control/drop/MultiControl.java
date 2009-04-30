@@ -1,7 +1,7 @@
 /*
  *  NoteLab:  An advanced note taking application for pen-enabled platforms
  *  
- *  Copyright (C) 2006, Dominic Kramer
+ *  Copyright (C) 2008, Dominic Kramer
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,35 +22,22 @@
  *    kramerd@iastate.edu
  */
 
-package noteLab.gui;
+package noteLab.gui.control.drop;
 
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
+import java.util.Vector;
 
-import noteLab.gui.menu.Menued;
-import noteLab.model.canvas.SubCanvas;
-
-public abstract class ToolBarButton 
-                        extends JToggleButton 
-                                   implements Menued, GuiSettingsConstants
+public class MultiControl<V, T extends ComboButton<V, T>>
 {
-   private JToolBar toolbar;
+   private Vector<ComboButton<V, T>> controlVec;
    
-   public ToolBarButton(DefinedIcon icon)
+   public MultiControl(T... controls)
    {
-      super(icon.getIcon(BUTTON_SIZE));
-      
-      this.toolbar = new JToolBar();
-      this.toolbar.setFloatable(false);
+      if (controls != null)
+      {
+         for (T control : controls)
+         {
+            
+         }
+      }
    }
-   
-   public JToolBar getToolBar()
-   {
-      return this.toolbar;
-   }
-   
-   public abstract SubCanvas getCanvas();
-   
-   public abstract void start();
-   public abstract void finish();
 }

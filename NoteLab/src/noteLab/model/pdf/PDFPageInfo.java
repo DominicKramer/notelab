@@ -1,7 +1,7 @@
 /*
  *  NoteLab:  An advanced note taking application for pen-enabled platforms
  *  
- *  Copyright (C) 2006, Dominic Kramer
+ *  Copyright (C) 2009, Dominic Kramer
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,35 +22,36 @@
  *    kramerd@iastate.edu
  */
 
-package noteLab.gui;
+package noteLab.model.pdf;
 
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
-
-import noteLab.gui.menu.Menued;
-import noteLab.model.canvas.SubCanvas;
-
-public abstract class ToolBarButton 
-                        extends JToggleButton 
-                                   implements Menued, GuiSettingsConstants
+public class PDFPageInfo
 {
-   private JToolBar toolbar;
+   private PDFFileInfo fileInfo;
+   private int pageNum;
    
-   public ToolBarButton(DefinedIcon icon)
+   public PDFPageInfo(PDFFileInfo fileInfo, int pageNum)
    {
-      super(icon.getIcon(BUTTON_SIZE));
+      if (fileInfo == null)
+         throw new NullPointerException();
       
-      this.toolbar = new JToolBar();
-      this.toolbar.setFloatable(false);
+      int numPages = fileInfo.getPDFFile().getNumPages();
+      if (pageNum < 1 || pageNum > numPages)
+         throw new IllegalArgumentException("The page number "+pageNum+
+                                            " must be positive" +
+                                            " but less than or equal to "+
+                                            numPages);
+      
+      this.fileInfo = fileInfo;
+      this.pageNum = pageNum;
    }
    
-   public JToolBar getToolBar()
+   public PDFFileInfo getFileInfo()
    {
-      return this.toolbar;
+      return this.fileInfo;
    }
    
-   public abstract SubCanvas getCanvas();
-   
-   public abstract void start();
-   public abstract void finish();
+   public int getPageNum()
+   {
+      return this.pageNum;
+   }
 }

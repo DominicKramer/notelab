@@ -25,8 +25,11 @@
 package noteLab.gui.toolbar.file;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -47,10 +50,25 @@ import noteLab.model.binder.Binder;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.util.InfoCenter;
 import noteLab.util.progress.ProgressEvent;
+import noteLab.util.render.EmptyRenderer2D;
 import noteLab.util.render.ImageRenderer2D;
+import noteLab.util.render.SwingRenderer2D;
+import noteLab.util.render.SwingRenderer2D.RenderMode;
+
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.DefaultFontMapper;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfTemplate;
+import com.lowagie.text.pdf.PdfWriter;
 
 public class ExportFileProcessor extends CanvasFileProcessor implements IIOWriteProgressListener
 {
+   private static final EmptyRenderer2D OVERLAY_RENDERER = 
+                                           new EmptyRenderer2D();
+   
    private static final String[] OVERWRITE_OPTIONS 
                                     = new String[]{"Never Overwrite", 
                                                    "Don't Overwrite Now", 
@@ -63,9 +81,16 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
    private static final int OVERWRITE_ALWAYS_OPTION = 2;
    private static final int OVERWRITE_NOW_OPTION = 3;
    
-   public ExportFileProcessor(MainFrame frame)
+   private String defaultExt;
+   
+   public ExportFileProcessor(MainFrame frame, String defaultExt)
    {
       super(frame);
+      
+      if (defaultExt == null)
+         throw new NullPointerException();
+      
+      this.defaultExt = defaultExt;
    }
    
    public void processFileImpl(File file)
@@ -73,23 +98,23 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
       if (file == null)
          throw new NullPointerException();
       
-      String ext = getExtension(file);
       File formatFile = getFormattedName(file);
+      String formatName = formatFile.getAbsolutePath().toLowerCase();
       
-      String svgExt = InfoCenter.getSVGExt();
-      String svgzExt = InfoCenter.getZippedSVGExt();
+      String svgExt = InfoCenter.getSVGExt().toLowerCase();
+      String svgzExt = InfoCenter.getZippedSVGExt().toLowerCase();
       
-      if (ext.equalsIgnoreCase(svgExt))
+      if (formatName.endsWith(svgExt))
       {
-         saveAsSVG(file, "."+svgExt, 
+         saveAsSVG(file, svgExt, 
                    false, // Don't zip the file 
                    true,  // Report progress to the user 
                    "Exporting the session");
          return;
       }
-      else if (ext.equalsIgnoreCase(svgzExt))
+      else if (formatName.endsWith(svgzExt))
       {
-         saveAsSVG(file, "."+svgzExt, 
+         saveAsSVG(file, svgzExt, 
                    true, // Zip the file 
                    true, // Report progress to the user
                    "Exporting the session");
@@ -104,75 +129,27 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
       
       try
       {
-         String errorText = "There are no writers available to write images with " +
-                            "the extension '"+ext+"'";
-         
-         Iterator<ImageWriter> writers = ImageIO.getImageWritersBySuffix(ext);
-         if (!writers.hasNext())
-            throw new Exception(errorText);
-         
-         ImageWriter writer = writers.next();
-         if (writer == null)
-            throw new NullPointerException(errorText);
-         
-         writer.addIIOWriteProgressListener(this);
-         
-         synchronized(canvas)
+         String pdfExt = InfoCenter.getPDFExtension().toLowerCase();
+         if (formatName.endsWith(pdfExt))
          {
-            mainFrame.setMessage("Exporting the session requires momentarily disabling the canvas.", 
-                                 Color.BLACK);
-            canvas.setEnabled(false);
+            mainFrame.progressOccured(new ProgressEvent(
+                                             messageBuffer.toString(), 
+                                             "", "", true, 0, false));
             
-            Binder binder = canvas.getBinder();
+            // Process the PDF file
+            processPdfFile(formatFile, mainFrame, canvas, messageBuffer);
             
-            try
-            {
-               float width = binder.getWidth();
-               float height = binder.getHeight();
-               
-               BufferedImage image = 
-                  new BufferedImage( (int)width, (int)height, 
-                                     BufferedImage.TYPE_INT_RGB );
-               ImageRenderer2D image2D = new ImageRenderer2D(image);
-               image2D.setColor(Color.WHITE);
-               image2D.fillRectangle(0, 0, width, height);
-               
-               canvas.renderInto(image2D);
-               
-               ImageOutputStream output = ImageIO.createImageOutputStream(formatFile);
-               writer.setOutput(output);
-               writer.write(image);
-            }
-            catch (Throwable t)
-            {
-               int size = GuiSettingsConstants.BUTTON_SIZE;
-               ImageIcon icon = DefinedIcon.dialog_error.getIcon(size);
-               
-               String title = "Warning";
-               String message = "There is not enough memory to export to " +
-               		           "a single image.  Export each page to a " +
-               		           "separate image?";
-               
-               int result = JOptionPane.showConfirmDialog(new JFrame(), 
-                                                          message, 
-                                                          title, 
-                                                          JOptionPane.YES_NO_OPTION, 
-                                                          JOptionPane.INFORMATION_MESSAGE, 
-                                                          icon);
-               
-               if (result == JOptionPane.YES_OPTION)
-                  writePages(binder, writer, mainFrame, formatFile);
-            }
-            
-            writer.dispose();
-            canvas.setEnabled(true);
+            messageBuffer.append("' completed successfully.");
+            mainFrame.progressOccured(new ProgressEvent(
+                                             messageBuffer.toString(), 
+                                             "", "", false, 100, true));
+         }
+         else
+         {
+            messageBuffer.append("' completed successfully.");
+            processImageFile(formatFile, mainFrame, canvas, messageBuffer);
          }
          
-         
-         writer.removeIIOWriteProgressListener(this);
-         writer.dispose();
-         
-         messageBuffer.append("' completed successfully.");
          mainFrame.setMessage(messageBuffer.toString(), Color.BLACK);
       }
       catch (Throwable throwable)
@@ -181,7 +158,175 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
          
          messageBuffer.append("' failed.");
          mainFrame.setMessage(messageBuffer.toString(), Color.RED);
+         
+         // Make sure the progress bar isn't set to be indeterminate
+         mainFrame.progressOccured(new ProgressEvent(messageBuffer.toString(), 
+                                                     "", 
+                                                     "", 
+                                                     false, 
+                                                     100, 
+                                                     true));
       }
+   }
+   
+   private void processPdfFile(File formatFile, 
+                               MainFrame mainFrame, 
+                               CompositeCanvas canvas, 
+                               StringBuffer messageBuffer) 
+                                  throws DocumentException, 
+                                         FileNotFoundException, 
+                                         IOException
+   {
+      synchronized(canvas)
+      {
+         mainFrame.setMessage("Exporting the session requires momentarily disabling the canvas.", 
+                              Color.BLACK);
+         canvas.setEnabled(false);
+         
+         Binder binder = canvas.getBinder();
+         
+         if (!formatFile.exists())
+            formatFile.createNewFile();
+         
+         // Create the document
+         Document doc = new Document();
+         
+         // Create a writer
+         PdfWriter pdfWriter =
+                      PdfWriter.
+                         getInstance(doc,
+                                     new FileOutputStream(formatFile));
+         
+         Rectangle pageSize = pdfWriter.getPageSize();
+         float width = pageSize.getWidth();
+         float height = pageSize.getHeight();
+         
+         // Open the document
+         doc.open();
+         
+         // Configure the fonts
+         DefaultFontMapper mapper = new DefaultFontMapper();
+         FontFactory.registerDirectories();
+         
+         // Get the content-byte to work with
+         PdfContentByte content = pdfWriter.getDirectContent();
+         
+         for (Page page : binder)
+         {
+            renderPage(width, height, content, mapper, page);
+            doc.newPage();
+         }
+         
+         // Close the document
+         doc.close();
+         
+         canvas.setEnabled(true);
+      }
+   }
+   
+   private void renderPage(float width, float height, 
+                           PdfContentByte content, 
+                           DefaultFontMapper mapper, 
+                           Page page)
+   {
+      // Make a template onto which data is written
+      PdfTemplate template = content.createTemplate(width, height);
+      
+      // Get the template's Graphics2D object
+      Graphics2D g2d = template.createGraphics(width, height, mapper);
+      
+      // Configure the template
+      template.setWidth(width);
+      template.setHeight(height);
+      
+      // Render the canvas
+      g2d.scale(width/page.getWidth(), 
+                height/page.getHeight());
+      
+      SwingRenderer2D pdf2D = new SwingRenderer2D();
+      pdf2D.setSwingGraphics(g2d, RenderMode.Appearance);
+      page.renderInto(pdf2D);
+      
+      // Dispose of the graphics object
+      g2d.dispose();
+      
+      // Add the template to the content
+      content.addTemplate(template, 0, 0);
+   }
+   
+   private void processImageFile(File formatFile, 
+                                 MainFrame mainFrame, 
+                                 CompositeCanvas canvas, 
+                                 StringBuffer messageBuffer) 
+                                    throws IOException
+   {
+      String ext = getExtension(formatFile);
+      String errorText = "There are no writers available to write images with " +
+                         "the extension '"+ext+"'";
+      
+      Iterator<ImageWriter> writers = ImageIO.getImageWritersBySuffix(ext);
+      if (!writers.hasNext())
+         throw new IOException(errorText);
+      
+      ImageWriter writer = writers.next();
+      if (writer == null)
+         throw new NullPointerException(errorText);
+      
+      writer.addIIOWriteProgressListener(this);
+      
+      synchronized(canvas)
+      {
+         mainFrame.setMessage("Exporting the session requires momentarily disabling the canvas.", 
+                              Color.BLACK);
+         canvas.setEnabled(false);
+         
+         Binder binder = canvas.getBinder();
+         
+         try
+         {
+            float width = binder.getWidth();
+            float height = binder.getHeight();
+            
+            BufferedImage image = 
+               new BufferedImage( (int)width, (int)height, 
+                                  BufferedImage.TYPE_INT_RGB );
+            ImageRenderer2D image2D = new ImageRenderer2D(image);
+            image2D.setColor(Color.WHITE);
+            image2D.fillRectangle(0, 0, width, height);
+            
+            canvas.renderInto(OVERLAY_RENDERER, image2D, false);
+            
+            ImageOutputStream output = ImageIO.createImageOutputStream(formatFile);
+            writer.setOutput(output);
+            writer.write(image);
+         }
+         catch (Throwable t)
+         {
+            int size = GuiSettingsConstants.BUTTON_SIZE;
+            ImageIcon icon = DefinedIcon.dialog_error.getIcon(size);
+            
+            String title = "Warning";
+            String message = "There is not enough memory to export to " +
+                             "a single image.  Export each page to a " +
+                             "separate image?";
+            
+            int result = JOptionPane.showConfirmDialog(new JFrame(), 
+                                                       message, 
+                                                       title, 
+                                                       JOptionPane.YES_NO_OPTION, 
+                                                       JOptionPane.INFORMATION_MESSAGE, 
+                                                       icon);
+            
+            if (result == JOptionPane.YES_OPTION)
+               writePages(binder, writer, mainFrame, formatFile);
+         }
+         
+         writer.dispose();
+         canvas.setEnabled(true);
+      }
+      
+      writer.removeIIOWriteProgressListener(this);
+      writer.dispose();
    }
    
    private void writePages(Binder binder, 
@@ -270,11 +415,7 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
       
       // if a valid extension isn't given, use a default
       if (ext == null)
-      {
-         String defaultExt = "png";
-         ext = defaultExt;
-         file = new File(file.getAbsolutePath()+"."+ext);
-      }
+         file = new File(file.getAbsolutePath()+this.defaultExt);
       
       return file;
    }
@@ -293,6 +434,15 @@ public class ExportFileProcessor extends CanvasFileProcessor implements IIOWrite
             ext = fileExt;
             break;
          }
+      }
+      
+      // If the file extension is 'null' 
+      // check if the file is a PDF file.
+      if (ext == null)
+      {
+         String pdfExt = InfoCenter.getPDFExtension();
+         if (path.endsWith(pdfExt.toLowerCase()))
+            ext = pdfExt;
       }
       
       return ext;

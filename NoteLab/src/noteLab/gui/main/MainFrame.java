@@ -72,7 +72,6 @@ import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
 import noteLab.util.progress.ProgressEvent;
 import noteLab.util.progress.ProgressListener;
-import noteLab.util.settings.SettingsManager;
 import noteLab.util.settings.SettingsUtilities;
 import noteLab.util.undoRedo.UndoRedoManager;
 
@@ -246,7 +245,10 @@ public class MainFrame extends JFrame implements Menued,
       
       setSize(maxWidth, maxHeight);
       
-      SettingsManager.getSharedInstance().notifyOfChanges();
+      // The settings manager should not notify of changes 
+      // every time a new MainFrame is opened since this would 
+      // affect previously opened MainFrame ojects.
+      // SettingsManager.getSharedInstance().notifyOfChanges();
       
       this.viewMainToolbar.doClick();
       this.viewToolToolbar.doClick();
@@ -310,12 +312,13 @@ public class MainFrame extends JFrame implements Menued,
                FullScreenManager.
                   getSharedInstance().
                      revokeFullScreenMode();
+               this.twinWindow.setVisible(false);
             }
          }
          catch (Exception exception)
          {
             System.err.print("An error occured while trying to make " +
-            		           InfoCenter.getAppName());
+                             InfoCenter.getAppName());
             if (this.fullScreenButton.isSelected())
                System.err.print(" enter ");
             else

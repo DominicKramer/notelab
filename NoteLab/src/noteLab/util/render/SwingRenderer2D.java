@@ -113,6 +113,12 @@ public class SwingRenderer2D extends Renderer2D
          
          this.g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
                                    RenderingHints.VALUE_DITHER_ENABLE);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, 
+                                   RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
+                                   RenderingHints.VALUE_RENDER_QUALITY);
       }
       else if (mode == RenderMode.Performance)
       {
@@ -136,6 +142,12 @@ public class SwingRenderer2D extends Renderer2D
          
          this.g2d.setRenderingHint(RenderingHints.KEY_DITHERING, 
                                    RenderingHints.VALUE_DITHER_DISABLE);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, 
+                                   RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+         
+         this.g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
+                                   RenderingHints.VALUE_RENDER_SPEED);
       }
    }
    
@@ -358,6 +370,16 @@ public class SwingRenderer2D extends Renderer2D
       int h = (int)(bounds.getHeight() * SCALE_FACTOR);
       
       return this.g2d.hitClip(x, y, w, h);
+   }
+   
+   /**
+    * Use this method only if absolutely necessary.
+    */
+   public Graphics2D createGraphics()
+   {
+      Graphics2D newG2d = (Graphics2D)(this.g2d.create());
+      newG2d.scale(SCALE_FACTOR, SCALE_FACTOR);
+      return newG2d;
    }
    
    private static class SelectedStroke implements Stroke

@@ -29,6 +29,7 @@ public interface NoteLabFileConstants
    public static final String BINDER_ID_NAME = "noteLab.model.binder.FlowBinder";
    public static final String PAGE_ID_NAME = "noteLab.model.Page";
    public static final String STROKE_ID_NAME = "noteLab.model.Stroke";
+   public static final String PAPER_ID_NAME = "noteLab.model.Paper";
    
    public static final String G_NAME = "g";
    public static final String ID_NAME = "id";

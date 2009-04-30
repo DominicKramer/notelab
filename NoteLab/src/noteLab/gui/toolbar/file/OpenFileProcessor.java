@@ -43,6 +43,7 @@ import noteLab.util.io.FileLoader;
 import noteLab.util.io.jarnal.JarnalFileLoader;
 import noteLab.util.io.noteLab.NoteLabFileLoadedListener;
 import noteLab.util.io.noteLab.NoteLabFileLoader;
+import noteLab.util.io.pdf.PDFFileLoader;
 import noteLab.util.progress.ProgressEvent;
 import noteLab.util.progress.ProgressListener;
 import noteLab.util.progress.Progressive;
@@ -77,6 +78,7 @@ public class OpenFileProcessor
          
          String nativeExt = InfoCenter.getFileExtension().toLowerCase();
          String jarnalExt = InfoCenter.getJarnalExtension().toLowerCase();
+         String pdfExt = InfoCenter.getPDFExtension().toLowerCase();
          String path = file.getPath().toLowerCase();
          
          FileLoader loader = null;
@@ -84,6 +86,8 @@ public class OpenFileProcessor
             loader = new NoteLabFileLoader(file, this);
          else if (path.endsWith(jarnalExt))
             loader = new JarnalFileLoader(file, this);
+         else if (path.endsWith(pdfExt))
+            loader = new PDFFileLoader(file, this);
          
          if (loader == null)
             throw new IOException("The file '"+file+

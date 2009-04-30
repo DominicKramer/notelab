@@ -29,12 +29,18 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import noteLab.gui.DefinedIcon;
+import noteLab.gui.GuiSettingsConstants;
 import noteLab.model.Page;
 import noteLab.model.Paper;
 import noteLab.model.Path;
@@ -44,6 +50,7 @@ import noteLab.model.binder.Binder;
 import noteLab.model.binder.FlowBinder;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.model.geom.FloatPoint2D;
+import noteLab.model.pdf.PDFPageInfo;
 import noteLab.model.tool.Pen;
 import noteLab.util.InfoCenter;
 import noteLab.util.geom.unit.Unit;
@@ -73,6 +80,8 @@ public class NoteLabFileLoader
    
    private int screenRes;
    
+   private Vector<String> fileErrorVec;
+   
    public NoteLabFileLoader(File file, 
                             NoteLabFileLoadedListener listener) 
                                throws IOException
@@ -96,6 +105,7 @@ public class NoteLabFileLoader
       this.lastID = null;
       
       this.screenRes = Unit.getScreenResolution();
+      this.fileErrorVec = new Vector<String>();
    }
    
    public void loadFile() throws ParserConfigurationException, 
@@ -194,6 +204,43 @@ public class NoteLabFileLoader
                                         new Path(SCALE_LEVEL, 
                                                  SCALE_LEVEL));
             this.curPage.addStroke(this.curStroke);
+         }
+         else if (id.equals(PAPER_ID_NAME))
+         {
+            if (this.curPage != null)
+            {
+               String desc = attributes.getValue(DESC_NAME);
+               try
+               {
+                  PDFPageInfo pageInfo = Paper.decodePDFPageInfo(this.file, 
+                                                                 desc);
+                  if (pageInfo != null)
+                     this.curPage.getPaper().setPDFPageInfo(pageInfo);
+               }
+               catch (NumberFormatException e)
+               {
+                  System.err.println(NoteLabFileLoader.class.getName()+
+                                     " ERROR:  The 'desc' attribute of the " +
+                                     "element with id='"+PAPER_ID_NAME+
+                                     "' contains an invalid page number.  " +
+                                     "Its value is '"+desc+"'");
+               }
+               catch (IOException e)
+               {
+                  String message = e.getMessage();
+                  
+                  System.err.println(NoteLabFileLoader.class.getName()+
+                                     " ERROR:  The 'desc' attribute of the " +
+                                     "element with id='"+PAPER_ID_NAME+
+                                     "' contains a filename with an I/O " +
+                                     "error.  The 'desc' attribute has " +
+                                     "the value '"+desc+"'.  The error " +
+                                     "returned was:  "+message);
+                  
+                  if (!this.fileErrorVec.contains(message))
+                     this.fileErrorVec.add(message);
+               }
+            }
          }
       }
       else if (localName.equals(RECT_TAG_NAME))
@@ -323,13 +370,61 @@ public class NoteLabFileLoader
       canvas.getBinder().resizeTo(unitScaleFactor, unitScaleFactor);
       canvas.setUnitScaleFactor(unitScaleFactor);
       
-      this.curBinder.setCurrentPage(this.curBinder.getNumberOfPages()-1);
-      Paper paper = this.curBinder.getCurrentPage().getPaper();
+      /* 
+      int numPages = this.curBinder.getNumberOfPages();
+      if (numPages > 0)
+      {
+         PaperType[] type = new PaperType[numPages];
+         for (int i=0; i<numPages; i++)
+         {
+            this.curBinder.setCurrentPage(i);
+            type[i] = this.curBinder.
+                         getCurrentPage().getPaper().getPaperType();
+         }
+         
+         this.curBinder.setCurrentPage(0);
+         Paper paper = this.curBinder.getCurrentPage().getPaper();
+         
+         SettingsUtilities.setPaperType(paper.getPaperType());
+         SettingsUtilities.setPaperColor(paper.getBackgroundColor());
+         
+         for (int i=0; i<numPages; i++)
+         {
+            this.curBinder.setCurrentPage(i);
+            this.curBinder.getCurrentPage().getPaper().setPaperType(type[i]);
+         }
+         
+         this.curBinder.setCurrentPage(0);
+      }
+      */
       
-      SettingsUtilities.setPaperType(paper.getPaperType());
-      SettingsUtilities.setPaperColor(paper.getBackgroundColor());
+      int numPages = this.curBinder.getNumberOfPages();
+      if (numPages > 0)
+      {
+         this.curBinder.setCurrentPage(0);
+         Paper paper = this.curBinder.getCurrentPage().getPaper();
+         
+         SettingsUtilities.setPaperType(paper.getPaperType());
+         SettingsUtilities.setPaperColor(paper.getBackgroundColor());
+      }
       
       this.listener.noteLabFileLoaded(canvas, getMessageBuffer().toString());
+      
+      for (String error : this.fileErrorVec)
+         displayErrorMessage("An error occured while opening the file "+
+                                error);
+   }
+   
+   private void displayErrorMessage(String message)
+   {
+      int size = GuiSettingsConstants.BUTTON_SIZE;
+      ImageIcon icon = DefinedIcon.dialog_error.getIcon(size);
+      
+      JOptionPane.showMessageDialog(new JFrame(), 
+                                    message, 
+                                    "Error", 
+                                    JOptionPane.ERROR_MESSAGE, 
+                                    icon);
    }
    
    private PaperType getPaperType(Attributes atts)

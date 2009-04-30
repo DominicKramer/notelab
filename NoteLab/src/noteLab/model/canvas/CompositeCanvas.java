@@ -94,7 +94,7 @@ public class CompositeCanvas
    
    private File file;
    
-   private SrokeCanvas printCanvas;
+   private StrokeCanvas printCanvas;
    private StrokeSelectionCanvas selCanvas;
    private PageSelectionCanvas pageSelCanvas;
    
@@ -139,7 +139,7 @@ public class CompositeCanvas
       this.binder.addModListener(this);
       
       //make the print canvas
-      this.printCanvas = new SrokeCanvas(this);
+      this.printCanvas = new StrokeCanvas(this);
       this.printCanvas.addRepaintListener(this);
       this.printCanvas.addModListener(this);
       
@@ -180,7 +180,7 @@ public class CompositeCanvas
       return this.pageSelCanvas;
    }
    
-   public SrokeCanvas getStrokeCanvas()
+   public StrokeCanvas getStrokeCanvas()
    {
       return this.printCanvas;
    }
@@ -334,22 +334,25 @@ public class CompositeCanvas
       return new Rectangle2D.Float(x, y, width, height);
    }
    
-   public void renderInto(Renderer2D mDisplay2D)
+   public void renderInto(Renderer2D overlayDisplay, 
+                          Renderer2D mainDisplay, 
+                          boolean isValid)
    {
-      if (mDisplay2D == null)
+      if (overlayDisplay == null || mainDisplay == null)
          throw new NullPointerException();
       
       SubCanvas subCanvas = getCurrentCanvas();
       
-      // render the binder if the SubCanvas want's it rendered
-      if (subCanvas.getRenderBinder())
-         this.binder.renderInto(mDisplay2D);
+      // render the binder if the SubCanvas wants it rendered
+      if (!isValid || subCanvas.getRenderBinder())
+         this.binder.renderInto(mainDisplay);
       
       // render the current canvas
-      subCanvas.renderInto(mDisplay2D);
+      subCanvas.renderInto(overlayDisplay, mainDisplay);
       
-      // tell the renderer that rendering is complete
-      mDisplay2D.finish();
+      // tell the renderers that rendering is complete
+      overlayDisplay.finish();
+      mainDisplay.finish();
    }
    
    public void setCurrentCanvas(SubCanvas canvas)
@@ -381,7 +384,7 @@ public class CompositeCanvas
       }
    }
    
-   private SubCanvas getCurrentCanvas()
+   public SubCanvas getCurrentCanvas()
    {
       return this.curCanvas;
    }

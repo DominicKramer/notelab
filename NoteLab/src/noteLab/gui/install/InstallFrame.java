@@ -29,6 +29,8 @@ import java.awt.GridLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.install.tile.WelcomeInstallTile;
@@ -69,6 +71,31 @@ public class InstallFrame extends SequenceFrame
    
    public static void main(String[] args)
    {
+      try
+      {
+         // Search for the look and feel with the name Nimbus instead of 
+         // setting the look and feel by instantiating an object representing 
+         // the Nimbus look and feel.  This is done because the full 
+         // classname of the Nimbus look and feel might change from one 
+         // version of Java to the next.  Hence if this occurs and an object 
+         // of the Nimbus look and feel is used below, this class won't 
+         // compile.  However, the code below avoids this problem.
+         LookAndFeelInfo[] lafArr = UIManager.getInstalledLookAndFeels();
+         for (LookAndFeelInfo info : lafArr)
+         {
+            if (info.getName().toLowerCase().contains("nimbus"))
+            {
+               UIManager.setLookAndFeel(info.getClassName());
+               break;
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         System.err.println("The Nimbus look and feel could not be loaded.  " +
+         		             "The default look and feel will be used instead.");
+      }
+      
       InstallFrame frame = new InstallFrame();
       frame.pack();
       frame.setVisible(true);

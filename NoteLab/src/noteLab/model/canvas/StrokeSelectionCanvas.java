@@ -158,6 +158,12 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
    }
    
    @Override
+   public boolean getRenderBinder()
+   {
+      return true;
+   }
+   
+   @Override
    public void pathStartedImpl(Path path, MouseButton button, boolean newPage)
    {
    }
@@ -505,7 +511,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       return this.selector;
    }
 
-   public void renderInto(Renderer2D mG2d)
+   public void renderInto(Renderer2D overlayDisplay, Renderer2D mG2d)
    {
       Mode curMode = this.toolBar.getCurrentMode();
       if (curMode == Mode.Box_Selection || curMode == Mode.Box_Unselection)

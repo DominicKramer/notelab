@@ -31,9 +31,12 @@ import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
@@ -46,8 +49,13 @@ import noteLab.util.settings.DebugSettings;
 
 public class MainPanel 
                 extends JPanel implements 
-                                  RepaintListener, AdjustmentListener
+                                  RepaintListener, 
+                                  AdjustmentListener, 
+                                  MouseWheelListener
 {
+   private static final int WHEEL_SCROLL_INCREMENT = 200;
+   private static final int BUTTON_SCROLL_INCREMENT = 75;
+   
    private CompositeCanvas canvas;
    private JComponent paintPanel;
    private JScrollPane scrollPane;
@@ -61,6 +69,28 @@ public class MainPanel
       this.canvas.addRepaintListener(this);
       this.canvas.syncCursor();
       
+      FlowLayout centerLayout = new FlowLayout(FlowLayout.CENTER, 0, 0);
+      JPanel centerPanel = new JPanel(centerLayout);
+      
+      this.scrollPane = new JScrollPane(centerPanel);
+      this.scrollPane.setWheelScrollingEnabled(false);
+      this.scrollPane.addMouseWheelListener(this);
+      this.scrollPane.getVerticalScrollBar().addAdjustmentListener(this);
+      this.scrollPane.getHorizontalScrollBar().addAdjustmentListener(this);
+      // The scroll mode must be BLIT_SCROLL_MODE and not 
+      // BACKINGSTORE_SCROLL_MODE.  This second mode causes 
+      // rendering artifacts.
+      this.scrollPane.getViewport().
+                         setScrollMode(JViewport.BLIT_SCROLL_MODE);
+      this.scrollPane.getVerticalScrollBar().
+                         setUnitIncrement(BUTTON_SCROLL_INCREMENT);
+      this.scrollPane.
+         setHorizontalScrollBarPolicy(
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+      this.scrollPane.
+         setVerticalScrollBarPolicy(
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+      
       this.paintPanel = new SwingDrawingBoard(this.canvas, this);
       updatePreferredSize();
       
@@ -68,20 +98,7 @@ public class MainPanel
       this.paintPanel.addMouseListener(inputListener);
       this.paintPanel.addMouseMotionListener(inputListener);
       
-      JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
       centerPanel.add(this.paintPanel);
-      
-      this.scrollPane = new JScrollPane(centerPanel);
-      this.scrollPane.getVerticalScrollBar().addAdjustmentListener(this);
-      this.scrollPane.getHorizontalScrollBar().addAdjustmentListener(this);
-      this.scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
-      this.scrollPane.setWheelScrollingEnabled(true);
-      this.scrollPane.
-         setHorizontalScrollBarPolicy(
-               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-      this.scrollPane.
-         setVerticalScrollBarPolicy(
-               ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
       
       setLayout(new GridLayout(1, 1));
       add(this.scrollPane);
@@ -192,5 +209,18 @@ public class MainPanel
       
       if (!e.getValueIsAdjusting())
          repaint();
+   }
+
+   public void mouseWheelMoved(MouseWheelEvent e)
+   {
+      if (e == null)
+         throw new NullPointerException();
+      
+      int clickCount = e.getWheelRotation();
+      JScrollBar scrollBar = this.scrollPane.getVerticalScrollBar();
+      scrollBar.setValueIsAdjusting(true);
+      scrollBar.setValue(scrollBar.getValue()+
+                            clickCount*WHEEL_SCROLL_INCREMENT);
+      scrollBar.setValueIsAdjusting(false);
    }
 }

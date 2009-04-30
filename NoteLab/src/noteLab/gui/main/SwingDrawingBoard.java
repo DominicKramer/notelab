@@ -29,20 +29,31 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Toolkit;
-import java.awt.geom.Rectangle2D;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JComponent;
-import javax.swing.Scrollable;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import noteLab.model.canvas.CompositeCanvas;
+import noteLab.model.canvas.StrokeCanvas;
+import noteLab.util.mod.ModListener;
+import noteLab.util.mod.ModType;
+import noteLab.util.render.EmptyRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.render.SwingRenderer2D.RenderMode;
 
-public class SwingDrawingBoard extends JComponent implements Scrollable
+public class SwingDrawingBoard 
+                extends JComponent 
+                           implements ComponentListener, 
+                                      ChangeListener, 
+                                      ModListener
 {
-   private static final int SCROLL_STEP = 20;
+   private static final EmptyRenderer2D EMPTY_RENDERER = new EmptyRenderer2D();
    
    private static final int SCREEN_WIDTH;
    private static final int SCREEN_HEIGHT;
@@ -55,8 +66,13 @@ public class SwingDrawingBoard extends JComponent implements Scrollable
    
    private CompositeCanvas canvas;
    private MainPanel mainPanel;
-   private SwingRenderer2D renderer;
+   
+   private SwingRenderer2D imageRenderer;
+   private SwingRenderer2D screenRenderer;
+   
    private BufferedImage drawingboard;
+   
+   private boolean isImageValid;
    
    public SwingDrawingBoard(CompositeCanvas canvas, MainPanel mainPanel)
    {
@@ -66,12 +82,19 @@ public class SwingDrawingBoard extends JComponent implements Scrollable
       this.canvas = canvas;
       this.canvas.setDisplayPanel(this);
       this.mainPanel = mainPanel;
-      this.renderer = new SwingRenderer2D();
-      
+      this.imageRenderer = new SwingRenderer2D();
+      this.screenRenderer = new SwingRenderer2D();
       
       this.drawingboard = new BufferedImage(SCREEN_WIDTH, 
                                             SCREEN_HEIGHT, 
                                             BufferedImage.TYPE_INT_ARGB);
+      
+      this.isImageValid = false;
+      
+      // Add listeners
+      this.canvas.addModListener(this);
+      addComponentListener(this);
+      this.mainPanel.getViewport().addChangeListener(this);
       
       //setting this to true means that this panel agrees to 
       //paint its entire area.  By setting this value to true, 
@@ -86,6 +109,7 @@ public class SwingDrawingBoard extends JComponent implements Scrollable
       clear();
    }
    
+   @Override
    public void paintComponent(Graphics g)
    {
       super.paintComponent(g);
@@ -108,29 +132,61 @@ public class SwingDrawingBoard extends JComponent implements Scrollable
       
       if (!isScrolling)
       {
-         Graphics2D g2d = this.drawingboard.createGraphics();
+         // Before the Graphics object is modified, configure the 
+         // screenRenderer to use a copy of it.  This renderer will 
+         // be used later
+         this.screenRenderer.setSwingGraphics((Graphics2D)g.create(), mode);
+         this.screenRenderer.setScrolling(isScrolling);
          
+         // Get the current view rectangle
          Rectangle viewRect = this.mainPanel.getViewport().getViewRect();
-         g2d.translate(-viewRect.x, -viewRect.y);
-         g2d.setClip(g.getClip());
          
-         this.renderer.setSwingGraphics(g2d, mode);
-         canvas.renderInto(this.renderer);
-         g2d.finalize();
+         // Get the current clip
+         Shape clip = g.getClip();
          
+         // Configure the drawing board
+         Graphics2D imageG2d = this.drawingboard.createGraphics();
+         imageG2d.translate(-viewRect.x, -viewRect.y);
+         imageG2d.setClip(clip);
+         this.imageRenderer.setSwingGraphics(imageG2d, mode);
+         this.imageRenderer.setScrolling(false);
+         
+         // Render the canvas ignoring the overlay
+         this.canvas.renderInto(EMPTY_RENDERER, 
+                                this.imageRenderer, 
+                                this.isImageValid);
+         // Since the image has just been rendered, it is now 
+         // consistent with the current state of the canvas
+         this.isImageValid = true;
+         imageG2d.finalize();
+         
+         // Translate to the top left corner of the view rectangle
          g.translate(viewRect.x, viewRect.y);
-         g.drawImage(this.drawingboard, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+         
+         // Paint the canvas on the screen
+         g.drawImage(this.drawingboard, 0, 0, 
+                     SCREEN_WIDTH, SCREEN_HEIGHT, null);
+         
+         // Now render the overlay using the current screen's renderer 
+         // (which was configured above) ignoring the main canvas
+         this.canvas.renderInto(this.screenRenderer, 
+                                EMPTY_RENDERER, 
+                                true);
       }
       else
       {
-         this.renderer.setSwingGraphics((Graphics2D)g, mode);
-         canvas.renderInto(this.renderer);
+         // Configure the renderer for the screen
+         this.screenRenderer.setSwingGraphics((Graphics2D)g, mode);
+         this.screenRenderer.setScrolling(isScrolling);
+         this.canvas.renderInto(this.screenRenderer, 
+                                this.screenRenderer, 
+                                false);
       }
       
       revalidate();
    }
    
-   public void clear()
+   private void clear()
    {
       if (this.drawingboard == null)
          return;
@@ -144,41 +200,11 @@ public class SwingDrawingBoard extends JComponent implements Scrollable
       g2d.finalize();
    }
    
-   public Dimension getPreferredScrollableViewportSize()
-   {
-      Rectangle2D bounds = canvas.getPreferredSize();
-      return new Dimension(1+(int)bounds.getWidth(), 
-                           1+(int)bounds.getHeight());
-   }
-
-   public int getScrollableBlockIncrement(Rectangle visibleRect, 
-                                          int orientation, 
-                                          int direction)
-   {
-      return SCROLL_STEP;
-   }
-
-   public boolean getScrollableTracksViewportHeight()
-   {
-      return false;
-   }
-
-   public boolean getScrollableTracksViewportWidth()
-   {
-      return false;
-   }
-
-   public int getScrollableUnitIncrement(Rectangle visibleRect, 
-                                         int orientation, 
-                                         int direction)
-   {
-      return SCROLL_STEP;
-   }
-   
    @Override
    public void repaint()
    {
       clear();
+      this.isImageValid = false;
       super.repaint();
    }
    
@@ -194,5 +220,51 @@ public class SwingDrawingBoard extends JComponent implements Scrollable
    {
       //Indicates no coalescing has done
       return null;
+   }
+
+   public void componentHidden(ComponentEvent e)
+   {
+   }
+
+   public void componentMoved(ComponentEvent e)
+   {
+   }
+
+   public void componentResized(ComponentEvent e)
+   {
+      this.isImageValid = false;
+   }
+
+   public void componentShown(ComponentEvent e)
+   {
+   }
+   
+   public void stateChanged(ChangeEvent e)
+   {
+      this.isImageValid = false;
+   }
+   
+   public void modOccured(Object source, ModType type)
+   {
+      if (source == null || type == null)
+         throw new NullPointerException();
+      
+      // True if the modification was from the CompositeCanvas 
+      // and wasn't a result of transforming the canvas
+      boolean otherFromCompCanvas = 
+                 (source instanceof CompositeCanvas) && 
+                    (type.equals(ModType.Other));
+      
+      // True if the current SubCanvas is the StrokeCanvas
+      boolean strokeCanvasCurrent = 
+                 (this.canvas.getCurrentCanvas() instanceof StrokeCanvas);
+      
+      // If the current SubCanvas is a StrokeCanvas, and the 
+      // modification wasn't caused by a transformation, ignore 
+      // the change since the StrokeCanvas is only modifying the 
+      // overlay.  Otherwise, the drawing board is invalid and needs 
+      // to be re-rendered.
+      if ( !(otherFromCompCanvas && strokeCanvasCurrent) )
+         this.isImageValid = false;
    }
 }
