@@ -1,0 +1,4 @@
+Authors:  Bruno Lowagie and Paulo Soares
+Homepage:  http://www.lowagie.com/iText/
+Licenses:  MPL and LGPL
+

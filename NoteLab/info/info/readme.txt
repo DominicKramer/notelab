@@ -7,7 +7,7 @@ http://www.gnu.org.
 
 The driving concept behind open-source software is the concept of collaboration.  
 That is, with open source software, especially software licensed under the GNU GPL, 
-it is not only legal, but encouraged, to encorporate existing open-source software 
+it is not only legal, but encouraged, to incorporate existing open-source software 
 projects to new open-source projects to add to the open-source software base.  This 
 helps the development of new software, and also helps improve existing software.
 
@@ -17,7 +17,7 @@ prior to NoteLab version 0.2, served as the main icon set for NoteLab.  Most of
 the icons used in NoteLab were created by Silvestre.  However, I did occasionally 
 modify some of his icons so that they were customized for NoteLab.  For more 
 information about the Dropline Neu, icon set, see Silvestre's website at 
-http://www.silvestre.com.ar.   The Dropline Neu icon set used in NoteLab is 
+http://www.silvestre.com.ar.  The Dropline Neu icon set used in NoteLab is 
 licensed under the GNU GPL.
 
 Also, as of NoteLab version 0.2, the Tango Desktop Project's Tango icon set formed 
@@ -26,7 +26,7 @@ the Tango icon set, it would have been impossible for me to provide such a nice 
 for NoteLab.  The Tango Desktop Project's homepage is http://tango.freedesktop.org.
 
 Next I would like to note that although I designed, developed, and wrote the entire 
-NoteLab application myself I would like to thank several open-source projects.  That 
+NoteLab application myself, I would like to thank several open-source projects.  That 
 is, although I did not use any code from other open-source projects verbatim, I was 
 greatly influenced by a few.  Without these projects NoteLab would not be what it 
 is.  Thus, I would like to acknowledge them here.
@@ -34,12 +34,19 @@ is.  Thus, I would like to acknowledge them here.
 For starters I would like to thank David K. Levine and Gunnar Teege for their note-taking 
 application Jarnal.  Many of the concepts seen in NoteLab were inspired by Jarnal.  In 
 addition, the initial builds of NoteLab used the icon set used in Jarnal.  Next, in the 
-same way Jarnal inspired Notelab, Chris Debenham's Gournal and Denis Auroux's Xournal also 
+same way Jarnal inspired NoteLab, Chris Debenham's Gournal and Denis Auroux's Xournal also 
 inspired the development of NoteLab.  
+
+Also, as of version 0.2.1, NoteLab included the ability to annotate and generate PDF files.  
+I would like to thank the iText team (http://www.lowagie.com/iText) for their iText library 
+used in NoteLab to generate PDF documents.  I would also like to thank the PDF-Renderer 
+team (https://pdf-renderer.dev.java.net/) for their PDF rendering library used for PDF 
+annotation in NoteLab.  The iText library is licensed under both the MPL and the LGPL.  
+The PDF-Renderer library is licensed under the LGPL.
 
 Last I would like to thank the ISAW development team.  I was going to use the ObjectState 
 concept from the ISAW project.  However, I found I didn't need to.  Nevertheless, an 
-implementation of the ObjectState concept is encorproated into an unused section of the 
+implementation of the ObjectState concept is incorporated into an unused section of the 
 NoteLab code.  Furthermore, I would like to thank the ISAW team as it gave me much insight 
 into software engineering while I was on the team during my undergraduate career.
 
@@ -51,6 +58,8 @@ http://www.pns.anl.gov/computing/isaw/ respectively.
 The basic concept of these credits is that the collaborative nature of open-source 
 community has allowed myself to develop NoteLab as a very nice application.  As such, I 
 strongly encourage everyone to contact me with any questions or comments regarding NoteLab.  
-Also you are more than welcome to help develop NoteLab.
+Also you are more than welcome to help develop NoteLab.  I can be contacted at 
+kramerd@users.sourceforge.net.
 
-You can contact me at kramerd@iastate.edu.
+Dominic Kramer
+NoteLab Project Administrator
