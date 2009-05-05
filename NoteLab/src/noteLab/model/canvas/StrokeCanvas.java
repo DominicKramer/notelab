@@ -94,10 +94,10 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
    private Pen pen;
    private PenToolBar toolBar;
    
-//   private Object curStrokeLock;
+   private Object curStrokeLock;
    private Stroke curStroke;
    
-//   private final Object queueLock;
+   private final Object queueLock;
    private Queue<Stroke> strokeQueue;
    
    public StrokeCanvas(CompositeCanvas canvas)
@@ -106,10 +106,10 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       
       this.pen = new Pen(canvas.getZoomLevel());
       
-//      this.curStrokeLock = new Object();
+      this.curStrokeLock = new Object();
       this.curStroke = null;
       
-//      this.queueLock = new Object();
+      this.queueLock = new Object();
       this.strokeQueue = new LinkedList<Stroke>();
       
       this.toolBar = new PenToolBar();
@@ -156,16 +156,19 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                      new DeleteStrokeAction(canvas, this.curStroke, page);
          canvas.getUndoRedoManager().actionDone(actionDone, undoAction);
          
-         final Stroke rawCurStroke = this.curStroke;
-//         synchronized (this.curStrokeLock)
-//         {
+         final Stroke[] curStrokeArr = new Stroke[1];
+         synchronized (this.curStrokeLock)
+         {
+            curStrokeArr[0] = this.curStroke;
             this.curStroke = null;
-//         }
+         }
          
          new Thread(new Runnable()
          {
             public void run()
             {
+               Stroke rawCurStroke = curStrokeArr[0];
+               
                RectangleUnioner unioner = new RectangleUnioner();
                unioner.union(rawCurStroke.getBounds2D());
                
@@ -173,12 +176,14 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                path.simplify(rawCurStroke.getPen().getWidth());
                path.smooth(SettingsUtilities.getSmoothFactor());
                
-//               synchronized (queueLock)
-//               {
+               synchronized (queueLock)
+               {
                   strokeQueue.add(rawCurStroke);
-//               }
-               
+               }
                unioner.union(rawCurStroke.getBounds2D());
+               
+               //for (Stroke stroke : strokeQueue)
+               //   unioner.union(stroke.getBounds2D());
                
                Rectangle2D bounds = unioner.getUnion();
                
@@ -206,8 +211,11 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       {
          if (this.curStroke == null)
          {
-            this.curStroke = new Stroke(this.pen.getCopy(), path);
-            binder.getCurrentPage().addStroke(this.curStroke);
+            synchronized (this.curStrokeLock)
+            {
+               this.curStroke = new Stroke(this.pen.getCopy(), path);
+               binder.getCurrentPage().addStroke(this.curStroke);
+            }
          }
          
          int numItems = path.getNumItems();
@@ -298,22 +306,29 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          Stroke stroke = null;
          do
          {
-//            synchronized(queueLock)
-//            {
-               stroke = this.strokeQueue.poll();
-//            }
+            synchronized(queueLock)
+            {
+               stroke = this.strokeQueue.peek();
+            }
             
             if (stroke != null)
+            {
                stroke.renderInto(mainDisplay);
                
+               synchronized(queueLock)
+               {
+                  this.strokeQueue.remove(stroke);
+               }
+            }
+            
          } while (stroke != null);
       }
       
       Stroke currentStroke = null;
-//      synchronized (this.curStrokeLock)
-//      {
+      synchronized (this.curStrokeLock)
+      {
          currentStroke = this.curStroke;
-//      }
+      }
       
       if (currentStroke != null)
          currentStroke.renderInto(overlayDisplay);
