@@ -861,7 +861,6 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                   dirtyUnioner.union(curStroke.getBounds2D());
                   
                   path = curStroke.getPath();
-                  path.simplify(curStroke.getPen().getWidth());
                   path.smooth(smoothFactor);
                   maxWidth = Math.max(maxWidth, curStroke.getPen().getWidth());
                   
