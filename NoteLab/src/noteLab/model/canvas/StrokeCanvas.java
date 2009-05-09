@@ -173,7 +173,6 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                unioner.union(rawCurStroke.getBounds2D());
                
                Path path = rawCurStroke.getPath();
-               path.simplify(rawCurStroke.getPen().getWidth());
                path.smooth(SettingsUtilities.getSmoothFactor());
                
                synchronized (queueLock)
