@@ -242,19 +242,21 @@ public class Stroke
       if (this.isSelected)
          penWidth = Renderer2D.getStrokeWidth(penWidth, true);
       
+      // Half of the pen's width
+      float penWidthHalf = penWidth/2;
+      
       double x = bounds.getX();
       double y = bounds.getY();
       double width = bounds.getWidth();
       double height = bounds.getHeight();
       
-      // shift the box left and up half of the pen's width
-      // also add delta to the width and height to put the 
-      // edge of the rectangle back to the position it was at before 
-      // the box was shifted.  Then add delta to the width and 
-      // height again to account for the fact that the line has a width, 
-      // specifically 2*delta.
-      bounds.setRect(x-penWidth, y-penWidth, 
-                     width+2*penWidth, height+2*penWidth);
+      // Shift the box left and up half of the pen's width 
+      // and increase the width and height by the pen's width.  
+      // Also, shift the box up and to the left one additional 
+      // pixel and increase its width and height by 2 pixels to 
+      // account for antialiasing.
+      bounds.setRect(x-penWidthHalf-1, y-penWidthHalf-1, 
+                     width+penWidth+2, height+penWidth+2);
       
       return bounds;
    }
