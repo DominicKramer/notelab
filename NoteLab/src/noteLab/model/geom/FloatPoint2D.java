@@ -25,7 +25,6 @@
 package noteLab.model.geom;
 
 import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
@@ -51,14 +50,8 @@ public class FloatPoint2D implements Transformable,
 {
    private static final int LINE_OFFSET_DELTA = 2;
    
-   private Point2D.Float initPoint;
-   private Point2D.Float srcPoint;
-   
-   /** The amount this point was scaled in the x direction. */
-   private float xScaleLevel;
-   
-   /** The amount this point was scaled in the y direction. */
-   private float yScaleLevel;
+   private ScalableFloat xValue;
+   private ScalableFloat yValue;
    
    /**
     * The vector of listeners that are notified when this point 
@@ -68,18 +61,9 @@ public class FloatPoint2D implements Transformable,
    
    private FloatPoint2D(FloatPoint2D point)
    {
-      if (point == null)
-         throw new NullPointerException();
+      this(point.getX(), point.getY(), 
+           point.getXScaleLevel(), point.getYScaleLevel());
       
-      this.initPoint = new Point2D.Float(point.initPoint.x, 
-                                         point.initPoint.y);
-      this.srcPoint  = new Point2D.Float(point.srcPoint.x, 
-                                         point.srcPoint.y);
-      
-      this.xScaleLevel = point.xScaleLevel;
-      this.yScaleLevel = point.yScaleLevel;
-      
-      this.modListenerVec = new Vector<ModListener>();
       for (ModListener listener : point.modListenerVec)
          this.modListenerVec.add(listener);
    }
@@ -99,11 +83,8 @@ public class FloatPoint2D implements Transformable,
    public FloatPoint2D(float x, float y, 
                        float xScaleLevel, float yScaleLevel)
    {
-      this.initPoint = new Point2D.Float(x/xScaleLevel, y/yScaleLevel);
-      this.srcPoint = new Point2D.Float(x, y);
-      
-      this.xScaleLevel = xScaleLevel;
-      this.yScaleLevel = yScaleLevel;
+      this.xValue = new ScalableFloat(x, xScaleLevel);
+      this.yValue = new ScalableFloat(y, yScaleLevel);
       
       this.modListenerVec = new Vector<ModListener>();
    }
@@ -126,12 +107,12 @@ public class FloatPoint2D implements Transformable,
    
    public float getXScaleLevel()
    {
-      return this.xScaleLevel;
+      return this.xValue.getScaleLevel();
    }
    
    public float getYScaleLevel()
    {
-      return this.yScaleLevel;
+      return this.yValue.getScaleLevel();
    }
    
    /**
@@ -146,12 +127,8 @@ public class FloatPoint2D implements Transformable,
     */
    public void scaleBy(float x, float y)
    {
-      this.xScaleLevel *= x;
-      this.yScaleLevel *= y;
-      
-      this.srcPoint.x = this.initPoint.x * this.xScaleLevel;
-      this.srcPoint.y = this.initPoint.y * this.yScaleLevel;
-      
+      this.xValue.scaleBy(x);
+      this.yValue.scaleBy(y);
       notifyModListeners(ModType.ScaleBy);
    }
    
@@ -164,31 +141,16 @@ public class FloatPoint2D implements Transformable,
     */
    public void scaleTo(float x, float y)
    {
-      this.xScaleLevel = x;
-      this.yScaleLevel = y;
-      
-      this.srcPoint.x = this.initPoint.x * x;
-      this.srcPoint.y = this.initPoint.y * y;
-      
+      this.xValue.scaleTo(x);
+      this.yValue.scaleTo(y);
       notifyModListeners(ModType.ScaleTo);
    }
    
    public void resizeTo(float x, float y)
    {
-      float oldXScale = this.xScaleLevel;
-      float oldYScale = this.yScaleLevel;
-      scaleTo(1, 1);
-      
-      this.initPoint.x *= x;
-      this.initPoint.y *= y;
-      
-      this.srcPoint.x = this.initPoint.x;
-      this.srcPoint.y = this.initPoint.y;
-      
-      this.xScaleLevel = 1;
-      this.yScaleLevel = 1;
-      
-      scaleTo(oldXScale, oldYScale);
+      this.xValue.resizeTo(x);
+      this.yValue.resizeTo(y);
+      notifyModListeners(ModType.ScaleTo);
    }
    
    /**
@@ -199,12 +161,8 @@ public class FloatPoint2D implements Transformable,
     */
    public void translateBy(float x, float y)
    {
-      this.srcPoint.x += x;
-      this.srcPoint.y += y;
-      
-      this.initPoint.x = this.srcPoint.x/this.xScaleLevel;
-      this.initPoint.y = this.srcPoint.y/this.yScaleLevel;
-      
+      this.xValue.translateBy(x);
+      this.yValue.translateBy(y);
       notifyModListeners(ModType.TranslateBy);
    }
    
@@ -216,12 +174,8 @@ public class FloatPoint2D implements Transformable,
     */
    public void translateTo(float x, float y)
    {
-      this.initPoint.x = x;
-      this.initPoint.y = y;
-      
-      this.srcPoint.x = x;
-      this.srcPoint.y = y;
-      
+      this.xValue.translateTo(x);
+      this.yValue.translateTo(y);
       notifyModListeners(ModType.TranslateTo);
    }
    
@@ -244,7 +198,7 @@ public class FloatPoint2D implements Transformable,
     */
    public Rectangle2D.Float getBounds2D()
    {
-      return new Rectangle2D.Float(this.srcPoint.x, this.srcPoint.y, 0, 0);
+      return new Rectangle2D.Float(getX(), getY(), 0, 0);
    }
    
    /**
@@ -371,7 +325,7 @@ public class FloatPoint2D implements Transformable,
    
    public float getX()
    {
-      return this.srcPoint.x;
+      return this.xValue.getValue();
    }
    
    /*
@@ -384,7 +338,7 @@ public class FloatPoint2D implements Transformable,
    
    public float getY()
    {
-      return this.srcPoint.y;
+      return this.yValue.getValue();
    }
    
    @Override
@@ -405,8 +359,8 @@ public class FloatPoint2D implements Transformable,
       
       FloatPoint2D pt2 = (FloatPoint2D)ob;
       
-      return (this.srcPoint.x == pt2.srcPoint.x) && 
-             (this.srcPoint.y == pt2.srcPoint.y);
+      return this.xValue.equals(pt2.xValue) && 
+             this.yValue.equals(pt2.yValue);
    }
    
    /**
