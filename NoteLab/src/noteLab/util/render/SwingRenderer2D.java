@@ -34,6 +34,7 @@ import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 
@@ -172,6 +173,8 @@ public class SwingRenderer2D extends Renderer2D implements ImageObserver
          throw new NullPointerException();
       
       int numPts = path.getNumItems();
+      if (numPts < 1)
+         return;
       
       if (numPts == 1)
       {
@@ -180,15 +183,19 @@ public class SwingRenderer2D extends Renderer2D implements ImageObserver
          return;
       }
       
-      FloatPoint2D pt1;
-      FloatPoint2D pt2;
-      for (int i=0; i<numPts-1; i++)
+      Path2D.Float floatPath = new Path2D.Float();
+      
+      FloatPoint2D pt = path.getItemAt(0);
+      floatPath.moveTo(pt.getX(), pt.getY());
+      
+      for (int i=1; i<numPts; i++)
       {
-         pt1 = path.getItemAt(i);
-         pt2 = path.getItemAt(i+1);
-         if (pt1 != null && pt2 != null)
-            drawLine(pt1, pt2);
+         pt = path.getItemAt(i);
+         if (pt != null)
+            floatPath.lineTo(pt.getX(), pt.getY());
       }
+      
+      this.g2d.draw(floatPath);
    }
    
    @Override
