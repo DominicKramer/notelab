@@ -34,6 +34,7 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.util.Vector;
 
+import noteLab.model.geom.ScalableFloat;
 import noteLab.util.InfoCenter;
 import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
@@ -58,13 +59,7 @@ public class Pen implements Tool
    /** The default color of the line drawn by this tool. */
    private static final Color DEFAULT_COLOR = Color.BLACK;
    
-   /** This pen's scale level. */
-   private float scaleLevel;
-   
-   private float initWidth;
-   
-   /** The width of the line drawn by this tool. */
-   private float width;
+   private ScalableFloat width;
    
    /** The color of the line drawn by this tool. */
    private Color color;
@@ -77,9 +72,7 @@ public class Pen implements Tool
    
    private Pen(Pen pen)
    {
-      this.scaleLevel = pen.scaleLevel;
-      this.initWidth = pen.initWidth;
-      this.width = pen.width;
+      this.width = pen.width.getCopy();
       
       int red = pen.color.getRed();
       int green = pen.color.getGreen();
@@ -119,12 +112,10 @@ public class Pen implements Tool
     */
    public Pen(float width, Color color, float scaleLevel)
    {
-      this.initWidth = width/scaleLevel;
-      this.width = width;
+      this.width = new ScalableFloat(width, scaleLevel);
       this.color = color;
       this.cursor = getCursor();
       
-      this.scaleLevel = scaleLevel;
       this.modListenerVec = new Vector<ModListener>();
    }
    
@@ -137,7 +128,7 @@ public class Pen implements Tool
     */
    public float getScaleLevel()
    {
-      return this.scaleLevel;
+      return this.width.getScaleLevel();
    }
    
    /**
@@ -173,7 +164,7 @@ public class Pen implements Tool
     */
    public float getWidth()
    {
-      return this.width;
+      return this.width.getValue();
    }
    
    /**
@@ -186,9 +177,7 @@ public class Pen implements Tool
       if (width <= 0)
          width = 1;
       
-      float newWidth = width/this.scaleLevel;
-      this.initWidth = newWidth;
-      this.width = newWidth;
+      this.width.setValue(width, getScaleLevel());
       invalidateCursor();
       notifyModListeners(ModType.Other);
    }
@@ -198,8 +187,7 @@ public class Pen implements Tool
       if (width <= 0)
          width = 1;
       
-      this.initWidth = width;
-      this.width = width;
+      this.width.setValue(width, 1);
       invalidateCursor();
       notifyModListeners(ModType.Other);
    }
@@ -221,7 +209,7 @@ public class Pen implements Tool
    {
       Toolkit toolkit = Toolkit.getDefaultToolkit();
       
-      int size = (int)Math.min(Math.max(this.width, MIN_CURSOR_WIDTH), 
+      int size = (int)Math.min(Math.max(getWidth(), MIN_CURSOR_WIDTH), 
                                MAX_CURSOR_WIDTH);
       Dimension bestSize = toolkit.getBestCursorSize(size, size);
       
@@ -283,7 +271,7 @@ public class Pen implements Tool
       if (renderer == null)
          throw new NullPointerException();
       
-      renderer.setLineWidth(this.width);
+      renderer.setLineWidth(getWidth());
       renderer.setColor(this.color);
    }
    
@@ -297,10 +285,8 @@ public class Pen implements Tool
       if (val < 0)
          val = -val;
       
-      this.scaleLevel *= val;
-      this.width = this.initWidth*this.scaleLevel;
+      this.width.scaleBy(val);
       invalidateCursor();
-      
       notifyModListeners(ModType.ScaleBy);
    }
    
@@ -309,15 +295,9 @@ public class Pen implements Tool
       if (val < 0)
          val = -val;
       
-      float oldScale = this.scaleLevel;
-      scaleTo(1);
-      
-      this.initWidth *= val;
-      this.width = this.initWidth;
-      this.scaleLevel = 1;
+      this.width.resizeTo(val);
       invalidateCursor();
-      
-      scaleTo(oldScale);
+      notifyModListeners(ModType.ScaleBy);
    }
    
    /**
@@ -331,10 +311,8 @@ public class Pen implements Tool
       if (val < 0)
          val = -val;
       
-      this.scaleLevel = val;
-      this.width = this.initWidth*val;
+      this.width.scaleTo(val);
       invalidateCursor();
-      
       notifyModListeners(ModType.ScaleTo);
    }
    
