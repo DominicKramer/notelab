@@ -28,41 +28,27 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.ImageObserver;
 
 import noteLab.model.Path;
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.util.geom.Bounded;
 import noteLab.util.settings.DebugSettings;
 
-public class SwingRenderer2D extends Renderer2D
+public class SwingRenderer2D extends Renderer2D implements ImageObserver
 {
    public enum RenderMode
    {
       Appearance, 
       Performance
    };
-   
-   // After comparing the quality of the graphics constructed 
-   // using SCALE_FACTOR values of 1, 10, 100, and 1000, I have 
-   // found that the difference between 1 and 10 is substantial.  
-   // The difference between 10 and 100 is only noticeable if the 
-   // user has zoomed out many times.  Finally, the difference 
-   // between 100 and 1000 is hardly ever noticeable.  Thus 
-   // a value greater than 1000 probably isn't necessary.
-   // 
-   // If too large of value is used, errors are produced which 
-   // culminate from the computer not having enough precision 
-   // to differentiate close numbers.
-   // 
-   // Thus, 1000 isn't a very large number and thus shouldn't cause 
-   // any such errors.  On the other hand, it should never cause 
-   // a noticeable degradation in graphics quality.
-   private static final float SCALE_FACTOR = 1000;
    
    private Graphics2D g2d;
    private float width;
@@ -80,7 +66,6 @@ public class SwingRenderer2D extends Renderer2D
          throw new NullPointerException();
       
       this.g2d = g2d;
-      this.g2d.scale(1.0/SCALE_FACTOR, 1.0/SCALE_FACTOR);
       setSelected(false);
       
       setRenderingHints(mode);
@@ -174,14 +159,14 @@ public class SwingRenderer2D extends Renderer2D
       width = Math.max(width+twoWidth,1);
       height = Math.max(height+twoWidth,1);
       
-      return this.g2d.hitClip((int)(x*SCALE_FACTOR), 
-                              (int)(y*SCALE_FACTOR), 
-                              (int)(width*SCALE_FACTOR), 
-                              (int)(height*SCALE_FACTOR));
+      return this.g2d.hitClip((int)x, 
+                              (int)y, 
+                              (int)width, 
+                              (int)height);
    }
    
    @Override
-   public void drawPath(final Path path)
+   public void drawPath(Path path)
    {
       if (path == null)
          throw new NullPointerException();
@@ -207,20 +192,15 @@ public class SwingRenderer2D extends Renderer2D
    }
    
    @Override
-   public void drawLine(final FloatPoint2D pt1, final FloatPoint2D pt2)
+   public void drawLine(FloatPoint2D pt1, FloatPoint2D pt2)
    {
       if (pt1 == null || pt2 == null)
          throw new NullPointerException();
       
       if (hitsClip(pt1, pt2))
       {
-         int pt1x = (int)(SCALE_FACTOR*pt1.getX());
-         int pt1y = (int)(SCALE_FACTOR*pt1.getY());
-         
-         int pt2x = (int)(SCALE_FACTOR*pt2.getX());
-         int pt2y = (int)(SCALE_FACTOR*pt2.getY());
-         
-         this.g2d.drawLine( pt1x, pt1y, pt2x, pt2y );
+         this.g2d.draw(new Line2D.Float(pt1.getX(), pt1.getY(), 
+                                        pt2.getX(), pt2.getY()));
       }
       
       if (DebugSettings.getSharedInstance().displayKnots())
@@ -232,33 +212,31 @@ public class SwingRenderer2D extends Renderer2D
    
    private void drawKnot(FloatPoint2D pt)
    {
-      int x = (int)(pt.getX()*SCALE_FACTOR);
-      int y = (int)(pt.getY()*SCALE_FACTOR);
+      float widthHalf = 2*getLineWidth();
+      float width = 2*widthHalf;
       
-      int width = (int)(4*getLineWidth()*SCALE_FACTOR);
-      int widthHalf = width/2;
-      
-      this.g2d.fillOval(x-widthHalf, 
-                        y-widthHalf, 
-                        width, 
-                        width);
+      this.g2d.draw(new Ellipse2D.Float(pt.getX()-widthHalf, 
+                                        pt.getY()-widthHalf, 
+                                        width, 
+                                        width));
    }
    
    @Override
-   public void drawRectangle(final float x, final float y, 
-                             final float width, final float height)
+   public void drawRectangle(float x, float y, 
+                             float width, float height)
    {
       if (hitsClip(x, y, width, height))
-         this.g2d.drawRect( (int)(SCALE_FACTOR*x), 
-                            (int)(SCALE_FACTOR*y), 
-                            (int)(SCALE_FACTOR*width), 
-                            (int)(SCALE_FACTOR*height) );
+         this.g2d.draw(new Rectangle2D.Float(x, y, width, height));
    }
    
    @Override
-   public void fillRectangle(final float x, final float y, 
-                             final float width, final float height)
+   public void fillRectangle(float x, float y, 
+                             float width, float height)
    {
+      if (hitsClip(x, y, width, height))
+         this.g2d.fill(new Rectangle2D.Float(x, y, width, height));
+      
+      /*
       if (!hitsClip(x, y, width, height))
          return;
       
@@ -282,6 +260,7 @@ public class SwingRenderer2D extends Renderer2D
          if (!rect.isEmpty())
             this.g2d.fillRect(rect.x, rect.y, rect.width, rect.height);
       }
+      */
    }
    
    @Override
@@ -293,7 +272,7 @@ public class SwingRenderer2D extends Renderer2D
          if (selected)
             this.g2d.setStroke(new SelectedStroke(this.width));
          else
-            this.g2d.setStroke(new BasicStroke(SCALE_FACTOR*this.width, 
+            this.g2d.setStroke(new BasicStroke(this.width, 
                                                BasicStroke.CAP_ROUND, 
                                                BasicStroke.JOIN_ROUND));
       }
@@ -332,7 +311,6 @@ public class SwingRenderer2D extends Renderer2D
    @Override
    public void finish()
    {
-      this.g2d.scale(SCALE_FACTOR, SCALE_FACTOR);
       this.g2d.dispose();
    }
    
@@ -341,7 +319,7 @@ public class SwingRenderer2D extends Renderer2D
       if (image == null)
          throw new NullPointerException();
       
-      this.g2d.drawImage(image, 0, 0, null);
+      this.g2d.drawImage(image, new AffineTransform(), this);
    }
    
    // The Renderer2D class doesn't specify a scale() method
@@ -354,7 +332,7 @@ public class SwingRenderer2D extends Renderer2D
    @Override
    public void translate(float x, float y)
    {
-      this.g2d.translate( (int)(SCALE_FACTOR*x), (int)(SCALE_FACTOR*y) );
+      this.g2d.translate(x, y);
    }
    
    @Override
@@ -364,10 +342,10 @@ public class SwingRenderer2D extends Renderer2D
          throw new NullPointerException();
       
       Rectangle2D bounds = bounded.getBounds2D();
-      int x = (int)(bounds.getMinX() * SCALE_FACTOR);
-      int y = (int)(bounds.getMinY() * SCALE_FACTOR);
-      int w = (int)(bounds.getWidth() * SCALE_FACTOR);
-      int h = (int)(bounds.getHeight() * SCALE_FACTOR);
+      int x = (int)bounds.getMinX();
+      int y = (int)bounds.getMinY();
+      int w = (int)bounds.getWidth();
+      int h = (int)bounds.getHeight();
       
       return this.g2d.hitClip(x, y, w, h);
    }
@@ -377,9 +355,7 @@ public class SwingRenderer2D extends Renderer2D
     */
    public Graphics2D createGraphics()
    {
-      Graphics2D newG2d = (Graphics2D)(this.g2d.create());
-      newG2d.scale(SCALE_FACTOR, SCALE_FACTOR);
-      return newG2d;
+      return (Graphics2D)(this.g2d.create());
    }
    
    private static class SelectedStroke implements Stroke
@@ -391,11 +367,11 @@ public class SwingRenderer2D extends Renderer2D
       {
          width *= 0.7f;
          
-         this.outerSelStroke = new BasicStroke(SCALE_FACTOR*getStrokeWidth(width, true), 
+         this.outerSelStroke = new BasicStroke(getStrokeWidth(width, true), 
                                                BasicStroke.CAP_ROUND, 
                                                BasicStroke.JOIN_ROUND);
          
-         this.innerSelStroke = new BasicStroke(SCALE_FACTOR*getStrokeWidth(width, false), 
+         this.innerSelStroke = new BasicStroke(getStrokeWidth(width, false), 
                                                BasicStroke.CAP_ROUND, 
                                                BasicStroke.JOIN_ROUND);
       }
@@ -434,5 +410,13 @@ public class SwingRenderer2D extends Renderer2D
          return this.innerSelStroke.
                     createStrokedShape(this.outerSelStroke.createStrokedShape(p));
       }
+   }
+
+   public boolean imageUpdate(Image img, int infoflags, int x, int y,
+                              int width, int height)
+   {
+      // This method should just return false to specify that no 
+      // further image loading information is needed.
+      return false;
    }
 }
