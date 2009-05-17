@@ -190,9 +190,8 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                float y = (float)bounds.getY()+page.getY();
                float width = (float)bounds.getWidth();
                float height = (float)bounds.getHeight();
-               float delta = rawCurStroke.getPen().getWidth();
                
-               doRepaint(x, y, width, height, delta);
+               doRepaint(x, y, width, height, 0);
             }
          }).start();
       }
@@ -220,11 +219,10 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          int numItems = path.getNumItems();
          if (numItems < 2)
          {
-            float delta = 1+this.pen.getWidth();
             FloatPoint2D pt = path.getFirst();
             Page page = binder.getCurrentPage();
             doRepaint(pt.getX()+page.getX(), 
-                      pt.getY()+page.getY(), 0, 0, delta);
+                      pt.getY()+page.getY(), 0, 0, 0);
             return;
          }
          
@@ -263,7 +261,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          y += page.getY();
       }
       
-      float delta = 1+this.pen.getWidth();
+      float delta = 1+this.pen.getWidth()*0.5f;
       doRepaint( x, y, width, height, delta );
    }
    
