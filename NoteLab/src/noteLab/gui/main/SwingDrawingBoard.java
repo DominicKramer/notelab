@@ -25,6 +25,7 @@
 package noteLab.gui.main;
 
 import java.awt.AWTEvent;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -46,6 +47,7 @@ import noteLab.util.mod.ModType;
 import noteLab.util.render.EmptyRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.render.SwingRenderer2D.RenderMode;
+import noteLab.util.settings.DebugSettings;
 
 public class SwingDrawingBoard 
                 extends JComponent 
@@ -181,6 +183,16 @@ public class SwingDrawingBoard
          this.canvas.renderInto(this.screenRenderer, 
                                 this.screenRenderer, 
                                 false);
+      }
+      
+      if (DebugSettings.getSharedInstance().displayUpdateBox())
+      {
+         Rectangle clip = g.getClipBounds();
+         if (clip != null)
+         {
+            g.setColor(Color.MAGENTA);
+            g.drawRect(clip.x, clip.y, clip.width-1, clip.height-1);
+         }
       }
       
       revalidate();
