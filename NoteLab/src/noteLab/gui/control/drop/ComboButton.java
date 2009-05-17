@@ -242,10 +242,9 @@ public abstract class ComboButton<V, S>
       super.paintComponent(g);
       
       Insets insets = getInsets();
-      Dimension size = getSize();
       
-      int rawWidth  = (int)(size.getWidth()-insets.left-insets.right);
-      int rawHeight = (int)(size.getHeight()-insets.top-insets.bottom);
+      int rawWidth  = getWidth()-insets.left-insets.right;
+      int rawHeight = getHeight()-insets.top-insets.bottom;
       int rawArrowWidth = this.arrowWidth - insets.right;
       
       g.translate(insets.left, insets.top);
