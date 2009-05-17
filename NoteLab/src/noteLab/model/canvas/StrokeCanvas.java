@@ -310,7 +310,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                stroke = this.strokeQueue.peek();
             }
             
-            if (stroke != null)
+            if (stroke != null && mainDisplay.isInClipRegion(stroke))
             {
                stroke.renderInto(mainDisplay);
                
@@ -329,7 +329,8 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          currentStroke = this.curStroke;
       }
       
-      if (currentStroke != null)
+      if (currentStroke != null && 
+            overlayDisplay.isInClipRegion(currentStroke))
          currentStroke.renderInto(overlayDisplay);
       
       mainDisplay.translate(-pageX, -pageY);
