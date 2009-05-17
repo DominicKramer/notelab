@@ -132,6 +132,7 @@ public class MainPanel
       invalidate();
    }
    
+   @Override
    public void repaint()
    {
       super.repaint();
