@@ -115,12 +115,12 @@ public class PrimitivePic implements ButtonPic
       if (realValue < 0)
          realValue = (int)(width*0.5f);
       
-      int xMid = width/2;
-      int x1 = xMid-realValue/2;
-      int x2 = xMid+realValue/2;
+      int xMid = (int)(width*0.5f);
+      int x1 = (int)(xMid-realValue*0.5f);
+      int x2 = (int)(xMid+realValue*0.5f);
       
-      int yMid = height/2;
-      int y1 = yMid-realValue/2;
+      int yMid = (int)(height*0.5f);
+      int y1 = (int)(yMid-realValue*0.5f);
       
       g.setColor(this.color);
       
