@@ -156,4 +156,28 @@ public class CutCopyPasteToolBar<E extends Object & CopyReady<E>>
       this.cutButton.setEnabled(canCopy);
       this.copyButton.setEnabled(canCopy);
    }
+   
+   public void setCutToolTipText(String text)
+   {
+      if (text == null)
+         throw new NullPointerException();
+      
+      this.cutButton.setToolTipText(text);
+   }
+   
+   public void setCopyToolTipText(String text)
+   {
+      if (text == null)
+         throw new NullPointerException();
+      
+      this.copyButton.setToolTipText(text);
+   }
+   
+   public void setPasteToolTipText(String text)
+   {
+      if (text == null)
+         throw new NullPointerException();
+      
+      this.pasteButton.setToolTipText(text);
+   }
 }

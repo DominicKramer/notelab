@@ -43,6 +43,7 @@ import javax.swing.JToolBar;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
+import noteLab.gui.Tooltips;
 import noteLab.gui.chooser.NoteLabFileChooser;
 import noteLab.gui.chooser.filter.ImageFileFilter;
 import noteLab.gui.chooser.filter.JarnalFileFilter;
@@ -93,26 +94,31 @@ public class FileToolBar
          new JButton(DefinedIcon.floppy.getIcon(BUTTON_SIZE));
       saveButton.addActionListener(this);
       saveButton.setActionCommand(SAVE);
+      saveButton.setToolTipText(Tooltips.SAVE);
       
       JButton newButton = 
          new JButton(DefinedIcon.page.getIcon(BUTTON_SIZE));
       newButton.addActionListener(this);
       newButton.setActionCommand(NEW);
+      newButton.setToolTipText(Tooltips.NEW);
       
       JButton openButton = 
          new JButton(DefinedIcon.directory.getIcon(BUTTON_SIZE));
       openButton.addActionListener(this);
       openButton.setActionCommand(OPEN);
+      openButton.setToolTipText(Tooltips.OPEN);
       
       JButton exportButton = 
          new JButton(DefinedIcon.image_page.getIcon(BUTTON_SIZE));
       exportButton.addActionListener(this);
       exportButton.setActionCommand(EXPORT);
+      exportButton.setToolTipText(Tooltips.EXPORT);
       
       JButton printButton = 
          new JButton(DefinedIcon.print.getIcon(BUTTON_SIZE));
       printButton.addActionListener(this);
       printButton.setActionCommand(PRINT);
+      printButton.setToolTipText(Tooltips.PRINT);
       
       add(newButton);
       add(openButton);
@@ -135,38 +141,47 @@ public class FileToolBar
       //make the menu items
       JMenuItem newItem = new JMenuItem("New", newIcon);
       newItem.setActionCommand(NEW);
+      //newItem.setToolTipText(Tooltips.NEW);
       newItem.addActionListener(this);
       
       JMenuItem openItem = new JMenuItem("Open", openIcon);
       openItem.setActionCommand(OPEN);
+      //openItem.setToolTipText(Tooltips.OPEN);
       openItem.addActionListener(this);
       
       JMenuItem pdfItem = new JMenuItem("Annotate PDF", pdfIcon);
       pdfItem.setActionCommand(ANNOTATE_PDF);
+      //pdfItem.setToolTipText(Tooltips.ANNOTATE_PDF);
       pdfItem.addActionListener(this);
       
       JMenuItem saveItem = new JMenuItem("Save", saveIcon);
       saveItem.setActionCommand(SAVE);
+      //saveItem.setToolTipText(Tooltips.SAVE);
       saveItem.addActionListener(this);
       
       JMenuItem saveAsItem = new JMenuItem("Save As", saveAsIcon);
       saveAsItem.setActionCommand(SAVE_AS);
+      //saveAsItem.setToolTipText(Tooltips.SAVE_AS);
       saveAsItem.addActionListener(this);
       
       JMenuItem exportItem = new JMenuItem("Export", exportIcon);
       exportItem.setActionCommand(EXPORT);
+      //exportItem.setToolTipText(Tooltips.EXPORT);
       exportItem.addActionListener(this);
       
       JMenuItem exportPdfItem = new JMenuItem("Export PDF", pdfIcon);
       exportPdfItem.setActionCommand(EXPORT_PDF);
+      //exportPdfItem.setToolTipText(Tooltips.EXPORT_PDF);
       exportPdfItem.addActionListener(this);
       
       JMenuItem printItem = new JMenuItem("Print", printIcon);
       printItem.setActionCommand(PRINT);
+      //printItem.setToolTipText(Tooltips.PRINT);
       printItem.addActionListener(this);
       
       JMenuItem settingsItem = new JMenuItem("Settings", settingsIcon);
       settingsItem.setActionCommand(SETTINGS);
+      //settingsItem.setToolTipText(Tooltips.SETTTINGS);
       settingsItem.addActionListener(this);
       
       //add the menu items to the menu vector

@@ -50,6 +50,7 @@ import javax.swing.JWindow;
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.ToolBarButton;
+import noteLab.gui.Tooltips;
 import noteLab.gui.button.IconToggleButton;
 import noteLab.gui.chooser.NoteLabFileChooser;
 import noteLab.gui.chooser.filter.JarnalFileFilter;
@@ -473,15 +474,19 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       {
          super(DefinedIcon.select_page);
          
+         setToolTipText(Tooltips.PAGE_EDITING_MODE);
+         
          int smallSize = GuiSettingsConstants.SMALL_BUTTON_SIZE;
          
          JMenuItem pasteItem = new JMenuItem("Paste", DefinedIcon.paste.getIcon(smallSize));
          pasteItem.setActionCommand(Action.Paste.toString());
          pasteItem.addActionListener(this);
+         pasteItem.setToolTipText(Tooltips.PAGE_PASTE);
          
          JMenuItem cancelPaste = new JMenuItem("Cancel", DefinedIcon.close.getIcon(smallSize));
          cancelPaste.setActionCommand(CANCEL_PASTE);
          cancelPaste.addActionListener(this);
+         cancelPaste.setToolTipText(Tooltips.PAGE_CANCEL_PASTE);
          
          this.pasteMenu = new JPopupMenu();
          this.pasteMenu.add(pasteItem);
@@ -490,10 +495,12 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          JMenuItem importItem = new JMenuItem("Import", DefinedIcon.jump.getIcon(smallSize));
          importItem.setActionCommand(Action.Drop.toString());
          importItem.addActionListener(this);
+         importItem.setToolTipText(Tooltips.PAGE_OPEN_IMPORT);
          
          JMenuItem cancelImport = new JMenuItem("Cancel", DefinedIcon.close.getIcon(smallSize));
          cancelImport.setActionCommand(CANCEL_IMPORT);
          cancelImport.addActionListener(this);
+         cancelImport.setToolTipText(Tooltips.PAGE_CANCEL_IMPORT);
          
          this.importMenu = new JPopupMenu();
          this.importMenu.add(importItem);
@@ -511,45 +518,54 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.selButton = new JToggleButton(DefinedIcon.select_page.getIcon(size));
          this.selButton.setActionCommand(Mode.Selection.toString());
          this.selButton.addActionListener(this);
+         this.selButton.setToolTipText(Tooltips.PAGE_SELECT);
          selGroup.add(this.selButton);
          
          this.unSelButton = new JToggleButton(DefinedIcon.unselect_page.getIcon(size));
          this.unSelButton.setActionCommand(Mode.Unselection.toString());
          this.unSelButton.addActionListener(this);
+         this.unSelButton.setToolTipText(Tooltips.PAGE_UNSELECT);
          selGroup.add(this.unSelButton);
          
          this.selAllButton = new JButton(DefinedIcon.select_all_page.getIcon(size));
          this.selAllButton.setActionCommand(DefinedIcon.select_all_page.toString());
          this.selAllButton.addActionListener(this);
+         this.selAllButton.setToolTipText(Tooltips.PAGE_SELECT_ALL);
          
          this.unSelAllButton = new JButton(DefinedIcon.unselect_all_page.getIcon(size));
          this.unSelAllButton.setActionCommand(DefinedIcon.unselect_all_page.toString());
          this.unSelAllButton.addActionListener(this);
+         this.unSelAllButton.setToolTipText(Tooltips.PAGE_UNSELECT_ALL);
          
          //construct the buttons that control the page type
          this.plainButton = 
             new IconToggleButton(DefinedIcon.page, BUTTON_SIZE);
          this.plainButton.setActionCommand(PaperType.Plain.toString());
          this.plainButton.addActionListener(this);
+         this.plainButton.setToolTipText(Tooltips.TYPE_PLAIN_PAPER);
          
          this.graphButton = 
             new IconToggleButton(DefinedIcon.graph, BUTTON_SIZE);
          this.graphButton.setActionCommand(PaperType.Graph.toString());
          this.graphButton.addActionListener(this);
+         this.graphButton.setToolTipText(Tooltips.TYPE_GRAPH_PAPER);
          
          this.collegeButton = 
             new IconToggleButton(DefinedIcon.college_rule, BUTTON_SIZE);
          this.collegeButton.setActionCommand(PaperType.CollegeRuled.toString());
          this.collegeButton.addActionListener(this);
+         this.collegeButton.setToolTipText(Tooltips.TYPE_COLLEGE_RULED_PAPER);
          
          this.wideButton = 
             new IconToggleButton(DefinedIcon.wide_rule, BUTTON_SIZE);
          this.wideButton.setActionCommand(PaperType.WideRuled.toString());
          this.wideButton.addActionListener(this);
+         this.wideButton.setToolTipText(Tooltips.TYPE_WIDE_RULED_PAPER);
          
          ButtonComboButton typeCombo = 
                               new ButtonComboButton(DefinedIcon.page);
          typeCombo.addActionListener(this);
+         typeCombo.setToolTipText(Tooltips.PAGE_TYPE);
          typeCombo.registerButton(this.plainButton);
          typeCombo.registerButton(this.graphButton);
          typeCombo.registerButton(this.collegeButton);
@@ -566,6 +582,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
             new JButton(DefinedIcon.delete_page.getIcon(BUTTON_SIZE));
          this.delPageButton.setActionCommand(Action.DeletePage.toString());
          this.delPageButton.addActionListener(this);
+         this.delPageButton.setToolTipText(Tooltips.PAGE_DELETE);
          
          Color defaultColor = SettingsUtilities.getPaperColor();
          
@@ -574,11 +591,13 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.bgColorButton.setActionCommand(Action.ChangeBGColor.toString());
          this.bgColorButton.addActionListener(this);
          this.bgColorButton.addValueChangeListener(this);
+         this.bgColorButton.setToolTipText(Tooltips.PAGE_COLOR);
          
          this.clearPageButton = 
             new JButton(DefinedIcon.delete_stroke.getIcon(BUTTON_SIZE));
          this.clearPageButton.setActionCommand(Action.ClearPage.toString());
          this.clearPageButton.addActionListener(this);
+         this.clearPageButton.setToolTipText(Tooltips.PAGE_DELETE_STROKES);
          
          JToolBar toolbar = getToolBar();
          toolbar.add(this.selButton);
@@ -594,10 +613,14 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.cutToolbar = 
                   new CutCopyPasteToolBar<CopyVector<Page>>(this);
          this.cutToolbar.setCopyIcon(DefinedIcon.copy_page);
+         this.cutToolbar.setCutToolTipText(Tooltips.PAGE_CUT);
+         this.cutToolbar.setCopyToolTipText(Tooltips.PAGE_COPY);
+         this.cutToolbar.setPasteToolTipText(Tooltips.PAGE_PASTE);
          
          this.openButton = new JButton(DefinedIcon.directory.getIcon(SMALL_BUTTON_SIZE));
          this.openButton.setActionCommand(Action.Open.toString());
          this.openButton.addActionListener(this);
+         this.openButton.setToolTipText(Tooltips.PAGE_OPEN_IMPORT);
          
          this.fileField = new JTextField(10);
          this.fileField.setEditable(false);
@@ -606,6 +629,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.dropButton.setActionCommand(Mode.SelectImportLocation.toString());
          this.dropButton.addActionListener(this);
          this.dropButton.setEnabled(false);
+         this.dropButton.setToolTipText(Tooltips.PAGE_DROP_IMPORT);
          
          toolbar.add(this.delPageButton);
          toolbar.add(this.clearPageButton);
@@ -634,12 +658,14 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
                new JCheckBoxMenuItem("Plain", DefinedIcon.page.getIcon(16));
          plainItem.setActionCommand(PaperType.Plain.toString());
          plainItem.addActionListener(menuListener);
+         plainItem.setToolTipText(Tooltips.TYPE_PLAIN_PAPER);
          typeGroup.add(plainItem);
          
          JCheckBoxMenuItem graphItem = 
                new JCheckBoxMenuItem("Graph", DefinedIcon.graph.getIcon(16));
          graphItem.setActionCommand(PaperType.Graph.toString());
          graphItem.addActionListener(menuListener);
+         graphItem.setToolTipText(Tooltips.TYPE_GRAPH_PAPER);
          typeGroup.add(graphItem);
          
          JCheckBoxMenuItem collegeItem = 
@@ -647,6 +673,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
                                      DefinedIcon.college_rule.getIcon(16));
          collegeItem.setActionCommand(PaperType.CollegeRuled.toString());
          collegeItem.addActionListener(menuListener);
+         collegeItem.setToolTipText(Tooltips.TYPE_COLLEGE_RULED_PAPER);
          typeGroup.add(collegeItem);
          
          JCheckBoxMenuItem wideItem = 
@@ -654,6 +681,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
                                      DefinedIcon.wide_rule.getIcon(16));
          wideItem.setActionCommand(PaperType.WideRuled.toString());
          wideItem.addActionListener(menuListener);
+         wideItem.setToolTipText(Tooltips.TYPE_WIDE_RULED_PAPER);
          typeGroup.add(wideItem);
          
          //add the menu items to the Vector

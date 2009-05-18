@@ -42,6 +42,7 @@ import javax.swing.JToolBar;
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.ToolBarButton;
+import noteLab.gui.Tooltips;
 import noteLab.gui.control.drop.ColorControl;
 import noteLab.gui.control.drop.SizeControl;
 import noteLab.gui.control.drop.TriControl;
@@ -338,13 +339,17 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       {
          super(DefinedIcon.compose);
          
+         setToolTipText(Tooltips.WRITING_MODE);
+         
          this.writeButton = new JToggleButton(DefinedIcon.pencil.getIcon(BUTTON_SIZE));
          this.writeButton.setActionCommand(Mode.Write.toString());
          this.writeButton.addActionListener(this);
+         this.writeButton.setToolTipText(Tooltips.PEN);
          
          this.deleteButton = new JToggleButton(DefinedIcon.remove.getIcon(BUTTON_SIZE));
          this.deleteButton.setActionCommand(Mode.Delete.toString());
          this.deleteButton.addActionListener(this);
+         this.deleteButton.setToolTipText(Tooltips.ERASER);
          
          ButtonGroup writeDelGroup = new ButtonGroup();
          writeDelGroup.add(this.writeButton);
@@ -357,8 +362,13 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          Color color3 = SettingsUtilities.getPen3Color();
          
          ColorControl colorControl1 = new ColorControl(color1);
+         colorControl1.setToolTipText(Tooltips.PEN_1_COLOR);
+         
          ColorControl colorControl2 = new ColorControl(color2);
+         colorControl2.setToolTipText(Tooltips.PEN_2_COLOR);
+         
          ColorControl colorControl3 = new ColorControl(color3);
+         colorControl3.setToolTipText(Tooltips.PEN_3_COLOR);
          
          this.colorControl = 
             new TriControl<Color, ColorControl>(colorControl1, 
@@ -370,16 +380,21 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, 
                             Color.BLACK, 1);
+         size1.setToolTipText(Tooltips.PEN_1_SIZE);
+         
          SizeControl size2 = 
             new SizeControl("", MEDIUM_SIZE_PX, MIN_SIZE_PX, 
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, 
                             Color.BLACK, 1);
+         size2.setToolTipText(Tooltips.PEN_2_SIZE);
+         
          SizeControl size3 = 
             new SizeControl("", THICK_SIZE_PX, MIN_SIZE_PX, 
                             MAX_SIZE_PX, STEP_SIZE_PX, 
                             Unit.PIXEL, Style.Circle, true, Color.BLACK, 
                             1);
+         size3.setToolTipText(Tooltips.PEN_3_SIZE);
          
          MValue pen1Size = SettingsUtilities.getPen1Size();
          MValue pen2Size = SettingsUtilities.getPen2Size();
@@ -425,28 +440,34 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          
          JCheckBoxMenuItem size1Item = new JCheckBoxMenuItem(PEN_1_SIZE_KEY);
          size1Item.addActionListener(this);
+         size1Item.setToolTipText(Tooltips.PEN_1_SIZE);
          sizeGroup.add(size1Item);
          
          JCheckBoxMenuItem size2Item = new JCheckBoxMenuItem(PEN_2_SIZE_KEY);
          size2Item.addActionListener(this);
+         size2Item.setToolTipText(Tooltips.PEN_2_SIZE);
          sizeGroup.add(size2Item);
          
          JCheckBoxMenuItem size3Item = new JCheckBoxMenuItem(PEN_3_SIZE_KEY);
          size3Item.addActionListener(this);
+         size3Item.setToolTipText(Tooltips.PEN_3_SIZE);
          sizeGroup.add(size3Item);
          
          ButtonGroup colorGroup = new ButtonGroup();
          
          JCheckBoxMenuItem color1Item = new JCheckBoxMenuItem(PEN_1_COLOR_KEY);
          color1Item.addActionListener(this);
+         color1Item.setToolTipText(Tooltips.PEN_1_COLOR);
          colorGroup.add(color1Item);
          
          JCheckBoxMenuItem color2Item = new JCheckBoxMenuItem(PEN_2_COLOR_KEY);
          color2Item.addActionListener(this);
+         color2Item.setToolTipText(Tooltips.PEN_2_COLOR);
          colorGroup.add(color2Item);
          
          JCheckBoxMenuItem color3Item = new JCheckBoxMenuItem(PEN_3_COLOR_KEY);
          color3Item.addActionListener(this);
+         color3Item.setToolTipText(Tooltips.PEN_3_COLOR);
          colorGroup.add(color3Item);
          
          this.menuItemVec.add(new PathMenuItem(new JLabel(" Size"), 
