@@ -96,6 +96,7 @@ public class SizeControl
       notifyListeners();
       getButtonPic().
          setValue((int)event.getCurrentValue().getValue(Unit.PIXEL));
+      repaint();
    }
    
    private void notifyListeners()
