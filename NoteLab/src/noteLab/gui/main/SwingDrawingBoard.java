@@ -132,19 +132,21 @@ public class SwingDrawingBoard
       if (isScrolling)
          mode = RenderMode.Performance;
       
+      Graphics2D g2d = (Graphics2D)g;
+      
       if (!isScrolling)
       {
          // Before the Graphics object is modified, configure the 
          // screenRenderer to use a copy of it.  This renderer will 
          // be used later
-         this.screenRenderer.setSwingGraphics((Graphics2D)g.create(), mode);
+         this.screenRenderer.setSwingGraphics(g2d, mode);
          this.screenRenderer.setScrolling(isScrolling);
          
          // Get the current view rectangle
          Rectangle viewRect = this.mainPanel.getViewport().getViewRect();
          
          // Get the current clip
-         Shape clip = g.getClip();
+         Shape clip = g2d.getClip();
          
          // Configure the drawing board
          Graphics2D imageG2d = this.drawingboard.createGraphics();
@@ -160,14 +162,13 @@ public class SwingDrawingBoard
          // Since the image has just been rendered, it is now 
          // consistent with the current state of the canvas
          this.isImageValid = true;
-         imageG2d.finalize();
+         this.imageRenderer.finish();
          
          // Translate to the top left corner of the view rectangle
-         g.translate(viewRect.x, viewRect.y);
+         g2d.translate(viewRect.x, viewRect.y);
          
          // Paint the canvas on the screen
-         g.drawImage(this.drawingboard, 0, 0, 
-                     SCREEN_WIDTH, SCREEN_HEIGHT, null);
+         g2d.drawImage(this.drawingboard, null, null);
          
          // Now render the overlay using the current screen's renderer 
          // (which was configured above) ignoring the main canvas
@@ -178,7 +179,7 @@ public class SwingDrawingBoard
       else
       {
          // Configure the renderer for the screen
-         this.screenRenderer.setSwingGraphics((Graphics2D)g, mode);
+         this.screenRenderer.setSwingGraphics(g2d, mode);
          this.screenRenderer.setScrolling(isScrolling);
          this.canvas.renderInto(this.screenRenderer, 
                                 this.screenRenderer, 
