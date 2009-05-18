@@ -153,37 +153,6 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          canvas.getUndoRedoManager().actionDone(actionDone, undoAction);
       }
       
-      RectangleUnioner unioner = new RectangleUnioner();
-      // This code is written as it its because multiple threads 
-      // may access 'this.strokeVec'.  Since the Vector class 
-      // is synchronized, calls to its methods are safe.  However, 
-      // one must be careful when iterating through the vector 
-      // since its state may change.
-      for (int i=0; i<this.strokeVec.size(); i++)
-      {
-         try
-         {
-            unioner.union(this.strokeVec.
-                                  elementAt(i).getStroke().getBounds2D());
-         }
-         catch (ArrayIndexOutOfBoundsException e)
-         {
-            // If this.strokeVec doesn't contain the given element 
-            // its because the renderInto() method has already 
-            // rendered it and removed it from the vector.  
-            // Thus we don't need to worry about its bounds.
-         }
-      }
-      
-      Rectangle2D bounds = unioner.getUnion();
-      
-      float x = (float)bounds.getX()+page.getX();
-      float y = (float)bounds.getY()+page.getY();
-      float width = (float)bounds.getWidth();
-      float height = (float)bounds.getHeight();
-      
-      doRepaint(x, y, width, height, 0);
-      
       this.toolBar.syncMode();
    }
    
@@ -199,7 +168,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          {
             Stroke newStroke = new Stroke(this.pen.getCopy(), path);
             binder.getCurrentPage().addStroke(newStroke);
-            this.strokeVec.add(new StrokeSmoother(newStroke));
+            this.strokeVec.addElement(new StrokeSmoother(newStroke));
          }
          
          int numItems = path.getNumItems();
@@ -719,7 +688,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       this.toolBar.resizeControlsTo(val);
    }
    
-   private static class StrokeSmoother
+   private class StrokeSmoother
    {
       private final Stroke stroke;
       private final Object isSmoothLock;
@@ -744,12 +713,26 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          {
             public void run()
             {
+               RectangleUnioner unioner = new RectangleUnioner();
+               unioner.union(stroke.getBounds2D());
+               
                stroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
                
                synchronized (isSmoothLock)
                {
                   isSmooth = true;
                }
+               
+               unioner.union(stroke.getBounds2D());
+               Rectangle2D bounds = unioner.getUnion();
+               
+               Page page = getCompositeCanvas().getBinder().getCurrentPage();
+               float x = (float)bounds.getX()+page.getX();
+               float y = (float)bounds.getY()+page.getY();
+               float width = (float)bounds.getWidth();
+               float height = (float)bounds.getHeight();
+               
+               doRepaint(x, y, width, height, 0);
             }
          }).start();
       }
