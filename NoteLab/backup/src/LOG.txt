@@ -1002,3 +1002,35 @@ This backup contains the code as of September 1, 2008.  This code contains NoteL
 ---------------------------------
 With this backup a new command line argument with sets directory from which NoteLab starts.
 
+03-07-2009_07-28-21NoteLab.jar
+---------------------------------
+This backup has PDF annotation working.
+
+03-08-2009_08-28-09NoteLab.jar
+---------------------------------
+This backup has PDF annotation and PDF exporting working.  However, with the PDFRenderer library for PDF rendering, some PDF files are not rendered correctly.
+
+03-09-2009_10-49-59NoteLab.jar
+---------------------------------
+This backup contains code that tested jPod renderer for rendering PDF pages.  However, jPod renderer had similar problems to PDFRenderer.  Since PDFRenderer is easier to use, I will use it to render PDF files since I found a fix for the bug in the PDFRenderer code that caused some PDF files to display incorrectly.
+
+03-10-2009_08-41-58NoteLab.jar
+---------------------------------
+This backup has fixes for the screen artifacts being shown after drawing as well as a fix for the blank area rendered at the top of each page.
+
+03-10-2009_09-24-54NoteLab.jar
+---------------------------------
+The SrokeCanvas class has been renamed to StrokeCanvas.  Also, when it renders the current stroke it does so using a width of 90% the original.  This makes the stroke look smoother and after smoothing the stroke doesn't seem to change width.
+
+03-20-2009_11-06-51NoteLab.jar
+---------------------------------
+Changes will be made so that SubCanvas objects have access to an overlay and main canvas Renderer to render into.  This backup contains the code before this change.
+
+03-22-2009_12-01-45NoteLab.jar
+---------------------------------
+In this backup, each SubCanvas renders to an overlay, and to a main canvas.  The main canvas is non-volatile, but the overlay is not.  The SubCanvas has also been modified so that subclasses need to override the 'public boolean getRenderBinder()' method.  They cannot simply set the value of the variable 'renderBinder' from the superclass.  This second method causes concurrency issues which cause rendering problems.
+
+03-22-2009_11-54-19NoteLab.jar
+---------------------------------
+With this backup, the canvas is rendered as it should using overlays.  Also, a new EmptyRenderer class was made.  This class extends Renderer2D and is a renderer that does nothing.  This is used when the canvas is to be exported to an SVG or raster image.  When this is done, the renderer given to render the overlay is an EmptyRenderer.  If the same SVGRenderer2D was used to render both the main canvas and overaly, it would result in writing errors.  Particularly, it seems that writing would occur after the SVG stream had been closed.  Next, ethe code of this backup works good except that flickering seems to occur when writing strokes.  I think this is because the overlay image is being cleared as it is being rendered to.  Thus, it is necessary to double buffer the overlay image, i.e. have two images.  When the clearOverlay() method is invoked in the SwingDrawingBoard class, it will simply swap the images and in a background thread clear the image not being used for rendering.  Before making these changes, I made this backup.
+
