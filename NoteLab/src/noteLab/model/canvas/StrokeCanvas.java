@@ -302,7 +302,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          if (isMainNotEmpty && smoother.isSmooth())
          {
             stroke.renderInto(mainDisplay);
-            this.strokeVec.remove(i);
+            this.strokeVec.remove(smoother);
          }
          else
             stroke.renderInto(overlayDisplay);
@@ -737,6 +737,9 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       
       public void smooth()
       {
+         if (isSmooth())
+            return;
+         
          new Thread(new Runnable()
          {
             public void run()
