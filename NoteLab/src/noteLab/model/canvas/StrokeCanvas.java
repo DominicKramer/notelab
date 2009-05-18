@@ -438,34 +438,40 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          // make the menu items
          ButtonGroup sizeGroup = new ButtonGroup();
          
-         JCheckBoxMenuItem size1Item = new JCheckBoxMenuItem(PEN_1_SIZE_KEY);
+         JCheckBoxMenuItem size1Item = new JCheckBoxMenuItem("First Pen Size");
+         size1Item.setActionCommand(PEN_1_SIZE_KEY);
          size1Item.addActionListener(this);
          size1Item.setToolTipText(Tooltips.PEN_1_SIZE);
          sizeGroup.add(size1Item);
          
-         JCheckBoxMenuItem size2Item = new JCheckBoxMenuItem(PEN_2_SIZE_KEY);
+         JCheckBoxMenuItem size2Item = new JCheckBoxMenuItem("Second Pen Size");
+         size2Item.setActionCommand(PEN_2_SIZE_KEY);
          size2Item.addActionListener(this);
          size2Item.setToolTipText(Tooltips.PEN_2_SIZE);
          sizeGroup.add(size2Item);
          
-         JCheckBoxMenuItem size3Item = new JCheckBoxMenuItem(PEN_3_SIZE_KEY);
+         JCheckBoxMenuItem size3Item = new JCheckBoxMenuItem("Third Pen Size");
+         size3Item.setActionCommand(PEN_3_SIZE_KEY);
          size3Item.addActionListener(this);
          size3Item.setToolTipText(Tooltips.PEN_3_SIZE);
          sizeGroup.add(size3Item);
          
          ButtonGroup colorGroup = new ButtonGroup();
          
-         JCheckBoxMenuItem color1Item = new JCheckBoxMenuItem(PEN_1_COLOR_KEY);
+         JCheckBoxMenuItem color1Item = new JCheckBoxMenuItem("First Pen Color");
+         color1Item.setActionCommand(PEN_1_COLOR_KEY);
          color1Item.addActionListener(this);
          color1Item.setToolTipText(Tooltips.PEN_1_COLOR);
          colorGroup.add(color1Item);
          
-         JCheckBoxMenuItem color2Item = new JCheckBoxMenuItem(PEN_2_COLOR_KEY);
+         JCheckBoxMenuItem color2Item = new JCheckBoxMenuItem("Second Pen Color");
+         color2Item.setActionCommand(PEN_2_COLOR_KEY);
          color2Item.addActionListener(this);
          color2Item.setToolTipText(Tooltips.PEN_2_COLOR);
          colorGroup.add(color2Item);
          
-         JCheckBoxMenuItem color3Item = new JCheckBoxMenuItem(PEN_3_COLOR_KEY);
+         JCheckBoxMenuItem color3Item = new JCheckBoxMenuItem("Third Pen Color");
+         color3Item.setActionCommand(PEN_3_COLOR_KEY);
          color3Item.addActionListener(this);
          color3Item.setToolTipText(Tooltips.PEN_3_COLOR);
          colorGroup.add(color3Item);
