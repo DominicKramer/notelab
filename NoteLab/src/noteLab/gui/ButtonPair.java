@@ -243,6 +243,16 @@ public class ButtonPair implements ActionListener, GuiSettingsConstants
       System.out.println("Pair.getMin() = "+pair.getMin());
       System.out.println("Pair.getMax()="+pair.getMax());
       System.out.println("Pair.getValue() = "+pair.getValue());
+      pair.addValueChangeListener(new ValueChangeListener<Double, ButtonPair>()
+      {
+         public void valueChanged(ValueChangeEvent<Double, ButtonPair> event)
+         {
+            System.out.println("The value has changed");
+            System.out.println("Current value = "+event.getCurrentValue());
+            System.out.println("Previous value = "+event.getPreviousValue());
+            System.out.println();
+         }
+      });
       
       JFrame frame = new JFrame(""+ButtonPair.class.getName()+" Demo");
         frame.setLayout(new FlowLayout(FlowLayout.CENTER));
