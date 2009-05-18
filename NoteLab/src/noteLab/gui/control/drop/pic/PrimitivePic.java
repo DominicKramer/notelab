@@ -109,7 +109,7 @@ public class PrimitivePic implements ButtonPic
       if (g == null)
          throw new NullPointerException();
       
-      //setRenderingHints(g);
+      setRenderingHints(g);
       
       int realValue = (int)(this.scaleFactor*this.imageWidth);
       if (realValue < 0)
