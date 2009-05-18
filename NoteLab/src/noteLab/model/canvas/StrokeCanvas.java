@@ -29,9 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
@@ -94,23 +92,14 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
    private Pen pen;
    private PenToolBar toolBar;
    
-   private Object curStrokeLock;
-   private Stroke curStroke;
-   
-   private final Object queueLock;
-   private Queue<Stroke> strokeQueue;
+   private Vector<StrokeSmoother> strokeVec;
    
    public StrokeCanvas(CompositeCanvas canvas)
    {
       super(canvas, true);
       
       this.pen = new Pen(canvas.getZoomLevel());
-      
-      this.curStrokeLock = new Object();
-      this.curStroke = null;
-      
-      this.queueLock = new Object();
-      this.strokeQueue = new LinkedList<Stroke>();
+      this.strokeVec = new Vector<StrokeSmoother>();
       
       this.toolBar = new PenToolBar();
    }
@@ -145,56 +134,54 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
    @Override
    public void pathFinishedImpl(Path path, MouseButton button)
    {
-      if (this.toolBar.getCurrentMode() == Mode.Write)
+      CompositeCanvas canvas = getCompositeCanvas();
+      Page page = canvas.getBinder().getCurrentPage();
+      
+      if (this.toolBar.getCurrentMode() == Mode.Write && 
+            !this.strokeVec.isEmpty())
       {
-         CompositeCanvas canvas = getCompositeCanvas();
-         final Page page = canvas.getBinder().getCurrentPage();
+         StrokeSmoother smoother = this.strokeVec.lastElement();
+         smoother.smooth();
+         
+         Stroke curStroke = smoother.getStroke();
          
          DrawStrokeAction actionDone = 
-                     new DrawStrokeAction(canvas, this.curStroke, page);
+                     new DrawStrokeAction(canvas, curStroke, page);
          DeleteStrokeAction undoAction = 
-                     new DeleteStrokeAction(canvas, this.curStroke, page);
+                     new DeleteStrokeAction(canvas, curStroke, page);
          canvas.getUndoRedoManager().actionDone(actionDone, undoAction);
-         
-         final Stroke[] curStrokeArr = new Stroke[1];
-         synchronized (this.curStrokeLock)
-         {
-            curStrokeArr[0] = this.curStroke;
-            this.curStroke = null;
-         }
-         
-         new Thread(new Runnable()
-         {
-            public void run()
-            {
-               Stroke rawCurStroke = curStrokeArr[0];
-               
-               RectangleUnioner unioner = new RectangleUnioner();
-               unioner.union(rawCurStroke.getBounds2D());
-               
-               Path path = rawCurStroke.getPath();
-               path.smooth(SettingsUtilities.getSmoothFactor());
-               
-               synchronized (queueLock)
-               {
-                  strokeQueue.add(rawCurStroke);
-               }
-               unioner.union(rawCurStroke.getBounds2D());
-               
-               //for (Stroke stroke : strokeQueue)
-               //   unioner.union(stroke.getBounds2D());
-               
-               Rectangle2D bounds = unioner.getUnion();
-               
-               float x = (float)bounds.getX()+page.getX();
-               float y = (float)bounds.getY()+page.getY();
-               float width = (float)bounds.getWidth();
-               float height = (float)bounds.getHeight();
-               
-               doRepaint(x, y, width, height, 0);
-            }
-         }).start();
       }
+      
+      RectangleUnioner unioner = new RectangleUnioner();
+      // This code is written as it its because multiple threads 
+      // may access 'this.strokeVec'.  Since the Vector class 
+      // is synchronized, calls to its methods are safe.  However, 
+      // one must be careful when iterating through the vector 
+      // since its state may change.
+      for (int i=0; i<this.strokeVec.size(); i++)
+      {
+         try
+         {
+            unioner.union(this.strokeVec.
+                                  elementAt(i).getStroke().getBounds2D());
+         }
+         catch (ArrayIndexOutOfBoundsException e)
+         {
+            // If this.strokeVec doesn't contain the given element 
+            // its because the renderInto() method has already 
+            // rendered it and removed it from the vector.  
+            // Thus we don't need to worry about its bounds.
+         }
+      }
+      
+      Rectangle2D bounds = unioner.getUnion();
+      
+      float x = (float)bounds.getX()+page.getX();
+      float y = (float)bounds.getY()+page.getY();
+      float width = (float)bounds.getWidth();
+      float height = (float)bounds.getHeight();
+      
+      doRepaint(x, y, width, height, 0);
       
       this.toolBar.syncMode();
    }
@@ -207,13 +194,11 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       
       if (curMode == Mode.Write)
       {
-         if (this.curStroke == null)
+         if (this.strokeVec.isEmpty())
          {
-            synchronized (this.curStrokeLock)
-            {
-               this.curStroke = new Stroke(this.pen.getCopy(), path);
-               binder.getCurrentPage().addStroke(this.curStroke);
-            }
+            Stroke newStroke = new Stroke(this.pen.getCopy(), path);
+            binder.getCurrentPage().addStroke(newStroke);
+            this.strokeVec.add(new StrokeSmoother(newStroke));
          }
          
          int numItems = path.getNumItems();
@@ -298,38 +283,29 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       // can have a volatile overlay without using a buffer.  The 
       // disadvantage is that SubCanvases must verify that important 
       // information is not being rendered with an EmptyRenderer2D.
-      if ( !(mainDisplay instanceof EmptyRenderer2D) )
+      boolean isMainNotEmpty = !(mainDisplay instanceof EmptyRenderer2D);
+      
+      StrokeSmoother smoother;
+      Stroke stroke;
+      // Even though multiple threads may access 'this.strokeVec', 
+      // the code below is safe since other code is this class either 
+      // only reads 'this.strokeVec' or appends elements to 'this.strokeVec'.  
+      // Thus the code below would only possibly ignore new elements in 
+      // 'this.strokeVec'.  However, this is fine since these ignored 
+      // elements will be rendered in the next invocation of this method.
+      for (int i=this.strokeVec.size()-1; i>=0; i--)
       {
-         Stroke stroke = null;
-         do
+         smoother = this.strokeVec.elementAt(i);
+         stroke = smoother.getStroke();
+         
+         if (isMainNotEmpty && smoother.isSmooth())
          {
-            synchronized(queueLock)
-            {
-               stroke = this.strokeQueue.peek();
-            }
-            
-            if (stroke != null && mainDisplay.isInClipRegion(stroke))
-            {
-               stroke.renderInto(mainDisplay);
-               
-               synchronized(queueLock)
-               {
-                  this.strokeQueue.remove(stroke);
-               }
-            }
-            
-         } while (stroke != null);
+            stroke.renderInto(mainDisplay);
+            this.strokeVec.remove(i);
+         }
+         else
+            stroke.renderInto(overlayDisplay);
       }
-      
-      Stroke currentStroke = null;
-      synchronized (this.curStrokeLock)
-      {
-         currentStroke = this.curStroke;
-      }
-      
-      if (currentStroke != null && 
-            overlayDisplay.isInClipRegion(currentStroke))
-         currentStroke.renderInto(overlayDisplay);
       
       mainDisplay.translate(-pageX, -pageY);
       overlayDisplay.translate(-pageX, -pageY);
@@ -714,5 +690,54 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
    public void resizeTo(float val)
    {
       this.toolBar.resizeControlsTo(val);
+   }
+   
+   private static class StrokeSmoother
+   {
+      private final Stroke stroke;
+      private final Object isSmoothLock;
+      private boolean isSmooth;
+      
+      public StrokeSmoother(Stroke newStroke)
+      {
+         if (newStroke == null)
+            throw new NullPointerException();
+         
+         this.stroke = newStroke;
+         this.isSmoothLock = new Object();
+         this.isSmooth = false;
+      }
+      
+      public void smooth()
+      {
+         new Thread(new Runnable()
+         {
+            public void run()
+            {
+               stroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
+               
+               synchronized (isSmoothLock)
+               {
+                  isSmooth = true;
+               }
+            }
+         }).start();
+      }
+      
+      public Stroke getStroke()
+      {
+         return this.stroke;
+      }
+      
+      public boolean isSmooth()
+      {
+         boolean result = false;
+         synchronized (isSmoothLock)
+         {
+            result = this.isSmooth;
+         }
+         
+         return result;
+      }
    }
 }
