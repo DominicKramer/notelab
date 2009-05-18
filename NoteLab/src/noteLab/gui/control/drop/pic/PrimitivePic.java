@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 
 public class PrimitivePic implements ButtonPic
 {
@@ -109,44 +112,57 @@ public class PrimitivePic implements ButtonPic
       if (g == null)
          throw new NullPointerException();
       
+      if ( !(g instanceof Graphics2D) )
+         return;
+      
       setRenderingHints(g);
       
-      int realValue = (int)(this.scaleFactor*this.imageWidth);
+      float realValue = this.scaleFactor*this.imageWidth;
       if (realValue < 0)
-         realValue = (int)(width*0.5f);
+         realValue = width*0.5f;
       
-      int xMid = (int)(width*0.5f);
-      int x1 = (int)(xMid-realValue*0.5f);
-      int x2 = (int)(xMid+realValue*0.5f);
+      float xMid = width*0.5f;
+      float x1 = xMid-realValue*0.5f;
+      float x2 = xMid+realValue*0.5f;
       
-      int yMid = (int)(height*0.5f);
-      int y1 = (int)(yMid-realValue*0.5f);
+      float yMid = height*0.5f;
+      float y1 = yMid-realValue*0.5f;
       
       g.setColor(this.color);
       
+      // The following operations require a Graphics2D object
+      Graphics2D g2d = (Graphics2D)g;
+      
       if (this.style == Style.Circle)
       {
+         Ellipse2D.Float oval = 
+                            new Ellipse2D.Float(x1, y1, realValue, realValue);
+         
          if (this.fill)
-            g.fillOval(x1, y1, realValue, realValue);
+            g2d.fill(oval);
          else
-            g.drawOval(x1, y1, realValue, realValue);
+            g2d.draw(oval);
       }
       else if (this.style == Style.Square)
       {
+         Rectangle2D.Float rect = 
+                              new Rectangle2D.Float(x1, y1, 
+                                                    realValue, realValue);
+         
          if (this.fill)
-            g.fillRect(x1, y1, realValue, realValue);
+            g2d.fill(rect);
          else
-            g.drawRect(x1, y1, realValue, realValue);
+            g2d.draw(rect);
       }
       else if (this.style == Style.Line)
       {
-         int littleDelta = 2;
-         int yTop = yMid+littleDelta;
-         int yBottom = yMid-littleDelta;
+         float littleDelta = 2;
+         float yTop = yMid+littleDelta;
+         float yBottom = yMid-littleDelta;
          
-         g.drawLine(x1, xMid, x2, xMid);
-         g.drawLine(x1, yTop, x1, yBottom);
-         g.drawLine(x2, yTop, x2, yBottom);
+         g2d.draw(new Line2D.Float(x1, xMid, x2, xMid));
+         g2d.draw(new Line2D.Float(x1, yTop, x1, yBottom));
+         g2d.draw(new Line2D.Float(x2, yTop, x2, yBottom));
       }
    }
    
