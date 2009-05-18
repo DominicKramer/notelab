@@ -357,7 +357,14 @@
    </target>
    
    <target name="javadoc" depends="init.doc">
-      <ant antfile="javadoc.xml" inheritall="true"/>
+      <javadoc packagenames="*" 
+   	           sourcepath="src" 
+   	           destdir="doc" 
+   	           author="true" 
+   	           version="true" 
+   	           use="true" 
+      	       private="true" 
+   	           windowtitle="NoteLab Reference"/>
    </target>
    
    <target name="display_javadoc" depends="javadoc">
