@@ -44,6 +44,7 @@ import javax.swing.JWindow;
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.ToolBarButton;
+import noteLab.gui.Tooltips;
 import noteLab.gui.button.IconButton;
 import noteLab.gui.button.IconToggleButton;
 import noteLab.gui.control.drop.ButtonComboButton;
@@ -583,29 +584,36 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       {
          super(DefinedIcon.select_stroke);
          
+         setToolTipText(Tooltips.STROKE_EDITING_MODE);
+         
          this.selButton = 
                  new IconToggleButton(DefinedIcon.select, BUTTON_SIZE);
          this.selButton.setActionCommand(Mode.Single_Selection.toString());
          this.selButton.addActionListener(this);
+         this.selButton.setToolTipText(Tooltips.STROKE_SELECT);
          
          this.unselButton = 
                  new IconToggleButton(DefinedIcon.unselect, BUTTON_SIZE);
          this.unselButton.setActionCommand(Mode.Single_Unselection.toString());
          this.unselButton.addActionListener(this);
+         this.unselButton.setToolTipText(Tooltips.STROKE_UNSELECT);
          
          this.selBoxButton = 
                  new IconToggleButton(DefinedIcon.box_select, BUTTON_SIZE);
          this.selBoxButton.setActionCommand(Mode.Box_Selection.toString());
          this.selBoxButton.addActionListener(this);
+         this.selBoxButton.setToolTipText(Tooltips.REGION_SELECT);
          
          this.unselBoxButton = 
                  new IconToggleButton(DefinedIcon.box_unselect, BUTTON_SIZE);
          this.unselBoxButton.setActionCommand(Mode.Box_Unselection.toString());
          this.unselBoxButton.addActionListener(this);
+         this.unselBoxButton.setToolTipText(Tooltips.REGION_UNSELECT);
          
          this.removeButton = 
                  new IconButton(DefinedIcon.delete_stroke, BUTTON_SIZE);
          this.removeButton.setActionCommand(Action.Deletion.toString());
+         this.removeButton.setToolTipText(Tooltips.STROKE_DELETE);
          // Don't directly listen to this button.  Instead, listen to 
          // the drop down button that contains this button.  That way if 
          // the user selects this button from the drop down list, strokes 
@@ -618,6 +626,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          this.combButton = 
                  new IconButton(DefinedIcon.paintbrush, BUTTON_SIZE);
          this.combButton.setActionCommand(Action.Smooth.toString());
+         this.combButton.setToolTipText(Tooltips.STROKE_SMOOTH);
          // Don't directly listen to this button.  Instead, listen to 
          // the drop down button that contains this button.  That way if 
          // the user selects this button from the drop down list, strokes 
@@ -631,21 +640,25 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                  new IconToggleButton(DefinedIcon.move_stroke, BUTTON_SIZE);
          this.moveButton.addActionListener(this);
          this.moveButton.setActionCommand(Mode.Move.toString());
+         this.moveButton.setToolTipText(Tooltips.STROKE_MOVE);
          
          this.scaleButton = 
                  new IconToggleButton(DefinedIcon.resize_stroke, BUTTON_SIZE);
          this.scaleButton.addActionListener(this);
          this.scaleButton.setActionCommand(Mode.Scale.toString());
+         this.scaleButton.setToolTipText(Tooltips.STROKE_RESIZE);
          
          this.selAllButton = 
                  new IconButton(DefinedIcon.select_all, BUTTON_SIZE);
          this.selAllButton.addActionListener(this);
          this.selAllButton.setActionCommand(Action.Select_All.toString());
+         this.selAllButton.setToolTipText(Tooltips.STROKE_SELECT_ALL);
          
          this.unselAllButton = 
                  new IconButton(DefinedIcon.unselect_all, BUTTON_SIZE);
          this.unselAllButton.addActionListener(this);
          this.unselAllButton.setActionCommand(Action.Unselect_All.toString());
+         this.unselAllButton.setToolTipText(Tooltips.STROKE_UNSELECT_ALL);
          
          this.sizeControl = 
                         new SizeControl("Size", 1.2, 0, 20, 0.2, 
@@ -654,12 +667,14 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          SizeListener sizeListener = new SizeListener();
          this.sizeControl.addValueChangeListener(sizeListener);
          this.sizeControl.addActionListener(sizeListener);
+         this.sizeControl.setToolTipText(Tooltips.STROKE_SIZE);
          
          this.colorControl = new ColorControl(Color.BLACK);
          
          ColorListener colorListener = new ColorListener();
          this.colorControl.addValueChangeListener(colorListener);
          this.colorControl.addActionListener(colorListener);
+         this.colorControl.setToolTipText(Tooltips.STROKE_COLOR);
          
          ButtonGroup selUnselGroup = new ButtonGroup();
          selUnselGroup.add(this.selButton);
@@ -671,6 +686,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          
          ButtonComboButton selCombo = 
                               new ButtonComboButton(DefinedIcon.select);
+         selCombo.setToolTipText(Tooltips.PAGE_ACTIVE_EDITING_TOOL);
          selCombo.addActionListener(this);
          selCombo.registerButton(this.selButton);
          selCombo.registerButton(this.selBoxButton);
@@ -722,6 +738,9 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          
          CutCopyPasteToolBar<CopyVector<Stroke>> copyToolbar = 
                                new CutCopyPasteToolBar(this);
+         copyToolbar.setCutToolTipText(Tooltips.STROKE_CUT);
+         copyToolbar.setCopyToolTipText(Tooltips.STROKE_COPY);
+         copyToolbar.setPasteToolTipText(Tooltips.STROKE_PASTE);
          copyToolbar.appendTo(toolbar);
          
          // set up the menus
@@ -737,6 +756,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                                      DefinedIcon.select.getIcon(16));
          selItem.setActionCommand(Mode.Single_Selection.toString());
          selItem.addActionListener(listener);
+         selItem.setToolTipText(Tooltips.STROKE_SELECT);
          group.add(selItem);
          
          JCheckBoxMenuItem deSelItem = 
@@ -744,6 +764,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                                      DefinedIcon.unselect.getIcon(16));
          deSelItem.setActionCommand(Mode.Single_Unselection.toString());
          deSelItem.addActionListener(listener);
+         deSelItem.setToolTipText(Tooltips.STROKE_UNSELECT);
          group.add(deSelItem);
          
          JCheckBoxMenuItem deleteItem = 
@@ -751,6 +772,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                                      DefinedIcon.delete_stroke.getIcon(16));
          deleteItem.setActionCommand(Action.Deletion.toString());
          deleteItem.addActionListener(listener);
+         deleteItem.setToolTipText(Tooltips.STROKE_DELETE);
          group.add(deleteItem);
          
          JCheckBoxMenuItem moveItem = 
@@ -758,6 +780,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                                      DefinedIcon.move_stroke.getIcon(16));
          moveItem.setActionCommand(Mode.Move.toString());
          moveItem.addActionListener(listener);
+         moveItem.setToolTipText(Tooltips.STROKE_MOVE);
          group.add(moveItem);
          
          //set up the path

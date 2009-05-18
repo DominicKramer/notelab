@@ -35,6 +35,7 @@ import javax.swing.JToolBar;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
+import noteLab.gui.Tooltips;
 import noteLab.util.undoRedo.UndoRedoListener;
 import noteLab.util.undoRedo.UndoRedoManager;
 
@@ -56,9 +57,11 @@ public class UndoRedoToolBar implements UndoRedoListener,
       
       this.undoButton = new JButton(DefinedIcon.undo.getIcon(BUTTON_SIZE));
       this.undoButton.addActionListener(new UndoListener());
+      this.undoButton.setToolTipText(Tooltips.UNDO);
       
       this.redoButton = new JButton(DefinedIcon.redo.getIcon(BUTTON_SIZE));
       this.redoButton.addActionListener(new RedoListener());
+      this.redoButton.setToolTipText(Tooltips.REDO);
       
       undoRedoStackChanged(this.manager);
    }

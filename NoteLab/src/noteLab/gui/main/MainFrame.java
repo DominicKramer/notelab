@@ -53,6 +53,7 @@ import javax.swing.WindowConstants;
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.ToolBarButton;
+import noteLab.gui.Tooltips;
 import noteLab.gui.button.IconToggleButton;
 import noteLab.gui.fullscreen.FullScreenListener;
 import noteLab.gui.fullscreen.FullScreenManager;
@@ -140,6 +141,7 @@ public class MainFrame extends JFrame implements Menued,
          new JMenuItem("Exit", DefinedIcon.quit.getIcon(16));
       exitItem.setActionCommand(EXIT);
       exitItem.addActionListener(this);
+      //exitItem.setToolTipText(Tooltips.EXIT);
       
       this.menuItemVec.add(new PathMenuItem(exitItem, 
                                             MenuConstants.FILE_MENU_PATH));
@@ -175,6 +177,8 @@ public class MainFrame extends JFrame implements Menued,
             new IconToggleButton(FULLSCREEN_ICON, 
                                  GuiSettingsConstants.BUTTON_SIZE);
       this.fullScreenButton.addActionListener(this);
+      this.fullScreenButton.setToolTipText(Tooltips.FULLSCREEN);
+      
       this.fileToolBar.add(this.fullScreenButton);
       
       this.canvasToolbar = new CanvasControlToolBar(this.canvas);

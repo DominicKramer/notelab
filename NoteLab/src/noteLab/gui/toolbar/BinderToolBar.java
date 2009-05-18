@@ -32,6 +32,7 @@ import javax.swing.JToolBar;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
+import noteLab.gui.Tooltips;
 import noteLab.model.Page;
 import noteLab.model.binder.Binder;
 import noteLab.model.binder.BinderListener;
@@ -79,16 +80,19 @@ public class BinderToolBar implements ActionListener,
          new JButton(DefinedIcon.zoom_in.getIcon(BUTTON_SIZE));
       this.zoomInButton.setActionCommand(ZOOM_IN);
       this.zoomInButton.addActionListener(this);
+      this.zoomInButton.setToolTipText(Tooltips.ZOOM_IN);
       
       this.zoomNormalButton = 
          new JButton(DefinedIcon.zoom_100.getIcon(BUTTON_SIZE));
       this.zoomNormalButton.setActionCommand(ZOOM_NORMAL);
       this.zoomNormalButton.addActionListener(this);
+      this.zoomNormalButton.setToolTipText(Tooltips.ZOOM_100);
       
       this.zoomOutButton = 
          new JButton(DefinedIcon.zoom_out.getIcon(BUTTON_SIZE));
       this.zoomOutButton.setActionCommand(ZOOM_OUT);
       this.zoomOutButton.addActionListener(this);
+      this.zoomOutButton.setToolTipText(Tooltips.ZOOM_OUT);
       
       // construct the buttons for moving to the next or 
       // previous page
@@ -96,27 +100,32 @@ public class BinderToolBar implements ActionListener,
          new JButton(DefinedIcon.forward.getIcon(BUTTON_SIZE));
       this.nextButton.setActionCommand(NEXT);
       this.nextButton.addActionListener(this);
+      this.nextButton.setToolTipText(Tooltips.NEXT_PAGE);
       
       this.prevButton = 
          new JButton(DefinedIcon.backward.getIcon(BUTTON_SIZE));
       this.prevButton.setActionCommand(PREVIOUS);
       this.prevButton.addActionListener(this);
+      this.prevButton.setToolTipText(Tooltips.PREVIOUS_PAGE);
       
       this.currentButton = 
          new JButton(DefinedIcon.down.getIcon(BUTTON_SIZE));
       this.currentButton.setActionCommand(CURRENT);
       this.currentButton.addActionListener(this);
+      this.currentButton.setToolTipText(Tooltips.CURRENT_PAGE);
       
       // construct the buttons that allow you to edit pages
       this.newPageButton = 
          new JButton(DefinedIcon.page.getIcon(BUTTON_SIZE));
       this.newPageButton.setActionCommand(NEW_PAGE);
       this.newPageButton.addActionListener(this);
+      this.newPageButton.setToolTipText(Tooltips.NEW_PAGE);
       
       this.refreshButton = 
          new JButton(DefinedIcon.refresh.getIcon(BUTTON_SIZE));
       this.refreshButton.setActionCommand(REFRESH);
       this.refreshButton.addActionListener(this);
+      this.refreshButton.setToolTipText(Tooltips.REFRESH);
       
       this.canvas.getBinder().addBinderListener(this);
       adjustNextPrevButtons();
