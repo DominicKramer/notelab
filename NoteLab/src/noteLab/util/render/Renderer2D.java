@@ -162,6 +162,7 @@ public abstract class Renderer2D implements Selectable
                                       float width, float height);
    
    public abstract void setColor(Color color);
+   public abstract Color getColor();
    public abstract void setLineWidth(float width);
    public abstract float getLineWidth();
    
