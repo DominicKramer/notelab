@@ -110,4 +110,10 @@ public class EmptyRenderer2D extends Renderer2D
    public void translate(float x, float y)
    {
    }
+
+   @Override
+   public Color getColor()
+   {
+      return Color.BLACK;
+   }
 }
