@@ -139,7 +139,7 @@ public class SwingDrawingBoard
          // Before the Graphics object is modified, configure the 
          // screenRenderer to use a copy of it.  This renderer will 
          // be used later
-         this.screenRenderer.setSwingGraphics(g2d, mode);
+         this.screenRenderer.setSwingGraphics((Graphics2D)g2d.create(), mode);
          this.screenRenderer.setScrolling(isScrolling);
          
          // Get the current view rectangle
