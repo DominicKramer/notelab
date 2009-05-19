@@ -45,6 +45,7 @@ import noteLab.model.canvas.StrokeCanvas;
 import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
 import noteLab.util.render.EmptyRenderer2D;
+import noteLab.util.render.QueuedRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.render.SwingRenderer2D.RenderMode;
 import noteLab.util.settings.DebugSettings;
@@ -71,6 +72,7 @@ public class SwingDrawingBoard
    
    private SwingRenderer2D imageRenderer;
    private SwingRenderer2D screenRenderer;
+   private QueuedRenderer2D queuedRenderer;
    
    private BufferedImage drawingboard;
    
@@ -86,6 +88,7 @@ public class SwingDrawingBoard
       this.mainPanel = mainPanel;
       this.imageRenderer = new SwingRenderer2D();
       this.screenRenderer = new SwingRenderer2D();
+      this.queuedRenderer = new QueuedRenderer2D(this.screenRenderer);
       
       this.drawingboard = new BufferedImage(SCREEN_WIDTH, 
                                             SCREEN_HEIGHT, 
@@ -155,26 +158,23 @@ public class SwingDrawingBoard
          this.imageRenderer.setSwingGraphics(imageG2d, mode);
          this.imageRenderer.setScrolling(false);
          
+         // Translate to the top left corner of the view rectangle
+         g2d.translate(viewRect.x, viewRect.y);
+         
+         this.queuedRenderer.setRenderer(this.screenRenderer);
+         
          // Render the canvas ignoring the overlay
-         this.canvas.renderInto(EMPTY_RENDERER, 
+         this.canvas.renderInto(this.queuedRenderer, 
                                 this.imageRenderer, 
                                 this.isImageValid);
          // Since the image has just been rendered, it is now 
          // consistent with the current state of the canvas
          this.isImageValid = true;
-         this.imageRenderer.finish();
-         
-         // Translate to the top left corner of the view rectangle
-         g2d.translate(viewRect.x, viewRect.y);
+         imageG2d.finalize();
          
          // Paint the canvas on the screen
          g2d.drawImage(this.drawingboard, null, null);
-         
-         // Now render the overlay using the current screen's renderer 
-         // (which was configured above) ignoring the main canvas
-         this.canvas.renderInto(this.screenRenderer, 
-                                EMPTY_RENDERER, 
-                                true);
+         this.queuedRenderer.replay();
       }
       else
       {
