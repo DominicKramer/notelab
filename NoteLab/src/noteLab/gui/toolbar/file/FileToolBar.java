@@ -27,6 +27,8 @@ package noteLab.gui.toolbar.file;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
@@ -40,6 +42,7 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
@@ -140,41 +143,68 @@ public class FileToolBar
       
       //make the menu items
       JMenuItem newItem = new JMenuItem("New", newIcon);
+      newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, 
+                                                    InputEvent.CTRL_DOWN_MASK, 
+                                                    true));
       newItem.setActionCommand(NEW);
       //newItem.setToolTipText(Tooltips.NEW);
       newItem.addActionListener(this);
       
       JMenuItem openItem = new JMenuItem("Open", openIcon);
+      openItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, 
+                                                     InputEvent.CTRL_DOWN_MASK, 
+                                                     true));
       openItem.setActionCommand(OPEN);
       //openItem.setToolTipText(Tooltips.OPEN);
       openItem.addActionListener(this);
       
       JMenuItem pdfItem = new JMenuItem("Annotate PDF", pdfIcon);
+      pdfItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, 
+                                          InputEvent.CTRL_DOWN_MASK | 
+                                             InputEvent.SHIFT_DOWN_MASK, 
+                                          true));
       pdfItem.setActionCommand(ANNOTATE_PDF);
       //pdfItem.setToolTipText(Tooltips.ANNOTATE_PDF);
       pdfItem.addActionListener(this);
       
       JMenuItem saveItem = new JMenuItem("Save", saveIcon);
+      saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, 
+                                                     InputEvent.CTRL_DOWN_MASK, 
+                                                     true));
       saveItem.setActionCommand(SAVE);
       //saveItem.setToolTipText(Tooltips.SAVE);
       saveItem.addActionListener(this);
       
       JMenuItem saveAsItem = new JMenuItem("Save As", saveAsIcon);
+      saveAsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, 
+                                             InputEvent.CTRL_DOWN_MASK | 
+                                                InputEvent.SHIFT_DOWN_MASK, 
+                                             true));
       saveAsItem.setActionCommand(SAVE_AS);
       //saveAsItem.setToolTipText(Tooltips.SAVE_AS);
       saveAsItem.addActionListener(this);
       
       JMenuItem exportItem = new JMenuItem("Export", exportIcon);
+      exportItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, 
+                                                       InputEvent.CTRL_DOWN_MASK, 
+                                                       true));
       exportItem.setActionCommand(EXPORT);
       //exportItem.setToolTipText(Tooltips.EXPORT);
       exportItem.addActionListener(this);
       
       JMenuItem exportPdfItem = new JMenuItem("Export PDF", pdfIcon);
+      exportPdfItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, 
+                                                InputEvent.CTRL_DOWN_MASK | 
+                                                   InputEvent.SHIFT_DOWN_MASK, 
+                                                true));
       exportPdfItem.setActionCommand(EXPORT_PDF);
       //exportPdfItem.setToolTipText(Tooltips.EXPORT_PDF);
       exportPdfItem.addActionListener(this);
       
       JMenuItem printItem = new JMenuItem("Print", printIcon);
+      printItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, 
+                                                      InputEvent.CTRL_DOWN_MASK, 
+                                                      true));
       printItem.setActionCommand(PRINT);
       //printItem.setToolTipText(Tooltips.PRINT);
       printItem.addActionListener(this);
