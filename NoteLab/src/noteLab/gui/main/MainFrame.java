@@ -34,6 +34,8 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -48,6 +50,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JWindow;
+import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
 import noteLab.gui.DefinedIcon;
@@ -138,7 +141,10 @@ public class MainFrame extends JFrame implements Menued,
       this.menuItemVec = new Vector<PathMenuItem>(1);
       
       JMenuItem exitItem = 
-         new JMenuItem("Exit", DefinedIcon.quit.getIcon(16));
+         new JMenuItem("Quit", DefinedIcon.quit.getIcon(16));
+      exitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, 
+                                                     InputEvent.CTRL_DOWN_MASK, 
+                                                     true));
       exitItem.setActionCommand(EXIT);
       exitItem.addActionListener(this);
       //exitItem.setToolTipText(Tooltips.EXIT);
