@@ -78,15 +78,10 @@ public class QueuedRenderer2D extends Renderer2D
    @Override
    public void tryRenderBoundingBox(final Bounded bounded)
    {
-      final Color color = this.renderer.getColor();
-      final float width = this.renderer.getLineWidth();
-      
       addCommand(new Runnable()
       {
          public void run()
          {
-            renderer.setColor(color);
-            renderer.setLineWidth(width);
             renderer.tryRenderBoundingBox(bounded);
          }
       });
@@ -96,15 +91,10 @@ public class QueuedRenderer2D extends Renderer2D
    public void beginGroup(final Renderable renderable, final String desc, 
                           final float xScaleLevel, final float yScaleLevel)
    {
-      final Color color = this.renderer.getColor();
-      final float width = this.renderer.getLineWidth();
-      
       addCommand(new Runnable()
       {
          public void run()
          {
-            renderer.setColor(color);
-            renderer.setLineWidth(width);
             renderer.beginGroup(renderable, desc, xScaleLevel, yScaleLevel);
          }
       });
@@ -113,15 +103,10 @@ public class QueuedRenderer2D extends Renderer2D
    @Override
    public void endGroup(final Renderable renderable)
    {
-      final Color color = this.renderer.getColor();
-      final float width = this.renderer.getLineWidth();
-      
       addCommand(new Runnable()
       {
          public void run()
          {
-            renderer.setColor(color);
-            renderer.setLineWidth(width);
             renderer.endGroup(renderable);
          }
       });
@@ -144,15 +129,10 @@ public class QueuedRenderer2D extends Renderer2D
    @Override
    public void drawLine(final FloatPoint2D pt1, final FloatPoint2D pt2)
    {
-      final Color color = this.renderer.getColor();
-      final float width = this.renderer.getLineWidth();
-      
       addCommand(new Runnable()
       {
          public void run()
          {
-            renderer.setColor(color);
-            renderer.setLineWidth(width);
             renderer.drawLine(pt1, pt2);
          }
       });
@@ -161,15 +141,10 @@ public class QueuedRenderer2D extends Renderer2D
    @Override
    public void drawPath(final Path path)
    {
-      final Color color = this.renderer.getColor();
-      final float width = this.renderer.getLineWidth();
-      
       addCommand(new Runnable()
       {
          public void run()
          {
-            renderer.setColor(color);
-            renderer.setLineWidth(width);
             renderer.drawPath(path);
          }
       });
@@ -179,15 +154,10 @@ public class QueuedRenderer2D extends Renderer2D
    public void drawRectangle(final float x, final float y, 
                              final float width, final float height)
    {
-      final Color color = this.renderer.getColor();
-      final float lineWidth = this.renderer.getLineWidth();
-      
       addCommand(new Runnable()
       {
          public void run()
          {
-            renderer.setColor(color);
-            renderer.setLineWidth(lineWidth);
             renderer.drawRectangle(x, y, width, height);
          }
       });
@@ -197,15 +167,10 @@ public class QueuedRenderer2D extends Renderer2D
    public void fillRectangle(final float x, final float y, 
                              final float width, final float height)
    {
-      final Color color = this.renderer.getColor();
-      final float lineWidth = this.renderer.getLineWidth();
-      
       addCommand(new Runnable()
       {
          public void run()
          {
-            renderer.setColor(color);
-            renderer.setLineWidth(lineWidth);
             renderer.fillRectangle(x, y, width, height);
          }
       });
@@ -214,15 +179,10 @@ public class QueuedRenderer2D extends Renderer2D
    @Override
    public void finish()
    {
-      final Color color = this.renderer.getColor();
-      final float width = this.renderer.getLineWidth();
-      
       addCommand(new Runnable()
       {
          public void run()
          {
-            renderer.setColor(color);
-            renderer.setLineWidth(width);
             renderer.finish();
          }
       });
@@ -231,15 +191,10 @@ public class QueuedRenderer2D extends Renderer2D
    @Override
    public void translate(final float x, final float y)
    {
-      final Color color = this.renderer.getColor();
-      final float width = this.renderer.getLineWidth();
-      
       addCommand(new Runnable()
       {
          public void run()
          {
-            renderer.setColor(color);
-            renderer.setLineWidth(width);
             renderer.translate(x, y);
          }
       });
@@ -258,9 +213,17 @@ public class QueuedRenderer2D extends Renderer2D
    }
    
    @Override
-   public void setColor(Color color)
+   public void setColor(final Color color)
    {
       this.renderer.setColor(color);
+      
+      addCommand(new Runnable()
+      {
+         public void run()
+         {
+            renderer.setColor(color);
+         }
+      });
    }
    
    @Override
@@ -270,8 +233,16 @@ public class QueuedRenderer2D extends Renderer2D
    }
    
    @Override
-   public void setLineWidth(float width)
+   public void setLineWidth(final float width)
    {
       this.renderer.setLineWidth(width);
+      
+      addCommand(new Runnable()
+      {
+         public void run()
+         {
+            renderer.setLineWidth(width);
+         }
+      });
    }
 }
