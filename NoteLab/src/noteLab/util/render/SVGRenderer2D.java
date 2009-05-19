@@ -242,6 +242,12 @@ public class SVGRenderer2D extends Renderer2D implements NoteLabFileConstants
       this.color = "#"+r+g+b;
    }
    
+   @Override
+   public Color getColor()
+   {
+      return Color.decode(this.color);
+   }
+   
    private static String fixColorValue(String val)
    {
       if (val == null)

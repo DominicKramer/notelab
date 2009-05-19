@@ -292,6 +292,12 @@ public class SwingRenderer2D extends Renderer2D implements ImageObserver
    }
    
    @Override
+   public Color getColor()
+   {
+      return this.g2d.getColor();
+   }
+   
+   @Override
    public void setLineWidth(float width)
    {
       this.width = width;
