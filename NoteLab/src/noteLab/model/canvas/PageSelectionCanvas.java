@@ -139,7 +139,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       for (Page page : this.selPageVec)
          page.setSelectionEnabled(true);
       
-      doPaintDirtyRectangle();
+      doRepaint();
    }
    
    @Override
@@ -148,7 +148,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       for (Page page : this.selPageVec)
          page.setSelectionEnabled(false);
       
-      doPaintDirtyRectangle();
+      doRepaint();
    }
    
    @Override
@@ -733,7 +733,6 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       @Override
       public void finish()
       {
-         selPageVec.clear();
       }
 
       @Override
