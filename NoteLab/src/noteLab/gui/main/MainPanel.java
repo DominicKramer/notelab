@@ -137,6 +137,9 @@ public class MainPanel
    {
       super.repaint();
       
+      if (this.paintPanel != null)
+         this.paintPanel.repaint();
+      
       if (DebugSettings.getSharedInstance().notifyOfRepaints())
          System.err.println("repaint() called");
    }
