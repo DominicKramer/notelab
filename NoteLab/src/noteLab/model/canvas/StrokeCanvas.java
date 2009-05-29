@@ -176,8 +176,16 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          {
             FloatPoint2D pt = path.getFirst();
             Page page = binder.getCurrentPage();
-            doRepaint(pt.getX()+page.getX(), 
-                      pt.getY()+page.getY(), 0, 0, 0);
+            float width = 0;
+            if (!this.strokeVec.isEmpty())
+               width = this.strokeVec.lastElement().
+                          getStroke().getPen().getWidth();
+            
+            float twiceWidth = 2*width;
+            doRepaint(pt.getX()+page.getX()-width, 
+                      pt.getY()+page.getY()-width, 
+                      twiceWidth, 
+                      twiceWidth, 0);
             return;
          }
          
