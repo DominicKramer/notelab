@@ -24,6 +24,7 @@
 
 package noteLab.gui.main;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -442,5 +443,19 @@ public class MainFrame extends JFrame implements Menued,
       add(this.mainPanel);
       validate();
       repaint();
+   }
+   
+   /**
+    * Overridden so that multiple mouse dragged events are not coalesced into 
+    * one.  If this were done, drawing would look choppy.  By disabling 
+    * coalescing, drawing looks smooth.
+    * 
+    * @return <code>null</code> to indicate that no coalescing has taken place
+    */
+   @Override
+   protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent)
+   {
+      //Indicates no coalescing has been done
+      return null;
    }
 }
