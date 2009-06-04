@@ -120,7 +120,7 @@ public class SettingsUtilities implements SettingsKeys
    {
       Object val = SettingsManager.getSharedInstance().getValue(PEN_3_SIZE_KEY);
       if (val == null || !(val instanceof MValue))
-         return new MValue(PenSettingsConstants.MAX_SIZE_PX, Unit.PIXEL);
+         return new MValue(PenSettingsConstants.THICK_SIZE_PX, Unit.PIXEL);
       
       return (MValue)val;
    }
