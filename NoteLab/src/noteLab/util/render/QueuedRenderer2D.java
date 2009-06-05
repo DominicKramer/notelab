@@ -213,6 +213,12 @@ public class QueuedRenderer2D extends Renderer2D
    }
    
    @Override
+   public boolean isCompletelyInClipRegion(Bounded bounded)
+   {
+      return this.renderer.isCompletelyInClipRegion(bounded);
+   }
+   
+   @Override
    public void setColor(final Color color)
    {
       this.renderer.setColor(color);

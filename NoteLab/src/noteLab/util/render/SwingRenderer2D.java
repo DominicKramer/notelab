@@ -28,6 +28,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -361,6 +362,25 @@ public class SwingRenderer2D extends Renderer2D implements ImageObserver
       int h = (int)bounds.getHeight();
       
       return this.g2d.hitClip(x, y, w, h);
+   }
+   
+   @Override
+   public boolean isCompletelyInClipRegion(Bounded bounded)
+   {
+      if (bounded == null)
+         throw new NullPointerException();
+
+      Rectangle2D bounds = bounded.getBounds2D();
+      int x = (int)bounds.getMinX();
+      int y = (int)bounds.getMinY();
+      int w = (int)bounds.getWidth();
+      int h = (int)bounds.getHeight();
+
+      Rectangle clipBounds = this.g2d.getClipBounds();
+      if (clipBounds == null)
+         return true;
+
+      return clipBounds.contains(x, y, w, h);
    }
    
    /**
