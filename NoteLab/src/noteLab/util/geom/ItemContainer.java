@@ -88,6 +88,8 @@ public class ItemContainer<T extends Transformable & Bounded & ModBroadcaster>
    public void removeFirst()
    {
       this.itemList.removeFirst();
+      
+      notifyModListeners(ModType.Other);
    }
    
    public T getLast()
@@ -101,6 +103,8 @@ public class ItemContainer<T extends Transformable & Bounded & ModBroadcaster>
    public void removeLast()
    {
       this.itemList.removeLast();
+      
+      notifyModListeners(ModType.Other);
    }
    
    protected void clear()
