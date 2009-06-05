@@ -38,7 +38,6 @@ import javax.swing.JLabel;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
@@ -279,10 +278,13 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          stroke = smoother.getStroke();
          
          if (isMainNotEmpty && 
-               smoother.isSmooth() && 
+               smoother.getIsSmooth() && 
                   mainDisplay.isCompletelyInClipRegion(stroke))
          {
-            stroke.renderInto(mainDisplay);
+            if (!smoother.getHasBeenRendered())
+               stroke.renderInto(mainDisplay);
+            
+            smoother.setHasBeenRendered(true);
             this.strokeVec.remove(index);
          }
          else
@@ -710,6 +712,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       // getting and setting primitive values in Java 
       // is atomic.
       private boolean isSmooth;
+      private volatile boolean hasBeenRendered;
       
       public StrokeSmoother(Stroke newStroke)
       {
@@ -718,11 +721,12 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          
          this.stroke = newStroke;
          this.isSmooth = false;
+         this.hasBeenRendered = false;
       }
       
       public void smooth()
       {
-         if (isSmooth())
+         if (getIsSmooth())
             return;
          
          new Thread(new Runnable()
@@ -744,7 +748,8 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                final float height = (float)bounds.getHeight();
                
                isSmooth = true;
-               doRepaint(x, y, width, height, 0);
+               if (!getHasBeenRendered())
+                  doRepaint(x, y, width, height, 0);
             }
          }).start();
       }
@@ -754,9 +759,19 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          return this.stroke;
       }
       
-      public boolean isSmooth()
+      public boolean getIsSmooth()
       {
          return this.isSmooth;
+      }
+      
+      public synchronized boolean getHasBeenRendered()
+      {
+         return this.hasBeenRendered;
+      }
+      
+      public synchronized void setHasBeenRendered(boolean hasBeenRendered)
+      {
+         this.hasBeenRendered = hasBeenRendered;
       }
    }
 }
