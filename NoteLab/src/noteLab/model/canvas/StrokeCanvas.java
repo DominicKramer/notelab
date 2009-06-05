@@ -38,6 +38,7 @@ import javax.swing.JLabel;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
@@ -130,6 +131,13 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
    {
       if (button == MouseButton.Button3)
          this.toolBar.setCurrentMode(this.toolBar.getCurrentMode().invert());
+      
+      if (this.toolBar.getCurrentMode() == Mode.Write)
+      {
+         Stroke newStroke = new Stroke(this.pen.getCopy(), path);
+         getCompositeCanvas().getBinder().getCurrentPage().addStroke(newStroke);
+         this.strokeVec.addElement(new StrokeSmoother(newStroke));
+      }
    }
    
    @Override
@@ -164,13 +172,6 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       
       if (curMode == Mode.Write)
       {
-         if (this.strokeVec.isEmpty())
-         {
-            Stroke newStroke = new Stroke(this.pen.getCopy(), path);
-            binder.getCurrentPage().addStroke(newStroke);
-            this.strokeVec.addElement(new StrokeSmoother(newStroke));
-         }
-         
          int numItems = path.getNumItems();
          if (numItems < 2)
          {
@@ -271,18 +272,23 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       // Thus the code below would only possibly ignore new elements in 
       // 'this.strokeVec'.  However, this is fine since these ignored 
       // elements will be rendered in the next invocation of this method.
-      for (int i=this.strokeVec.size()-1; i>=0; i--)
+      int index = this.strokeVec.size()-1;
+      while (index >= 0)
       {
-         smoother = this.strokeVec.elementAt(i);
+         smoother = this.strokeVec.elementAt(index);
          stroke = smoother.getStroke();
          
-         if (isMainNotEmpty && smoother.isSmooth())
+         if (isMainNotEmpty && 
+               smoother.isSmooth() && 
+                  mainDisplay.isCompletelyInClipRegion(stroke))
          {
             stroke.renderInto(mainDisplay);
-            this.strokeVec.remove(smoother);
+            this.strokeVec.remove(index);
          }
          else
             stroke.renderInto(overlayDisplay);
+         
+         index--;
       }
       
       mainDisplay.translate(-pageX, -pageY);
@@ -699,7 +705,10 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
    private class StrokeSmoother
    {
       private final Stroke stroke;
-      private final Object isSmoothLock;
+      // Explicit synchronization does not need to be used 
+      // when getting or setting this field's value since 
+      // getting and setting primitive values in Java 
+      // is atomic.
       private boolean isSmooth;
       
       public StrokeSmoother(Stroke newStroke)
@@ -708,7 +717,6 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
             throw new NullPointerException();
          
          this.stroke = newStroke;
-         this.isSmoothLock = new Object();
          this.isSmooth = false;
       }
       
@@ -726,20 +734,16 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                
                stroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
                
-               synchronized (isSmoothLock)
-               {
-                  isSmooth = true;
-               }
-               
                unioner.union(stroke.getBounds2D());
                Rectangle2D bounds = unioner.getUnion();
                
                Page page = getCompositeCanvas().getBinder().getCurrentPage();
-               float x = (float)bounds.getX()+page.getX();
-               float y = (float)bounds.getY()+page.getY();
-               float width = (float)bounds.getWidth();
-               float height = (float)bounds.getHeight();
+               final float x = (float)bounds.getX()+page.getX();
+               final float y = (float)bounds.getY()+page.getY();
+               final float width = (float)bounds.getWidth();
+               final float height = (float)bounds.getHeight();
                
+               isSmooth = true;
                doRepaint(x, y, width, height, 0);
             }
          }).start();
@@ -752,13 +756,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       
       public boolean isSmooth()
       {
-         boolean result = false;
-         synchronized (isSmoothLock)
-         {
-            result = this.isSmooth;
-         }
-         
-         return result;
+         return this.isSmooth;
       }
    }
 }
