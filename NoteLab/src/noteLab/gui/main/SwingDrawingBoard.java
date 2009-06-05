@@ -44,7 +44,6 @@ import noteLab.model.canvas.CompositeCanvas;
 import noteLab.model.canvas.StrokeCanvas;
 import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
-import noteLab.util.render.EmptyRenderer2D;
 import noteLab.util.render.QueuedRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.render.SwingRenderer2D.RenderMode;
@@ -56,15 +55,11 @@ public class SwingDrawingBoard
                                       ChangeListener, 
                                       ModListener
 {
-   private static final EmptyRenderer2D EMPTY_RENDERER = new EmptyRenderer2D();
-   
-   private static final int SCREEN_WIDTH;
-   private static final int SCREEN_HEIGHT;
+   private static final int SCREEN_MAX_DIM;
    static
    {
       Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-      SCREEN_WIDTH = screenSize.width;
-      SCREEN_HEIGHT = screenSize.height;
+      SCREEN_MAX_DIM = Math.max(screenSize.width, screenSize.height);
    }
    
    private CompositeCanvas canvas;
@@ -90,8 +85,8 @@ public class SwingDrawingBoard
       this.screenRenderer = new SwingRenderer2D();
       this.queuedRenderer = new QueuedRenderer2D(this.screenRenderer);
       
-      this.drawingboard = new BufferedImage(SCREEN_WIDTH, 
-                                            SCREEN_HEIGHT, 
+      this.drawingboard = new BufferedImage(SCREEN_MAX_DIM, 
+                                            SCREEN_MAX_DIM, 
                                             BufferedImage.TYPE_INT_ARGB);
       
       this.isImageValid = false;
@@ -209,7 +204,7 @@ public class SwingDrawingBoard
          return;
       
       g2d.setBackground(getBackground());
-      g2d.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+      g2d.clearRect(0, 0, SCREEN_MAX_DIM, SCREEN_MAX_DIM);
       g2d.finalize();
    }
    
