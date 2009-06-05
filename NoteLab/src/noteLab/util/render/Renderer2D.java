@@ -175,6 +175,7 @@ public abstract class Renderer2D implements Selectable
    //public abstract void scale(float x, float y);
    
    public abstract boolean isInClipRegion(Bounded bounded);
+   public abstract boolean isCompletelyInClipRegion(Bounded bounded);
    
    protected abstract void beginGroupImpl(Renderable renderable, 
                                           String desc, 

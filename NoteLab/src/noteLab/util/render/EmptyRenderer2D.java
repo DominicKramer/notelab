@@ -97,6 +97,12 @@ public class EmptyRenderer2D extends Renderer2D
    }
    
    @Override
+   public boolean isCompletelyInClipRegion(Bounded bounded)
+   {
+      return false;
+   }
+   
+   @Override
    public void setColor(Color color)
    {
    }

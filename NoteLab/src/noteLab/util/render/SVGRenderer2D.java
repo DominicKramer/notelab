@@ -436,6 +436,12 @@ public class SVGRenderer2D extends Renderer2D implements NoteLabFileConstants
       return true;
    }
    
+   @Override
+   public boolean isCompletelyInClipRegion(Bounded bounded)
+   {
+      return true;
+   }
+   
    private class TranslateStack
    {
       private Vector<FloatPoint2D> stack;
