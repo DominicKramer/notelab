@@ -121,6 +121,10 @@ public class PrimitivePic implements ButtonPic
       if (realValue < 0)
          realValue = width*0.5f;
       
+      int minDim = Math.min(width, height);
+      if (realValue > minDim)
+         realValue = minDim;
+      
       float xMid = width*0.5f;
       float x1 = xMid-realValue*0.5f;
       float x2 = xMid+realValue*0.5f;
