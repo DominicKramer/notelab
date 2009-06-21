@@ -437,6 +437,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       private final String CANCEL_PASTE = "CANCEL_PASTE";
       private final String CANCEL_IMPORT = "CANCEL_IMPORT";
       
+      private ButtonComboButton typeCombo;
       private IconToggleButton plainButton;
       private IconToggleButton graphButton;
       private IconToggleButton collegeButton;
@@ -562,16 +563,15 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.wideButton.addActionListener(this);
          this.wideButton.setToolTipText(Tooltips.TYPE_WIDE_RULED_PAPER);
          
-         ButtonComboButton typeCombo = 
-                              new ButtonComboButton(DefinedIcon.page);
-         typeCombo.addActionListener(this);
-         typeCombo.setToolTipText(Tooltips.PAGE_TYPE);
-         typeCombo.registerButton(this.plainButton);
-         typeCombo.registerButton(this.graphButton);
-         typeCombo.registerButton(this.collegeButton);
-         typeCombo.registerButton(this.wideButton);
+         this.typeCombo = new ButtonComboButton(DefinedIcon.page);
+         this.typeCombo.addActionListener(this);
+         this.typeCombo.setToolTipText(Tooltips.PAGE_TYPE);
+         this.typeCombo.registerButton(this.plainButton);
+         this.typeCombo.registerButton(this.graphButton);
+         this.typeCombo.registerButton(this.collegeButton);
+         this.typeCombo.registerButton(this.wideButton);
          
-         JWindow typePopup = typeCombo.getPopupWindow();
+         JWindow typePopup = this.typeCombo.getPopupWindow();
          typePopup.setLayout(new FlowLayout(FlowLayout.LEFT));
          typePopup.add(this.plainButton);
          typePopup.add(this.graphButton);
@@ -733,6 +733,8 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       @Override
       public void finish()
       {
+         this.bgColorButton.setPopupVisible(false);
+         this.typeCombo.setPopupVisible(false);
       }
 
       @Override
