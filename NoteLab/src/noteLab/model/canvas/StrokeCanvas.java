@@ -567,6 +567,13 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       
       public void finish()
       {
+         this.sizeControl.getControl1().setPopupVisible(false);
+         this.sizeControl.getControl2().setPopupVisible(false);
+         this.sizeControl.getControl3().setPopupVisible(false);
+         
+         this.colorControl.getControl1().setPopupVisible(false);
+         this.colorControl.getControl2().setPopupVisible(false);
+         this.colorControl.getControl3().setPopupVisible(false);
       }
       
       public void actionPerformed(ActionEvent event)
