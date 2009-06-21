@@ -563,6 +563,8 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       private Mode mode;
       private Vector<PathMenuItem> menuItemVec;
       
+      private ButtonComboButton selCombo;
+      
       private IconToggleButton selButton;
       private IconToggleButton unselButton;
       
@@ -684,20 +686,19 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          selUnselGroup.add(this.moveButton);
          selUnselGroup.add(this.scaleButton);
          
-         ButtonComboButton selCombo = 
-                              new ButtonComboButton(DefinedIcon.select);
-         selCombo.setToolTipText(Tooltips.PAGE_ACTIVE_EDITING_TOOL);
-         selCombo.addActionListener(this);
-         selCombo.registerButton(this.selButton);
-         selCombo.registerButton(this.selBoxButton);
-         selCombo.registerButton(this.selAllButton);
-         selCombo.registerButton(this.unselButton);
-         selCombo.registerButton(this.unselBoxButton);
-         selCombo.registerButton(this.unselAllButton);
-         selCombo.registerButton(this.moveButton);
-         selCombo.registerButton(this.scaleButton);
-         selCombo.registerButton(this.removeButton);
-         selCombo.registerButton(this.combButton);
+         this.selCombo = new ButtonComboButton(DefinedIcon.select);
+         this.selCombo.setToolTipText(Tooltips.PAGE_ACTIVE_EDITING_TOOL);
+         this.selCombo.addActionListener(this);
+         this.selCombo.registerButton(this.selButton);
+         this.selCombo.registerButton(this.selBoxButton);
+         this.selCombo.registerButton(this.selAllButton);
+         this.selCombo.registerButton(this.unselButton);
+         this.selCombo.registerButton(this.unselBoxButton);
+         this.selCombo.registerButton(this.unselAllButton);
+         this.selCombo.registerButton(this.moveButton);
+         this.selCombo.registerButton(this.scaleButton);
+         this.selCombo.registerButton(this.removeButton);
+         this.selCombo.registerButton(this.combButton);
          
          JPanel singlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
          singlePanel.add(this.selButton);
@@ -719,7 +720,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          editPanel.add(this.removeButton);
          editPanel.add(this.combButton);
          
-         JWindow selPopup = selCombo.getPopupWindow();
+         JWindow selPopup = this.selCombo.getPopupWindow();
          selPopup.setLayout(new GridLayout(5, 1));
          selPopup.add(singlePanel);
          selPopup.add(boxPanel);
@@ -729,7 +730,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          
          JToolBar toolbar = getToolBar();
          
-         toolbar.add(selCombo);
+         toolbar.add(this.selCombo);
          toolbar.addSeparator();
          
          toolbar.add(this.colorControl);
@@ -825,6 +826,10 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       {
          for (Page page : getCompositeCanvas().getBinder())
             page.setAllStrokeSelected(false);
+         
+         this.selCombo.setPopupVisible(false);
+         this.sizeControl.setPopupVisible(false);
+         this.colorControl.setPopupVisible(false);
          
          doRepaint();
       }
