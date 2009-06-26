@@ -205,6 +205,17 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                             new Hashtable<Page, Vector<Stroke>>(1);
          strokeTable.put(curPage, strokesAtPt);
          
+         for (Stroke stroke : strokesAtPt)
+         {
+            for (int i=this.strokeVec.size()-1; i>=0; i--)
+            {
+               if (this.strokeVec.elementAt(i).getStroke().equals(stroke))
+               {
+                  this.strokeVec.removeElementAt(i);
+               }
+            }
+         }
+         
          deleteStrokes(strokeTable);
       }
    }
