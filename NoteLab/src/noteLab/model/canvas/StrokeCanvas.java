@@ -118,6 +118,15 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
    @Override
    public void finish()
    {
+      // If this canvas is finished, the Vector of 
+      // StrokeSmoother objects need to be cleared.  
+      // Explicit synchronization needs to be done 
+      // since the 'clear' method is not 
+      // synchronized.
+      synchronized (this.strokeVec)
+      {
+         this.strokeVec.clear();
+      }
    }
    
    public boolean getRenderBinder()
