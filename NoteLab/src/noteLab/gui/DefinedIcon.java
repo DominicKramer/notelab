@@ -104,7 +104,8 @@ public enum DefinedIcon
    unselect_page, 
    select_all_page, 
    unselect_all_page, 
-   document;
+   document, 
+   new_page;
    
    private static final ImageIcon EMPTY_ICON = 
                                     new ImageIcon(
