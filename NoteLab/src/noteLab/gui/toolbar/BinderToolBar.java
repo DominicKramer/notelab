@@ -116,7 +116,7 @@ public class BinderToolBar implements ActionListener,
       
       // construct the buttons that allow you to edit pages
       this.newPageButton = 
-         new JButton(DefinedIcon.page.getIcon(BUTTON_SIZE));
+         new JButton(DefinedIcon.new_page.getIcon(BUTTON_SIZE));
       this.newPageButton.setActionCommand(NEW_PAGE);
       this.newPageButton.addActionListener(this);
       this.newPageButton.setToolTipText(Tooltips.NEW_PAGE);
