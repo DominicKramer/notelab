@@ -39,8 +39,10 @@ public class ImageFileFilter extends FileFilter
       String[] tmpArr = ImageIO.getWriterFormatNames();
       String[] newArr = new String[tmpArr.length+2];
       System.arraycopy(tmpArr, 0, newArr, 0, tmpArr.length);
-      newArr[newArr.length-2] = InfoCenter.getSVGExt();
-      newArr[newArr.length-1] = InfoCenter.getZippedSVGExt();
+      newArr[newArr.length-2] = InfoCenter.getSVGExt().
+                                              replace('.', ' ').trim();
+      newArr[newArr.length-1] = InfoCenter.getZippedSVGExt().
+                                              replace('.', ' ').trim();
       EXT_ARR = newArr;
    }
    
