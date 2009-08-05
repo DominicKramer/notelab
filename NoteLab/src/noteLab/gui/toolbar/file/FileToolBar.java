@@ -430,8 +430,12 @@ public class FileToolBar
          else
          {
             String name = pageInfo.getFileInfo().getSource().getName();
-            int index = name.lastIndexOf(InfoCenter.getPDFExtension());
-            name = name.substring(0, index);
+            int index = name.toLowerCase().
+                                lastIndexOf(InfoCenter.getPDFExtension().
+                                                          toLowerCase());
+            if (index > 0)
+               name = name.substring(0, index);
+            
             saveChooser.
                setSelectedFile(new File(name+
                                         InfoCenter.getFileExtension()));
