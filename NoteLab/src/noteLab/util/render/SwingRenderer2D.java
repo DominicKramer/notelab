@@ -42,7 +42,6 @@ import java.awt.image.ImageObserver;
 import noteLab.model.Path;
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.util.geom.Bounded;
-import noteLab.util.settings.DebugSettings;
 
 public class SwingRenderer2D extends Renderer2D implements ImageObserver
 {
@@ -197,6 +196,21 @@ public class SwingRenderer2D extends Renderer2D implements ImageObserver
       }
       
       this.g2d.draw(floatPath);
+      
+      // Uncomment to enable the "Display Knots" debug setting.
+      // Since this method is called often, simply checking 
+      // if knots should be displayed could decrease performance.
+      /*
+      if (DebugSettings.getSharedInstance().displayKnots())
+      {
+         for (int i=0; i<numPts; i++)
+         {
+            pt = path.getItemAt(i);
+            if (pt != null)
+               drawKnot(pt);
+         }
+      }
+      */
    }
    
    @Override
@@ -211,11 +225,16 @@ public class SwingRenderer2D extends Renderer2D implements ImageObserver
                                         pt2.getX(), pt2.getY()));
       }
       
+      // Uncomment to enable the "Display Knots" debug setting.
+      // Since this method is called often, simply checking 
+      // if knots should be displayed could decrease performance.
+      /*
       if (DebugSettings.getSharedInstance().displayKnots())
       {
          drawKnot(pt1);
          drawKnot(pt2);
       }
+      */
    }
    
    private void drawKnot(FloatPoint2D pt)
