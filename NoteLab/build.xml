@@ -8,6 +8,7 @@
    <property name="dir.backup.src" value="${dir.backup}/src"/>
    <property name="dir.backup.ant" value="${dir.backup}/ant"/>
    <property name="dir.backup.script" value="${dir.backup}/script"/>
+   <property name="dir.backup.jar" value="${dir.backup}/jar"/>
    <property name="dir.jar" value="jar"/>
    <property name="dir.lib" value="lib"/>
    <property name="dir.doc" value="doc"/>
@@ -26,6 +27,7 @@
    <property name="file.log.src.backup" value="${dir.backup.src}/LOG.txt"/>
    <property name="file.log.ant.backup" value="${dir.backup.ant}/LOG.txt"/>
    <property name="file.log.script.backup" value="${dir.backup.script}/LOG.txt"/>
+   <property name="file.log.jar.backup" value="${dir.backup.jar}/LOG.txt"/>
    
    <target name="init">
       <mkdir dir="${dir.bin}"/>
@@ -70,66 +72,100 @@
 
    <target name="backup.build.xml" depends="init.backup.ant">
       <tstamp>
-	     <format property="date.day" pattern="MM-dd-yyyy"/>
-	  </tstamp>
-	  <tstamp>
-	     <format property="date.time" pattern="hh-mm-ss"/>
-	  </tstamp>
-	     <input
-	        message="Enter a log message:  "
-	        addproperty="log.message"
-	  />
-   	  <property name="file.build.xml.short" 
-   	  	        value="${date.day}_${date.time}_build.xml"/>
-	  <property name="file.build.xml" 
-	            value="${dir.backup.ant}/${file.build.xml.short}"/>
-   	  <copy file="build.xml" tofile="${file.build.xml}"/>
+         <format property="date.day" pattern="MM-dd-yyyy"/>
+      </tstamp>
+      <tstamp>
+         <format property="date.time" pattern="hh-mm-ss"/>
+      </tstamp>
+      <input
+         message="Enter a log message:  "
+         addproperty="log.message"
+      />
+      <property name="file.build.xml.short" 
+                value="${date.day}_${date.time}_build.xml"/>
+      <property name="file.build.xml" 
+                value="${dir.backup.ant}/${file.build.xml.short}"/>
+      <copy file="build.xml" tofile="${file.build.xml}"/>
       <echo message="${file.build.xml.short}${line.separator}" 
-   	        file="${file.log.ant.backup}" 
-   	        append="true"/>
-   	  <echo message="---------------------------------${line.separator}" 
-   	        file="${file.log.ant.backup}" 
-   	        append="true"/>
-   	  <echo message="${log.message}${line.separator}" 
-   	        file="${file.log.ant.backup}" 
-   	        append="true"/>
-   	  <echo message="${line.separator}" 
-   	        file="${file.log.ant.backup}" 
-   	        append="true"/>
+            file="${file.log.ant.backup}" 
+            append="true"/>
+      <echo message="---------------------------------${line.separator}" 
+            file="${file.log.ant.backup}" 
+            append="true"/>
+      <echo message="${log.message}${line.separator}" 
+            file="${file.log.ant.backup}" 
+            append="true"/>
+      <echo message="${line.separator}" 
+            file="${file.log.ant.backup}" 
+            append="true"/>
    </target>
-	
-	<target name="init.backup.script" depends="init.backup">
+
+   <target name="init.backup.jar" depends="init.backup">
+      <mkdir dir="${dir.backup.jar}"/>
+   </target>
+
+   <target name="backup.jar" depends="init.backup.jar">
+     <tstamp>
+        <format property="date.day" pattern="MM-dd-yyyy"/>
+     </tstamp>
+     <tstamp>
+        <format property="date.time" pattern="hh-mm-ss"/>
+     </tstamp>
+     <input
+        message="Enter a log message:  "
+        addproperty="log.message"
+     />
+     <property name="file.jar.short" 
+               value="${date.day}_${date.time}_jar.jar"/>
+     <property name="file.jar" 
+               value="${dir.backup.jar}/${file.jar.short}"/>
+     <jar destfile="${file.jar}" basedir="${dir.jar}"/>
+     <echo message="${file.jar.short}${line.separator}" 
+           file="${file.log.jar.backup}" 
+           append="true"/>
+     <echo message="---------------------------------${line.separator}" 
+           file="${file.log.jar.backup}" 
+           append="true"/>
+     <echo message="${log.message}${line.separator}" 
+           file="${file.log.jar.backup}" 
+           append="true"/>
+     <echo message="${line.separator}" 
+           file="${file.log.jar.backup}" 
+           append="true"/>
+   </target>
+
+   <target name="init.backup.script" depends="init.backup">
       <mkdir dir="${dir.backup.script}"/>
    </target>
 
    <target name="backup.script" depends="init.backup.script">
       <tstamp>
-	     <format property="date.day" pattern="MM-dd-yyyy"/>
-	  </tstamp>
-	  <tstamp>
-	     <format property="date.time" pattern="hh-mm-ss"/>
-	  </tstamp>
-	     <input
-	        message="Enter a log message:  "
-	        addproperty="log.message"
-	  />
-   	  <property name="file.script.short" 
-   	  	        value="${date.day}_${date.time}_script.jar"/>
-	  <property name="file.script" 
-	            value="${dir.backup.script}/${file.script.short}"/>
-  	  <jar destfile="${file.script}" basedir="${dir.script}"/>
+         <format property="date.day" pattern="MM-dd-yyyy"/>
+      </tstamp>
+      <tstamp>
+         <format property="date.time" pattern="hh-mm-ss"/>
+      </tstamp>
+      <input
+         message="Enter a log message:  "
+         addproperty="log.message"
+      />
+      <property name="file.script.short" 
+                value="${date.day}_${date.time}_script.jar"/>
+      <property name="file.script" 
+                value="${dir.backup.script}/${file.script.short}"/>
+      <jar destfile="${file.script}" basedir="${dir.script}"/>
       <echo message="${file.script.short}${line.separator}" 
-   	        file="${file.log.script.backup}" 
-   	        append="true"/>
-   	  <echo message="---------------------------------${line.separator}" 
-   	        file="${file.log.script.backup}" 
-   	        append="true"/>
-   	  <echo message="${log.message}${line.separator}" 
-   	        file="${file.log.script.backup}" 
-   	        append="true"/>
-   	  <echo message="${line.separator}" 
-   	        file="${file.log.script.backup}" 
-   	        append="true"/>
+            file="${file.log.script.backup}" 
+            append="true"/>
+      <echo message="---------------------------------${line.separator}" 
+            file="${file.log.script.backup}" 
+            append="true"/>
+      <echo message="${log.message}${line.separator}" 
+            file="${file.log.script.backup}" 
+            append="true"/>
+      <echo message="${line.separator}" 
+            file="${file.log.script.backup}" 
+            append="true"/>
    </target>
 
    <target name="init.backup.src" depends="init.backup">
@@ -199,10 +235,10 @@
          name="file.jar" 
          value="NoteLab_${date.day}_${date.time}_v${version.number}.jar"/>
       <jar destfile="${dir.build.jar}/${file.jar}" 
-      	   duplicate="preserve">
-      	 <fileset dir="${dir.src}"/>
-      	 <fileset dir="${dir.bin}"/>
-      	 <fileset dir="${dir.info}"/>
+           duplicate="preserve">
+         <fileset dir="${dir.src}"/>
+         <fileset dir="${dir.bin}"/>
+         <fileset dir="${dir.info}"/>
          <manifest>
             <attribute name="Built-By" value="${devel.name}"/>
             <attribute name="Build-On" value="${date.day} at ${date.time}"/>
@@ -310,13 +346,13 @@
         name="file.jar" 
         value="NoteLab_${date.day}_${date.time}_v${version.number}.jar"/>
      <jar destfile="${dir.build.installer}/${file.jar}" 
-     	   duplicate="preserve">
+          duplicate="preserve">
         <fileset dir="${dir.src}"/>
         <fileset dir="${dir.bin}"/>
         <fileset dir="${dir.info}"/>
         <fileset dir="${dir.script}"/>
-     	<fileset dir="${dir.jar}"/>
-     	<fileset dir="${dir.lib}"/>
+        <fileset dir="${dir.jar}"/>
+        <fileset dir="${dir.lib}"/>
         <fileset file="${dir.build.installer.change}/${version.number}_changelog.txt"/>
         <manifest>
            <attribute name="Built-By" value="${devel.name}"/>
@@ -338,7 +374,7 @@
      <echo message="${line.separator}" 
            file="${file.log.installer.build}" 
            append="true"/>
-  </target>
+   </target>
    
    <target name="NoteLab" depends="compile">
       <java classname="${java.main}"
@@ -358,13 +394,13 @@
    
    <target name="javadoc" depends="init.doc">
       <javadoc packagenames="*" 
-   	           sourcepath="src" 
-   	           destdir="doc" 
-   	           author="true" 
-   	           version="true" 
-   	           use="true" 
-      	       private="true" 
-   	           windowtitle="NoteLab Reference"/>
+               sourcepath="src" 
+               destdir="doc" 
+               author="true" 
+               version="true" 
+               use="true" 
+               private="true" 
+               windowtitle="NoteLab Reference"/>
    </target>
    
    <target name="display_javadoc" depends="javadoc">
