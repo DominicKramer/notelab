@@ -213,8 +213,11 @@ public class Pen implements Tool
                                MAX_CURSOR_WIDTH);
       Dimension bestSize = toolkit.getBestCursorSize(size, size);
       
-      BufferedImage image = new BufferedImage((int)bestSize.getWidth(), 
-                                              (int)bestSize.getHeight(), 
+      int bestWidth = Math.max(1, (int)bestSize.getWidth());
+      int bestHeight = Math.max(1, (int)bestSize.getHeight());
+      
+      BufferedImage image = new BufferedImage(bestWidth, 
+                                              bestHeight, 
                                               BufferedImage.TYPE_INT_ARGB);
       Graphics2D g2d = (Graphics2D)image.createGraphics();
       g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
