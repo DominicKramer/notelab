@@ -25,7 +25,10 @@
 package noteLab.gui.settings;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -35,6 +38,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
 import noteLab.gui.DefinedIcon;
@@ -71,19 +75,49 @@ public class SettingsFrame extends JFrame
       JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
       tabbedPane.addTab("Pen", 
                         DefinedIcon.pencil.getIcon(16), 
-                        penPanel);
+                        new JScrollPane(penPanel, 
+                                        JScrollPane.
+                                           VERTICAL_SCROLLBAR_AS_NEEDED, 
+                                        JScrollPane.
+                                           HORIZONTAL_SCROLLBAR_AS_NEEDED));
       tabbedPane.addTab("Page", 
                         DefinedIcon.copy_page.getIcon(16), 
-                        pagePanel);
+                        new JScrollPane(pagePanel, 
+                                        JScrollPane.
+                                           VERTICAL_SCROLLBAR_AS_NEEDED, 
+                                        JScrollPane.
+                                           HORIZONTAL_SCROLLBAR_AS_NEEDED));
       tabbedPane.addTab("Memory", 
                         DefinedIcon.floppy.getIcon(16), 
-                        this.vmPanel);
+                        new JScrollPane(this.vmPanel, 
+                                        JScrollPane.
+                                           VERTICAL_SCROLLBAR_AS_NEEDED, 
+                                        JScrollPane.
+                                           HORIZONTAL_SCROLLBAR_AS_NEEDED));
       
       setLayout(new BorderLayout());
       add(tabbedPane, BorderLayout.CENTER);
       add(new ButtonPanel(), BorderLayout.SOUTH);
       
       pack();
+      setVisible(true);
+      
+      Dimension windowDim = getSize();
+      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      Point locOnScreen = getLocationOnScreen();
+      
+      int useableWidth = (int)(screenSize.getWidth()-locOnScreen.getX());
+      int useableHeight = (int)(screenSize.getHeight()-locOnScreen.getY());
+      
+      float width = (float)windowDim.getWidth();
+      if (width > useableWidth)
+         width = 0.75f*useableWidth;
+      
+      float height = (float)windowDim.getHeight();
+      if (height > useableHeight)
+         height = 0.75f*useableHeight;
+      
+      setSize((int)width, (int)height);
    }
    
    private class ButtonPanel extends JPanel implements ActionListener
