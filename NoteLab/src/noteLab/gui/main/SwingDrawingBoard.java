@@ -193,12 +193,12 @@ public class SwingDrawingBoard
       revalidate();
    }
    
-   public void clear()
+   private void clear()
    {
       clear(0, 0, SCREEN_MAX_DIM, SCREEN_MAX_DIM);
    }
    
-   public void clear(int x, int y, int width, int height)
+   private void clear(int x, int y, int width, int height)
    {
       if (this.drawingboard == null)
          return;
@@ -231,6 +231,38 @@ public class SwingDrawingBoard
    {
       clear();
       super.repaint();
+   }
+   
+   @Override
+   public void repaint(long tm)
+   {
+      clear();
+      super.repaint(tm);
+   }
+   
+   @Override
+   public void repaint(Rectangle r)
+   {
+      if (r == null)
+         throw new NullPointerException();
+      
+      clear((int)r.getX(), (int)r.getY(), 
+            (int)r.getWidth(), (int)r.getHeight());
+      super.repaint(r);
+   }
+   
+   @Override
+   public void repaint(int x, int y, int width, int height)
+   {
+      clear(x, y, width, height);
+      super.repaint(x, y, width, height);
+   }
+   
+   @Override
+   public void repaint(long tm, int x, int y, int width, int height)
+   {
+      clear(x, y, width, height);
+      super.repaint(tm, x, y, width, height);
    }
    
    /*
