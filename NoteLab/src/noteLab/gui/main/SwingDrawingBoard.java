@@ -193,7 +193,12 @@ public class SwingDrawingBoard
       revalidate();
    }
    
-   private void clear()
+   public void clear()
+   {
+      clear(0, 0, SCREEN_MAX_DIM, SCREEN_MAX_DIM);
+   }
+   
+   public void clear(int x, int y, int width, int height)
    {
       if (this.drawingboard == null)
          return;
@@ -202,16 +207,29 @@ public class SwingDrawingBoard
       if (g2d == null)
          return;
       
+      if (x < 0)
+         x = 0;
+      
+      if (y < 0)
+         y = 0;
+      
+      if (width > SCREEN_MAX_DIM)
+         width = SCREEN_MAX_DIM;
+      
+      if (height > SCREEN_MAX_DIM)
+         height = SCREEN_MAX_DIM;
+      
       g2d.setBackground(getBackground());
-      g2d.clearRect(0, 0, SCREEN_MAX_DIM, SCREEN_MAX_DIM);
+      g2d.clearRect(x, y, width, height);
       g2d.finalize();
+      
+      this.isImageValid = false;
    }
    
    @Override
    public void repaint()
    {
       clear();
-      this.isImageValid = false;
       super.repaint();
    }
    
