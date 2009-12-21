@@ -1,6 +1,12 @@
-Version:  Obtained from CVS, Sunday, April 19, 2009 at 2:32 AM 
+Version:  Obtained from CVS, Saturday, September 26, 2009 at 12:49 AM 
           central standard time.  Some modifications were 
           made to the code.
+
+The following two commands will check out the current source code for 
+pdf-renderer from its CVS server (where 'username' is your username): 
+
+  cvs -d :pserver:username@cvs.dev.java.net:/cvs login
+  cvs -d :pserver:username@cvs.dev.java.net:/cvs checkout pdf-renderer 
 
 Modifications:
 --------------
