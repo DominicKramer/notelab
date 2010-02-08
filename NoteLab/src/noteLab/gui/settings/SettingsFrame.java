@@ -110,11 +110,11 @@ public class SettingsFrame extends JFrame
       int useableHeight = (int)(screenSize.getHeight()-locOnScreen.getY());
       
       float width = (float)windowDim.getWidth();
-      if (width > useableWidth)
+      if (width >= 0.9f*useableWidth)
          width = 0.75f*useableWidth;
       
       float height = (float)windowDim.getHeight();
-      if (height > useableHeight)
+      if (height >= 0.9f*useableHeight)
          height = 0.75f*useableHeight;
       
       setSize((int)width, (int)height);
