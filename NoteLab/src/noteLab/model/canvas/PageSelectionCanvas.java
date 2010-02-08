@@ -139,7 +139,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       for (Page page : this.selPageVec)
          page.setSelectionEnabled(true);
       
-      doRepaint();
+      doRedraw();
    }
    
    @Override
@@ -148,7 +148,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       for (Page page : this.selPageVec)
          page.setSelectionEnabled(false);
       
-      doRepaint();
+      doRedraw();
    }
    
    @Override
@@ -206,7 +206,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       this.toolBar.notifyOfCopyState();
    }
    
-   private void doPaintDirtyRectangle()
+   private void doRedrawDirtyRectangle()
    {
       if (this.selPageVec.isEmpty())
          return;
@@ -217,10 +217,10 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       
       Rectangle2D.Float union = unioner.getUnion();
       
-      doRepaint((float)union.getX(), 
-                (float)union.getY(), 
-                (float)union.getWidth(), 
-                (float)union.getHeight(), 1);
+      doRedraw((float)union.getX(), 
+               (float)union.getY(), 
+               (float)union.getWidth(), 
+               (float)union.getHeight(), 1);
    }
    
    @Override
@@ -284,7 +284,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          float y = page.getY();
          float w = page.getWidth();
          float h = page.getHeight();
-         doRepaint(x, y, w, h, 1);
+         doRedraw(x, y, w, h, 1);
       }
    }
    
@@ -375,22 +375,24 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          this.page = dropPage;
          this.dropAbove = dropAbove;
          
-         doPaint(oldLeft, oldRight, oldY);
-         doPaint(leftX, rightX, y);
+         doRedraw(oldLeft, oldRight, oldY);
+         doRedraw(leftX, rightX, y);
       }
       
-      private void doPaint()
+      private void doRedraw()
       {
          float leftX = this.leftPt.getX();
          float rightX = this.rightPt.getX();
          float y = this.leftPt.getY();
          
-         doRepaint(leftX, y-this.width, rightX-leftX, 2*this.width, this.width);
+         PageSelectionCanvas.this.doRedraw(leftX, y-this.width, rightX-leftX, 
+                                           2*this.width, this.width);
       }
       
-      private void doPaint(float leftX, float rightX, float y)
+      private void doRedraw(float leftX, float rightX, float y)
       {
-         doRepaint(leftX, y-this.width, rightX-leftX, 2*this.width, this.width);
+         PageSelectionCanvas.this.doRedraw(leftX, y-this.width, rightX-leftX, 
+                                           2*this.width, this.width);
       }
 
       public void resizeTo(float x, float y)
@@ -794,7 +796,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          else if (cmmd.equals(DefinedIcon.unselect_all_page.toString()))
          {
             unselectAllPages();
-            doRepaint();
+            doRedraw();
          }
          else if (cmmd.equals(Action.ChangeBGColor.toString()))
          {
@@ -804,7 +806,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          {
             this.curMode = Mode.Selection;
             this.cutToolbar.setPasteIcon(DefinedIcon.paste);
-            dropLine.doPaint();
+            dropLine.doRedraw();
          }
          else if (cmmd.equals(Action.Paste.toString()))
          {
@@ -816,7 +818,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          else if (cmmd.equals(CANCEL_IMPORT))
          {
             this.curMode = Mode.Selection;
-            dropLine.doPaint();
+            dropLine.doRedraw();
          }
          else if (cmmd.equals(Action.Drop.toString()))
          {
@@ -870,7 +872,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
                page.setPaperType(PaperType.WideRuled);
          }
          
-         doPaintDirtyRectangle();
+         doRedrawDirtyRectangle();
       }
       
       private void dropPages(Iterable<Page> pageVec)
@@ -909,7 +911,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
          
          this.curMode = Mode.Selection;
          this.cutToolbar.setPasteIcon(DefinedIcon.paste);
-         doRepaint();
+         doRedraw();
       }
       
       private void showPasteMenu()
@@ -947,7 +949,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
             page.setSelected(false);
          }
          
-         doPaintDirtyRectangle();
+         doRedrawDirtyRectangle();
          selPageVec.clear();
          syncActionButtons();
       }
@@ -1005,7 +1007,7 @@ public class PageSelectionCanvas extends SubCanvas<PageSelector, Page>
       public void valueChanged(ValueChangeEvent<Color, ColorControl> event)
       {
          setColor();
-         doPaintDirtyRectangle();
+         doRedrawDirtyRectangle();
       }
 
       public CopyVector<Page> copy()
