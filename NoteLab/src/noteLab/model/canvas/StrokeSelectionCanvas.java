@@ -196,7 +196,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          notifyOfCopyState(checkCanCopy());
       }
       
-      doRepaint();
+      doRedraw();
       this.prevPoint = null;
       this.selRect = null;
    }
@@ -254,10 +254,10 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          }
          
          Rectangle2D.Float union = unioner.getUnion();
-         doRepaint( curPage.getX()+(float)union.getX(), 
-                    curPage.getY()+(float)union.getY(), 
-                    (float)union.getWidth(), (float)union.getHeight(), 
-                    maxWidth);
+         doRedraw( curPage.getX()+(float)union.getX(), 
+                   curPage.getY()+(float)union.getY(), 
+                   (float)union.getWidth(), (float)union.getHeight(), 
+                   maxWidth);
          
          this.copiedItem = null;
          this.toolBar.moveButton.doClick();
@@ -279,7 +279,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          for (Stroke stroke : strokesAtPt)
          {
             curPage.setStrokeSelected(stroke, true);
-            paintStroke(stroke);
+            redrawStroke(stroke);
          }
          
          notifyOfCopyState(true);
@@ -289,7 +289,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          for (Stroke stroke : strokesAtPt)
          {
             curPage.setStrokeSelected(stroke, false);
-            paintStroke(stroke);
+            redrawStroke(stroke);
          }
          
          notifyOfCopyState(checkCanCopy());
@@ -309,9 +309,9 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          if (this.selRect == null)
          {
             this.selRect = new Rectangle2D.Float(boxH, boxY, boxW, boxH);
-            doRepaint(page.getX() + boxX, page.getY() + boxY, 
-                      boxW, boxH, 
-                      SEL_BOX_LINE_WIDTH);
+            doRedraw(page.getX() + boxX, page.getY() + boxY, 
+                     boxW, boxH, 
+                     SEL_BOX_LINE_WIDTH);
          }
          else
          {
@@ -323,9 +323,9 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             float repaintH = Math.max(this.selRect.height, boxH);
             
             this.selRect.setRect(boxX, boxY, boxW, boxH);
-            doRepaint(page.getX() + repaintX, page.getY() + repaintY, 
-                      repaintW, repaintH, 
-                      SEL_BOX_LINE_WIDTH);
+            doRedraw(page.getX() + repaintX, page.getY() + repaintY, 
+                     repaintW, repaintH, 
+                     SEL_BOX_LINE_WIDTH);
          }
          
          // we notify the CopyStateListeners of whether or not things 
@@ -387,11 +387,11 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             
             Rectangle2D.Float union = unioner.getUnion();
             Page page = binder.getCurrentPage();
-            doRepaint((float)union.getX()+page.getX()+initX, 
-                      (float)union.getY()+page.getY()+initY,
-                      (float)union.getWidth(), 
-                      (float)union.getHeight(), 
-                      maxWidth);
+            doRedraw((float)union.getX()+page.getX()+initX, 
+                     (float)union.getY()+page.getY()+initY,
+                     (float)union.getWidth(), 
+                     (float)union.getHeight(), 
+                     maxWidth);
          }
       }
       
@@ -434,7 +434,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                                    width+2*lineWidth, height+2*lineWidth);
    }
    
-   private void paintStroke(Stroke stroke)
+   private void redrawStroke(Stroke stroke)
    {
       float penWidth = stroke.getPen().getWidth();
       
@@ -448,8 +448,8 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          pt2 = path.getItemAt(i+1);
          
          lineBounds = getLineBounds(pt1, pt2, penWidth);
-         doRepaint(lineBounds.x, lineBounds.y, 
-                   lineBounds.width, lineBounds.height, penWidth);
+         doRedraw(lineBounds.x, lineBounds.y, 
+                  lineBounds.width, lineBounds.height, penWidth);
       }
    }
    
@@ -457,12 +457,12 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
                            float xDiff, float yDiff)
    {
       float penWidth = stroke.getPen().getWidth();
-      doMoveAndPaint(stroke.getBounds2D(), xDiff, yDiff, penWidth);
+      doMoveAndDraw(stroke.getBounds2D(), xDiff, yDiff, penWidth);
       stroke.translateBy(xDiff, yDiff);
    }
    
-   private void doMoveAndPaint(Rectangle2D bounds,  
-                               float xDiff, float yDiff, float delta)
+   private void doMoveAndDraw(Rectangle2D bounds,  
+                              float xDiff, float yDiff, float delta)
    {
       Page curPage = getCompositeCanvas().getBinder().getCurrentPage();
       
@@ -503,7 +503,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          height += delta;
       }
       
-      doRepaint(x,  y,  width,  height, 0);
+      doRedraw(x,  y,  width,  height, 0);
    }
    
    @Override
@@ -831,7 +831,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          this.sizeControl.setPopupVisible(false);
          this.colorControl.setPopupVisible(false);
          
-         doRepaint();
+         doRedraw();
       }
 
       public List<PathMenuItem> getPathMenuItems()
@@ -910,8 +910,8 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             float y = (float)(dirtyRect.getY()+curPage.getY());
             
             // repaint the dirty region
-            doRepaint( x, 
-                       y, 
+            doRedraw( x, 
+                      y, 
                       (float)dirtyRect.getWidth(), 
                       (float)dirtyRect.getHeight(), 
                       maxWidth);
@@ -936,7 +936,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          {
             getCompositeCanvas().getBinder().setAllStrokeSelected(true);
             // CHANGED:  Notice the whole screen is repainted here
-            doRepaint();
+            doRedraw();
             
             notifyOfCopyState(checkCanCopy());
          }
@@ -944,7 +944,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          {
             getCompositeCanvas().getBinder().setAllStrokeSelected(false);
             // CHANGED:  Notice the whole screen is repainted here
-            doRepaint();
+            doRedraw();
             
             notifyOfCopyState(checkCanCopy());
          }
@@ -999,10 +999,10 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             // repaint only the dirty region
             Rectangle2D dirtyRect = dirtyUnioner.getUnion();
             Page page = binder.getCurrentPage();
-            doRepaint((float)dirtyRect.getX()+page.getX(), 
-                      (float)dirtyRect.getY()+page.getY(), 
-                      (float)dirtyRect.getWidth(), 
-                      (float)dirtyRect.getHeight(), 0);
+            doRedraw((float)dirtyRect.getX()+page.getX(), 
+                     (float)dirtyRect.getY()+page.getY(), 
+                     (float)dirtyRect.getWidth(), 
+                     (float)dirtyRect.getHeight(), 0);
          }
          
          public void valueChanged(ValueChangeEvent<MValue, 
@@ -1047,10 +1047,10 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
             // repaint only the dirty region
             Rectangle2D dirtyRect = dirtyUnioner.getUnion();
             Page page = binder.getCurrentPage();
-            doRepaint((float)dirtyRect.getX()+page.getX(), 
-                      (float)dirtyRect.getY()+page.getY(), 
-                      (float)dirtyRect.getWidth(), 
-                      (float)dirtyRect.getHeight(), 0);
+            doRedraw((float)dirtyRect.getX()+page.getX(), 
+                     (float)dirtyRect.getY()+page.getY(), 
+                     (float)dirtyRect.getWidth(), 
+                     (float)dirtyRect.getHeight(), 0);
          }
          
          public void valueChanged(ValueChangeEvent<Color, ColorControl> event)
@@ -1091,11 +1091,11 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          }
          
          Rectangle2D.Float union = unioner.getUnion();
-         doRepaint((float)union.getX(), 
-                   (float)union.getY(), 
-                   (float)union.getWidth(), 
-                   (float)union.getHeight(), 
-                   maxWidth);
+         doRedraw((float)union.getX(), 
+                  (float)union.getY(), 
+                  (float)union.getWidth(), 
+                  (float)union.getHeight(), 
+                  maxWidth);
          
          binder.setAllStrokeSelected(false);
          
@@ -1134,11 +1134,11 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
          }
          
          Rectangle2D.Float union = dirtyRegion.getUnion();
-         doRepaint((float)union.getX(), 
-                   (float)union.getY(), 
-                   (float)union.getWidth(), 
-                   (float)union.getHeight(), 
-                   (float)maxWidth);
+         doRedraw((float)union.getX(), 
+                  (float)union.getY(), 
+                  (float)union.getWidth(), 
+                  (float)union.getHeight(), 
+                  (float)maxWidth);
          
          if (selStrokes.isEmpty())
             return null;
