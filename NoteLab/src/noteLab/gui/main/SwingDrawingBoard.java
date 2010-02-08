@@ -265,6 +265,29 @@ public class SwingDrawingBoard
       super.repaint(tm, x, y, width, height);
    }
    
+   public void redrawOverlay(int x, int y, int width, int height)
+   {
+      Graphics g = getGraphics();
+      g.setClip(x, y, width, height);
+      
+      paintComponent(g);
+   }
+   
+   public void redrawOverlay()
+   {
+      paintComponent(getGraphics());
+   }
+   
+   public void redraw(int x, int y, int width, int height)
+   {
+      repaint(x, y, width, height);
+   }
+   
+   public void redraw()
+   {
+      repaint();
+   }
+   
    /*
     * Overridden so that multiple mouse dragged events are not coalesced into 
     * one.  If this were done, drawing would look choppy.  By disabling 
