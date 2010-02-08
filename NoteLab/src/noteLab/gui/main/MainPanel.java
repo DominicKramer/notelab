@@ -33,7 +33,6 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -56,7 +55,7 @@ public class MainPanel
    private static final int BUTTON_SCROLL_INCREMENT = 75;
    
    private CompositeCanvas canvas;
-   private JComponent paintPanel;
+   private SwingDrawingBoard paintPanel;
    private JScrollPane scrollPane;
    
    public MainPanel(CompositeCanvas canvas)
@@ -131,36 +130,31 @@ public class MainPanel
       invalidate();
    }
    
-   @Override
-   public void repaint()
+   public void redrawOverlay()
    {
-      super.repaint();
-      
       if (this.paintPanel != null)
-         this.paintPanel.repaint();
+         this.paintPanel.redrawOverlay();
       
       if (DebugSettings.getSharedInstance().notifyOfRepaints())
          System.err.println("repaint() called");
    }
    
-   public void repaint(float x, float y, float width, float height)
+   public void redraw()
+   {
+      if (this.paintPanel != null)
+         this.paintPanel.redraw();
+      
+      if (DebugSettings.getSharedInstance().notifyOfRepaints())
+         System.err.println("repaint() called");
+   }
+   
+   public void redrawOverlay(float x, float y, float width, float height)
    {
       if (DebugSettings.getSharedInstance().forceGlobalRepaints())
       {
-         repaint();
+         redraw();
          return;
       }
-      
-      int iX = (int)x;
-      int iY = (int)y;
-      
-      int iWidth = 1+(int)width;
-      if (iWidth == 0)
-         iWidth = 1;
-      
-      int iHeight = 1+(int)height;
-      if (iHeight == 0)
-         iHeight = 1;
       
       //only painting the 'paint panel' which holds the painted binder 
       //and not 'this' panel (which contains the paint panel) needs to 
@@ -169,7 +163,38 @@ public class MainPanel
       // The method below adds the specified rectangle to the list of 
       // dirty rectangles that need repainting.  The first parameter 
       // is not used.
-      this.paintPanel.repaint(0, iX, iY, iWidth, iHeight);
+      this.paintPanel.redrawOverlay( (int)x, (int)y, 
+                                     getAdjustedValue(width), 
+                                     getAdjustedValue(height));
+   }
+   
+   public void redraw(float x, float y, float width, float height)
+   {
+      if (DebugSettings.getSharedInstance().forceGlobalRepaints())
+      {
+         redraw();
+         return;
+      }
+      
+      //only painting the 'paint panel' which holds the painted binder 
+      //and not 'this' panel (which contains the paint panel) needs to 
+      //be repainted.
+      
+      // The method below adds the specified rectangle to the list of 
+      // dirty rectangles that need repainting.  The first parameter 
+      // is not used.
+      this.paintPanel.redraw( (int)x, (int)y, 
+                              getAdjustedValue(width), 
+                              getAdjustedValue(height) );
+   }
+   
+   private int getAdjustedValue(float value)
+   {
+      int iValue = 1+(int)value;
+      if (iValue == 0)
+         iValue = 1;
+      
+      return iValue;
    }
    
    public void show(float x, float y, float width, float height)
