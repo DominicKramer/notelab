@@ -276,7 +276,7 @@ public abstract class Binder implements Renderable, Bounded,
       this.pageList.remove(page);
       this.curPage = newIndex;
       getCurrentPage().setSelected(true);
-      repaint();
+      redraw();
       doLayout();
       
       notifyModListeners(ModType.Other);
@@ -416,16 +416,16 @@ public abstract class Binder implements Renderable, Bounded,
       this.repaintListeners.remove(listener);
    }
    
-   public void repaint(float x, float y, float width, float height)
+   public void redraw(float x, float y, float width, float height)
    {
       for (RepaintListener listener : this.repaintListeners)
-         listener.repaint(x, y, width, height);
+         listener.redraw(x, y, width, height);
    }
    
-   public void repaint()
+   public void redraw()
    {
       for (RepaintListener listener : this.repaintListeners)
-         listener.repaint();
+         listener.redraw();
    }
    
    public void show(float x, float y, float width, float height)
