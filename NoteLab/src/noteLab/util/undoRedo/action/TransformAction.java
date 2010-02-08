@@ -54,6 +54,6 @@ public class TransformAction extends CanvasAction
       this.transformer.scaleTo(this.xScale, this.yScale);
       this.transformer.translateTo(this.xTrans, this.yTrans);
       
-      getCompositeCanvas().repaint();
+      getCompositeCanvas().redraw();
    }
 }
