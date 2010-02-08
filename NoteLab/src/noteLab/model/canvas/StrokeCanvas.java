@@ -191,17 +191,17 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                           getStroke().getPen().getWidth();
             
             float halfWidth = width/2f;
-            doRepaint(pt.getX()+page.getX()-halfWidth, 
-                      pt.getY()+page.getY()-halfWidth, 
-                      width, 
-                      width, 0);
+            doRedrawOverlay(pt.getX()+page.getX()-halfWidth, 
+                            pt.getY()+page.getY()-halfWidth, 
+                            width, 
+                            width, 0);
             return;
          }
          
          FloatPoint2D pt3 = path.getItemAt(numItems-2);
          FloatPoint2D pt4 = path.getItemAt(numItems-1);
          
-         doRepaintLine(pt3, pt4, binder);
+         doRedrawLine(pt3, pt4, binder);
       }
       else if (curMode == Mode.Delete)
       {
@@ -229,8 +229,8 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       }
    }
    
-   private void doRepaintLine(FloatPoint2D pt1, FloatPoint2D pt2, 
-                              Binder binder)
+   private void doRedrawLine(FloatPoint2D pt1, FloatPoint2D pt2, 
+                             Binder binder)
    {
       float x = Math.min(pt1.getX(), pt2.getX());
       float y = Math.min(pt1.getY(), pt2.getY());
@@ -245,7 +245,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       }
       
       float delta = 1+this.pen.getWidth()*0.5f;
-      doRepaint( x, y, width, height, delta );
+      doRedrawOverlay( x, y, width, height, delta );
    }
    
    public void renderInto(Renderer2D overlayDisplay, Renderer2D mainDisplay)
@@ -776,7 +776,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                
                isSmooth = true;
                if (!getHasBeenRendered())
-                  doRepaint(x, y, width, height, 0);
+                  doRedrawOverlay(x, y, width, height, 0);
             }
          }).start();
       }
