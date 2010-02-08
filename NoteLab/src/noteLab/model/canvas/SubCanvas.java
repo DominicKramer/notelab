@@ -255,8 +255,8 @@ public abstract class SubCanvas<T extends Tool, S>
       float y = (float)(dirtyRect.getY()+page.getY());
       
       // repaint the dirty region
-      doRepaint( x, 
-                 y, 
+      doRedraw( x, 
+                y, 
                 (float)dirtyRect.getWidth(), 
                 (float)dirtyRect.getHeight(), 0);
    }
