@@ -395,16 +395,28 @@ public class CompositeCanvas
          listener.setCursor(cursor);
    }
    
-   public void repaint()
+   public void redrawOverlay()
    {
       for (RepaintListener listener : this)
-         listener.repaint();
+         listener.redrawOverlay();
    }
-
-   public void repaint(float x, float y, float width, float height)
+   
+   public void redraw()
    {
       for (RepaintListener listener : this)
-         listener.repaint(x, y, width, height);
+         listener.redraw();
+   }
+   
+   public void redrawOverlay(float x, float y, float width, float height)
+   {
+      for (RepaintListener listener : this)
+         listener.redrawOverlay(x, y, width, height);
+   }
+   
+   public void redraw(float x, float y, float width, float height)
+   {
+      for (RepaintListener listener : this)
+         listener.redraw(x, y, width, height);
    }
    
    public void show(float x, float y, float width, float height)
@@ -722,7 +734,7 @@ public class CompositeCanvas
             setUnitScaleFactor(newFactor);
             
             // NOTE:  The entire canvas needs to be repainted here
-            doRepaint();
+            doRedraw();
          }
       }
       else if (key.equals(SettingsKeys.PAPER_TYPE_KEY))
@@ -732,7 +744,7 @@ public class CompositeCanvas
             page.getPaper().setPaperType(type);
          
          // NOTE:  The entire canvas needs to be repainted here
-         doRepaint();
+         doRedraw();
       }
       else if (key.equals(SettingsKeys.PAPER_COLOR_KEY))
       {
@@ -741,7 +753,7 @@ public class CompositeCanvas
             page.getPaper().setBackgroundColor(color);
          
          // NOTE:  The entire canvas needs to be repainted here
-         doRepaint();
+         doRedraw();
       }
    }
 }
