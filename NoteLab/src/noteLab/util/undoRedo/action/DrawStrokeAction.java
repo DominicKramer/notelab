@@ -85,10 +85,10 @@ public class DrawStrokeAction extends CanvasAction
       }
       
       Rectangle2D.Float union = unioner.getUnion();
-      canvas.doRepaint((float)union.getX()+this.page.getX(), 
-                       (float)union.getY()+this.page.getY(), 
-                       (float)union.getWidth(), 
-                       (float)union.getHeight(), 
-                       maxWidth);
+      canvas.doRedraw((float)union.getX()+this.page.getX(), 
+                      (float)union.getY()+this.page.getY(), 
+                      (float)union.getWidth(), 
+                      (float)union.getHeight(), 
+                      maxWidth);
    }
 }
