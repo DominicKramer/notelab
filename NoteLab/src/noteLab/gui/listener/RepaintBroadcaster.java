@@ -59,14 +59,14 @@ public class RepaintBroadcaster implements RepaintBroadcastCenter,
       return this.listeners.iterator();
    }
    
-   public void doRepaint()
+   public void doRedraw()
    {
       for (RepaintListener listener : this.listeners)
-         listener.repaint();
+         listener.redraw();
    }
    
-   public void doRepaint(float x, float y, float width, float height, 
-                         float delta)
+   public void doRedraw(float x, float y, float width, float height, 
+                        float delta)
    {
       x -= delta;
       y -= delta;
@@ -75,6 +75,19 @@ public class RepaintBroadcaster implements RepaintBroadcastCenter,
       height += 2*delta;
       
       for (RepaintListener listener : this.listeners)
-         listener.repaint(x, y, width, height);
+         listener.redraw(x, y, width, height);
+   }
+   
+   public void doRedrawOverlay(float x, float y, float width, float height, 
+                               float delta)
+   {
+      x -= delta;
+      y -= delta;
+      
+      width += 2*delta;
+      height += 2*delta;
+      
+      for (RepaintListener listener : this.listeners)
+         listener.redrawOverlay(x, y, width, height);
    }
 }
