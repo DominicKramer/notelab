@@ -189,7 +189,7 @@ public class BinderToolBar implements ActionListener,
       
       // if cmmd.equals(REFRESH) nothing needs to be done except 
       // repainting which is done by the next line
-      this.canvas.doRepaint();
+      this.canvas.doRedraw();
    }
    
    private void adjustNextPrevButtons()
