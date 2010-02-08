@@ -79,10 +79,10 @@ public class DeleteStrokeAction extends CanvasAction
       }
       
       Rectangle2D.Float union = unioner.getUnion();
-      getCompositeCanvas().doRepaint((float)union.getX()+this.page.getX(), 
-                                     (float)union.getY()+this.page.getY(), 
-                                     (float)union.getWidth(), 
-                                     (float)union.getHeight(), 
-                                     maxWidth);
+      getCompositeCanvas().doRedraw((float)union.getX()+this.page.getX(), 
+                                    (float)union.getY()+this.page.getY(), 
+                                    (float)union.getWidth(), 
+                                    (float)union.getHeight(), 
+                                    maxWidth);
    }
 }
