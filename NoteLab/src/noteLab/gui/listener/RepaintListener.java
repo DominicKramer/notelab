@@ -28,8 +28,10 @@ import java.awt.Cursor;
 
 public interface RepaintListener
 {
-   public void repaint(float x, float y, float width, float height);
-   public void repaint();
+   public void redrawOverlay(float x, float y, float width, float height);
+   public void redrawOverlay();
+   public void redraw(float x, float y, float width, float height);
+   public void redraw();
    public void show(float x, float y, float width, float height);
    public void setCursor(Cursor cursor);
 }
