@@ -29,7 +29,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -159,13 +158,6 @@ public class Paper extends TransformRectangle2D
     */
    private float wideMargin;
    
-   /**
-    * The image to which this paper is cached to help speed 
-    * rendering.  If this field is <code>null</code> this 
-    * paper hasn't been cached or its cache is not up to date.
-    */
-   private BufferedImage cacheImage;
-   
    private boolean selectionEnabled;
    
    private float unitScaleFactor;
@@ -209,8 +201,6 @@ public class Paper extends TransformRectangle2D
       
       this.wideMargin = this.rawWideMargin*yScaleLevel;
       this.collegeMargin = this.rawCollegeMargin*yScaleLevel;
-      
-      this.cacheImage = null;
       
       setSelectionEnabled(false);
       setBackgroundColor(Color.WHITE);
@@ -311,32 +301,6 @@ public class Paper extends TransformRectangle2D
       
       this.type = type;
       notifyModListeners(ModType.Other);
-      updateCache();
-   }
-   
-   /**
-    * Informs this paper to cache itself to the image specified by 
-    * the field <code>this.cacheImage</code>.
-    */
-   private void updateCache()
-   {
-      if (DebugSettings.getSharedInstance().useCache())
-      {
-         int width = (int)(getWidth());
-         int height = (int)(getHeight());
-         
-         if (width <= 0)
-            width = 1;
-         
-         if (height <= 0)
-            height = 1;
-         
-         this.cacheImage = new BufferedImage(width, height, 
-                                             BufferedImage.TYPE_INT_ARGB);
-         
-         ImageRenderer2D renderer = new ImageRenderer2D(this.cacheImage);
-         doRenderInto(renderer);
-      }
    }
    
    /**
@@ -387,12 +351,6 @@ public class Paper extends TransformRectangle2D
    {
       if (renderer == null)
          throw new NullPointerException();
-      
-      if (this.cacheImage != null && renderer instanceof SwingRenderer2D)
-      {
-         ((SwingRenderer2D)renderer).drawImage(this.cacheImage);
-         return;
-      }
       
       doRenderInto(renderer);
       
@@ -724,8 +682,6 @@ public class Paper extends TransformRectangle2D
       
       this.collegeMargin *= y;
       this.wideMargin *= y;
-      
-      updateCache();
    }
    
    /**
@@ -745,8 +701,6 @@ public class Paper extends TransformRectangle2D
       
       this.collegeMargin = this.rawCollegeMargin*y;
       this.wideMargin = this.rawWideMargin*y;
-      
-      updateCache();
    }
    
    @Override
@@ -766,8 +720,6 @@ public class Paper extends TransformRectangle2D
       this.rawWideMargin *= y;
       
       scaleTo(xScale, yScale);
-      
-      updateCache();
    }
    
    public void adaptToUnitFactor(float unitScaleFactor)
@@ -786,34 +738,6 @@ public class Paper extends TransformRectangle2D
       this.rawWideMargin = calcWideMargin(this.screenRes, unitScaleFactor);
       
       scaleTo(xScale, yScale);
-      
-      updateCache();
-   }
-   
-   /**
-    * Translates this paper by the given amounts.
-    * 
-    * @param x The amount this paper is translated in the x direction.
-    * @param y THe amount this paper is translated in the y direction.
-    */
-   @Override
-   public void translateBy(float x, float y)
-   {
-      super.translateBy(x, y);
-      updateCache();
-   }
-
-   /**
-    * Translates this paper to the given coordinates.
-    * 
-    * @param x The x coordinate to which this paper is translated to.
-    * @param y The y coordinate to which this paper is translated to.
-    */
-   @Override
-   public void translateTo(float x, float y)
-   {
-      super.translateTo(x, y);
-      updateCache();
    }
    
    /** Calculates the width of squres on a grided piece of paper. */
