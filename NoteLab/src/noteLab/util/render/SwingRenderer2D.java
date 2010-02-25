@@ -27,23 +27,20 @@ package noteLab.util.render;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.ImageObserver;
 
 import noteLab.model.Path;
 import noteLab.model.geom.FloatPoint2D;
 import noteLab.util.geom.Bounded;
 
-public class SwingRenderer2D extends Renderer2D implements ImageObserver
+public class SwingRenderer2D extends Renderer2D
 {
    public enum RenderMode
    {
@@ -347,14 +344,6 @@ public class SwingRenderer2D extends Renderer2D implements ImageObserver
       this.g2d.dispose();
    }
    
-   public void drawImage(Image image)
-   {
-      if (image == null)
-         throw new NullPointerException();
-      
-      this.g2d.drawImage(image, new AffineTransform(), this);
-   }
-   
    // The Renderer2D class doesn't specify a scale() method
    //@Override
    //public void scale(float x, float y)
@@ -462,13 +451,5 @@ public class SwingRenderer2D extends Renderer2D implements ImageObserver
          return this.innerSelStroke.
                     createStrokedShape(this.outerSelStroke.createStrokedShape(p));
       }
-   }
-
-   public boolean imageUpdate(Image img, int infoflags, int x, int y,
-                              int width, int height)
-   {
-      // This method should just return false to specify that no 
-      // further image loading information is needed.
-      return false;
    }
 }
