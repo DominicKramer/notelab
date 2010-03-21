@@ -71,8 +71,11 @@ public class MainPanel
       JPanel centerPanel = new JPanel(centerLayout);
       
       this.scrollPane = new JScrollPane(centerPanel);
+      // Wheel scrolling is disabled since this class manually 
+      // handles wheel scrolling.
       this.scrollPane.setWheelScrollingEnabled(false);
       this.scrollPane.addMouseWheelListener(this);
+      this.scrollPane.setAutoscrolls(false);
       this.scrollPane.getVerticalScrollBar().addAdjustmentListener(this);
       this.scrollPane.getHorizontalScrollBar().addAdjustmentListener(this);
       // The scroll mode must be BLIT_SCROLL_MODE and not 
@@ -84,10 +87,10 @@ public class MainPanel
                          setUnitIncrement(BUTTON_SCROLL_INCREMENT);
       this.scrollPane.
          setHorizontalScrollBarPolicy(
-               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
       this.scrollPane.
          setVerticalScrollBarPolicy(
-               ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
       
       this.paintPanel = new SwingDrawingBoard(this.canvas, this);
       updatePreferredSize();
@@ -95,6 +98,9 @@ public class MainPanel
       MouseInputListener inputListener = this.canvas.getInputListener();
       this.paintPanel.addMouseListener(inputListener);
       this.paintPanel.addMouseMotionListener(inputListener);
+      
+      this.scrollPane.addMouseListener(inputListener);
+      this.scrollPane.addMouseMotionListener(inputListener);
       
       centerPanel.add(this.paintPanel);
       
@@ -236,20 +242,32 @@ public class MainPanel
       if (e == null)
          throw new NullPointerException();
       
-      if (!e.getValueIsAdjusting())
+      if ( !e.getValueIsAdjusting() )
          repaint();
    }
-
+   
    public void mouseWheelMoved(MouseWheelEvent e)
    {
       if (e == null)
          throw new NullPointerException();
       
       int clickCount = e.getWheelRotation();
+      if (clickCount == 0)
+         return;
+      
       JScrollBar scrollBar = this.scrollPane.getVerticalScrollBar();
+      int val = scrollBar.getValue();
+      
+      int min = scrollBar.getMinimum();
+      if (val == min && clickCount < 0)
+         return;
+      
+      int max = scrollBar.getMaximum()-scrollBar.getVisibleAmount();
+      if (val == max && clickCount > 0)
+         return;
+      
       scrollBar.setValueIsAdjusting(true);
-      scrollBar.setValue(scrollBar.getValue()+
-                            clickCount*WHEEL_SCROLL_INCREMENT);
+      scrollBar.setValue(val+clickCount*WHEEL_SCROLL_INCREMENT);
       scrollBar.setValueIsAdjusting(false);
    }
 }
