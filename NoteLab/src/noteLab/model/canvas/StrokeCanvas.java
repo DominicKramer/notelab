@@ -137,7 +137,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
    @Override
    public void pathStartedImpl(Path path, MouseButton button, boolean newPage)
    {
-      if (button == MouseButton.Button3)
+      if (button != MouseButton.Button1)
          this.toolBar.setCurrentMode(this.toolBar.getCurrentMode().invert());
       
       if (this.toolBar.getCurrentMode() == Mode.Write)
@@ -351,7 +351,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
          this.writeButton.addActionListener(this);
          this.writeButton.setToolTipText(Tooltips.PEN);
          
-         this.deleteButton = new JToggleButton(DefinedIcon.remove.getIcon(BUTTON_SIZE));
+         this.deleteButton = new JToggleButton(DefinedIcon.eraser.getIcon(BUTTON_SIZE));
          this.deleteButton.setActionCommand(Mode.Delete.toString());
          this.deleteButton.addActionListener(this);
          this.deleteButton.setToolTipText(Tooltips.ERASER);
