@@ -25,8 +25,10 @@
 package noteLab.model.canvas;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
@@ -38,6 +40,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
@@ -112,6 +115,10 @@ public class CompositeCanvas
    private JComponent displayPanel;
    
    private Queue<StylusEvent> pointQueue;
+   private PointProcessor pointProcessor;
+   
+   private boolean draggingEnabled;
+   private boolean isBeingDragged;
    
    public CompositeCanvas(float scaleLevel)
    {
@@ -162,10 +169,14 @@ public class CompositeCanvas
          }
       }.start();
       
-      new PointProcessor().start();
+      this.pointProcessor = new PointProcessor();
+      this.pointProcessor.start();
       
       this.hasBeenModified = false;
       this.isEnabled = true;
+      
+      this.draggingEnabled = false;
+      this.isBeingDragged = false;
       
       SettingsManager.getSharedInstance().addSettingsListener(this);
    }
@@ -482,6 +493,24 @@ public class CompositeCanvas
          listener.modOccured(this, type);
    }
    
+   public void setDraggingEnabled(boolean drag)
+   {
+      this.draggingEnabled = drag;
+      
+      if (!this.draggingEnabled)
+         this.isBeingDragged = false;
+   }
+   
+   public boolean getDraggingEnabled()
+   {
+      return this.draggingEnabled;
+   }
+   
+   public boolean isBeingDragged()
+   {
+      return this.isBeingDragged;
+   }
+   
    private class StylusEvent
    {
       public EventType type;
@@ -499,18 +528,74 @@ public class CompositeCanvas
    private class CanvasMouseListener implements MouseInputListener
    {
       private MouseButton curMouseButton;
+      private Point initDragPt;
+      private Rectangle initViewRect;
       
       private CanvasMouseListener()
       {
          this.curMouseButton = MouseButton.Unknown;
+         this.initDragPt = null;
+         this.initViewRect = null;
       }
       
       public void mouseClicked(MouseEvent e)
       {
       }
       
+      private Point getConvertedPoint(MouseEvent e)
+      {
+         if (e == null)
+            throw new NullPointerException();
+         
+         // If the MouseEvent came from a JScrollPane 
+         // (which is the JScrollPane containing 
+         // 'displayPanel'), simply return the MouseEvent's 
+         // point.  Otherwise convert the MouseEvent's 
+         // point from displayPanel's coordinate space 
+         // to the coordinate space of the JScrollPane 
+         // containing 'displayPanel'.
+         
+         Point point = e.getPoint();
+         if (e.getSource() instanceof JScrollPane)
+            return point;
+         
+         Container scrollPane = null;
+         // Based on the documentation, I cannot guarantee 
+         // that getParent() will return 'null' if an object 
+         // doesn't have a parent.  Thus, if I implement a 
+         // while loop that moves up the container 
+         // hierarchy until a JScrollPane is found, I do not 
+         // know which condition should be used to stop the loop.
+         // 
+         // Thus, since the displayPanel is contained in a JPanel 
+         // which is contained in a JViewPort which is contained 
+         // in a JScrollPane, the following code should retrieve 
+         // the scroll pane.  If any exception is thrown, 
+         // 'scrollPane' will have the value 'null'.  The 
+         // SwingUtilities.convertPoint(....) method is designed 
+         // to handle the situation where 'scrollPane' is 'null'.
+         try
+         {
+            scrollPane = displayPanel.getParent().getParent().getParent();
+         }
+         catch (Exception exception)
+         {
+            exception.printStackTrace();
+         }
+         
+         return SwingUtilities.convertPoint(displayPanel, point, 
+                                            scrollPane);
+      }
+      
       public void mousePressed(final MouseEvent e)
       {
+         if (draggingEnabled || (e.getSource() instanceof JScrollPane))
+         {
+            this.initDragPt = getConvertedPoint(e);
+            this.initViewRect = displayPanel.getVisibleRect();
+            return;
+         }
+         
          if (!isEnabled)
             return;
          
@@ -527,6 +612,13 @@ public class CompositeCanvas
 
       public void mouseReleased(final MouseEvent e)
       {
+         if (draggingEnabled || (e.getSource() instanceof JScrollPane))
+         {
+            this.initDragPt = null;
+            this.initViewRect = null;
+            return;
+         }
+         
          if (!isEnabled)
             return;
          
@@ -549,6 +641,45 @@ public class CompositeCanvas
       
       public void mouseDragged(final MouseEvent e)
       {
+         if (draggingEnabled || (e.getSource() instanceof JScrollPane))
+         {
+            Point newPt = getConvertedPoint(e);
+            
+            if (this.initDragPt != null && this.initViewRect != null)
+            {
+               int xDiff = this.initDragPt.x-newPt.x;
+               int yDiff = this.initDragPt.y-newPt.y;
+               
+               Rectangle viewRect = displayPanel.getVisibleRect();
+               
+               float xFactor = 1;
+               if (viewRect.width != 0)
+                  xFactor = getWidth()/viewRect.width;
+               
+               float yFactor = 1;
+               if (viewRect.height != 0)
+                  yFactor = getHeight()/viewRect.height;
+               
+               Rectangle newRect = new Rectangle(this.initViewRect.x, 
+                                                 this.initViewRect.y, 
+                                                 this.initViewRect.width, 
+                                                 this.initViewRect.height);
+               newRect.x -= (xFactor*xDiff);
+               newRect.y -= (yFactor*yDiff);
+               
+               isBeingDragged = true;
+               displayPanel.scrollRectToVisible(newRect);
+               isBeingDragged = false;
+            }
+            else
+            {
+               this.initDragPt = getConvertedPoint(e);
+               this.initViewRect = displayPanel.getVisibleRect();
+            }
+            
+            return;
+         }
+         
          if (!isEnabled)
             return;
          
@@ -566,6 +697,11 @@ public class CompositeCanvas
       }
    }
    
+   public boolean isProcessingPath()
+   {
+      return this.pointProcessor.isProcessingPath();
+   }
+   
    private class PointProcessor extends Thread
    {
       private Path curPath;
@@ -573,6 +709,11 @@ public class CompositeCanvas
       public PointProcessor()
       {
          this.curPath = null;
+      }
+      
+      public boolean isProcessingPath()
+      {
+         return (this.curPath != null);
       }
       
       public void run()
