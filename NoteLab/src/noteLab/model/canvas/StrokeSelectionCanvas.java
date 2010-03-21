@@ -178,7 +178,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       // use the opposite action.  This feature allows 
       // the user to temporarily switch to the opposite 
       // action without having to return to the toolbar.
-      if (button == MouseButton.Button3)
+      if (button != MouseButton.Button1)
          curMode = curMode.getInverse();
       
       if (curMode == Mode.Box_Selection || curMode == Mode.Box_Unselection)
@@ -271,7 +271,7 @@ public class StrokeSelectionCanvas extends SubCanvas<StrokeSelector, Stroke>
       // use the opposite action.  This feature allows 
       // the user to temporarily switch to the opposite 
       // action without having to return to the toolbar.
-      if (button == MouseButton.Button3)
+      if (button != MouseButton.Button1)
          curMode = curMode.getInverse();
       
       if (curMode == Mode.Single_Selection)
