@@ -39,6 +39,7 @@ public interface Tooltips
    public static final String ZOOM_100 = "Zoom Standard";
    public static final String PREVIOUS_PAGE = "Previous Page";
    public static final String CURRENT_PAGE = "Current Page";
+   public static final String DRAG = "View Dragging Tool";
    public static final String NEXT_PAGE = "Next Page";
    public static final String NEW_PAGE = "New Page";
    public static final String REFRESH = "Refresh";
