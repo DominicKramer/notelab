@@ -39,10 +39,14 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import noteLab.model.Page;
+import noteLab.model.binder.Binder;
+import noteLab.model.binder.BinderListener;
 import noteLab.model.canvas.CompositeCanvas;
 import noteLab.model.canvas.StrokeCanvas;
 import noteLab.util.mod.ModListener;
 import noteLab.util.mod.ModType;
+import noteLab.util.render.LoggedSwingRenderer2D;
 import noteLab.util.render.QueuedRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.render.SwingRenderer2D.RenderMode;
@@ -52,7 +56,8 @@ public class SwingDrawingBoard
                 extends JComponent 
                            implements ComponentListener, 
                                       ChangeListener, 
-                                      ModListener
+                                      ModListener, 
+                                      BinderListener
 {
    private static final int SCREEN_MAX_DIM;
    static
@@ -64,7 +69,7 @@ public class SwingDrawingBoard
    private CompositeCanvas canvas;
    private MainPanel mainPanel;
    
-   private SwingRenderer2D imageRenderer;
+   private LoggedSwingRenderer2D imageRenderer;
    private SwingRenderer2D screenRenderer;
    private QueuedRenderer2D queuedRenderer;
    
@@ -80,13 +85,13 @@ public class SwingDrawingBoard
       this.canvas = canvas;
       this.canvas.setDisplayPanel(this);
       this.mainPanel = mainPanel;
-      this.imageRenderer = new SwingRenderer2D();
+      this.imageRenderer = new LoggedSwingRenderer2D();
       this.screenRenderer = new SwingRenderer2D();
       this.queuedRenderer = new QueuedRenderer2D(this.screenRenderer);
       
       this.drawingboard = new BufferedImage(SCREEN_MAX_DIM, 
                                             SCREEN_MAX_DIM, 
-                                            BufferedImage.TYPE_INT_ARGB);
+                                            BufferedImage.TYPE_INT_RGB);
       
       this.isImageValid = false;
       
@@ -94,6 +99,7 @@ public class SwingDrawingBoard
       this.canvas.addModListener(this);
       addComponentListener(this);
       this.mainPanel.getViewport().addChangeListener(this);
+      this.canvas.getBinder().addBinderListener(this);
       
       //setting this to true means that this panel agrees to 
       //paint its entire area.  By setting this value to true, 
@@ -101,8 +107,8 @@ public class SwingDrawingBoard
       //if the entire area of the panel is not painted by this 
       //class (as this class agrees to do), small painting 
       //anamolies may result.
-      setOpaque(true);
-      setDoubleBuffered(true);
+      setOpaque(false);
+      setDoubleBuffered(false);
       
       // clear the drawing board
       clear();
@@ -111,8 +117,7 @@ public class SwingDrawingBoard
    @Override
    public void paintComponent(Graphics g)
    {
-      super.paintComponent(g);
-      
+      /* 
       if ( !(g instanceof Graphics2D) )
       {
          System.out.println("Warning:  The screen could not be painted " +
@@ -120,10 +125,10 @@ public class SwingDrawingBoard
                             "object.");
          return;
       }
+      */
       
-      this.mainPanel.updatePreferredSize();
-      
-      final boolean isScrolling = this.mainPanel.isScrolling();
+      final boolean isScrolling = this.mainPanel.isScrolling() || 
+                                     this.canvas.isBeingDragged();
       
       RenderMode mode = RenderMode.Appearance;
       if (isScrolling)
@@ -158,17 +163,24 @@ public class SwingDrawingBoard
          this.queuedRenderer.setRenderer(this.screenRenderer);
          
          // Render the canvas ignoring the overlay
+         this.imageRenderer.resetModifiedFlag();
          this.canvas.renderInto(this.queuedRenderer, 
                                 this.imageRenderer, 
                                 this.isImageValid);
+         
+         // Paint the canvas on the screen
+         if (!this.canvas.isProcessingPath() || 
+                this.imageRenderer.hasBeenModified())
+         {
+            g2d.drawImage(this.drawingboard, null, 0, 0);
+         }
+         
+         this.queuedRenderer.replay();
+         
          // Since the image has just been rendered, it is now 
          // consistent with the current state of the canvas
          this.isImageValid = true;
-         imageG2d.finalize();
-         
-         // Paint the canvas on the screen
-         g2d.drawImage(this.drawingboard, null, null);
-         this.queuedRenderer.replay();
+         imageG2d.dispose();
       }
       else
       {
@@ -189,8 +201,6 @@ public class SwingDrawingBoard
             g.drawRect(clip.x, clip.y, clip.width-1, clip.height-1);
          }
       }
-      
-      revalidate();
    }
    
    private void clear()
@@ -305,6 +315,7 @@ public class SwingDrawingBoard
 
    public void componentHidden(ComponentEvent e)
    {
+      this.isImageValid = false;
    }
 
    public void componentMoved(ComponentEvent e)
@@ -346,6 +357,32 @@ public class SwingDrawingBoard
       // overlay.  Otherwise, the drawing board is invalid and needs 
       // to be re-rendered.
       if ( !(otherFromCompCanvas && strokeCanvasCurrent) )
+      {
+         updateBoardSize();
          this.isImageValid = false;
+      }
+   }
+   
+   private void updateBoardSize()
+   {
+      this.mainPanel.updatePreferredSize();
+      revalidate();
+   }
+   
+   @Override
+   public void currentPageChanged(Binder source)
+   {
+   }
+   
+   @Override
+   public void pageAdded(Binder source, Page page)
+   {
+      updateBoardSize();
+   }
+   
+   @Override
+   public void pageRemoved(Binder source, Page page)
+   {
+      updateBoardSize();
    }
 }
