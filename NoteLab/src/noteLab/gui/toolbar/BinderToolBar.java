@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 import noteLab.gui.DefinedIcon;
@@ -49,6 +50,7 @@ public class BinderToolBar implements ActionListener,
    private static final String NEXT = "Next";
    private static final String PREVIOUS = "Previous";
    private static final String CURRENT = "Current";
+   private static final String DRAG = "Drag";
    
    private static final String NEW_PAGE = "NewPage";
    
@@ -64,6 +66,8 @@ public class BinderToolBar implements ActionListener,
    private JButton nextButton;
    private JButton prevButton;
    private JButton currentButton;
+   
+   private JToggleButton dragButton;
    
    private JButton newPageButton;
    
@@ -114,6 +118,12 @@ public class BinderToolBar implements ActionListener,
       this.currentButton.addActionListener(this);
       this.currentButton.setToolTipText(Tooltips.CURRENT_PAGE);
       
+      this.dragButton = 
+         new JToggleButton(DefinedIcon.move_stroke.getIcon(BUTTON_SIZE));
+      this.dragButton.setActionCommand(DRAG);
+      this.dragButton.addActionListener(this);
+      this.dragButton.setToolTipText(Tooltips.DRAG);
+      
       // construct the buttons that allow you to edit pages
       this.newPageButton = 
          new JButton(DefinedIcon.new_page.getIcon(BUTTON_SIZE));
@@ -144,6 +154,7 @@ public class BinderToolBar implements ActionListener,
       toolbar.add(this.prevButton);
       toolbar.add(this.currentButton);
       toolbar.add(this.nextButton);
+      toolbar.add(this.dragButton);
       toolbar.addSeparator();
       
       toolbar.add(this.newPageButton);
@@ -186,6 +197,8 @@ public class BinderToolBar implements ActionListener,
       }
       else if (cmmd.equals(CURRENT))
          this.canvas.getBinder().showCurrent();
+      else if (cmmd.equals(DRAG))
+         this.canvas.setDraggingEnabled(this.dragButton.isSelected());
       
       // if cmmd.equals(REFRESH) nothing needs to be done except 
       // repainting which is done by the next line
