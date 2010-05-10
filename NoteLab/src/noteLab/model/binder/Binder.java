@@ -114,7 +114,7 @@ public abstract class Binder implements Renderable, Bounded,
          throw new NullPointerException();
       
       if (pages.length == 0)
-         pages = new Page[] {new Page(PaperType.CollegeRuled, 
+         pages = new Page[] {new Page(SettingsUtilities.getPaperType(), 
                                       xScaleLevel, yScaleLevel, 
                                       Unit.getScreenResolution(), 
                                       SettingsUtilities.getUnitScaleFactor())};
