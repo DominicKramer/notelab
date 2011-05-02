@@ -44,9 +44,9 @@ import javax.swing.JTabbedPane;
 import noteLab.gui.DefinedIcon;
 import noteLab.gui.GuiSettingsConstants;
 import noteLab.gui.fullscreen.FullScreenManager;
+import noteLab.gui.settings.panel.OtherSettingsPanel;
 import noteLab.gui.settings.panel.PageSettingsPanel;
 import noteLab.gui.settings.panel.TriPenSettingsPanel;
-import noteLab.gui.settings.panel.VMSettingsPanel;
 import noteLab.util.InfoCenter;
 import noteLab.util.InfoCenter.OSType;
 
@@ -54,7 +54,7 @@ public class SettingsFrame extends JFrame
 {
    private TriPenSettingsPanel tripPenPanel;
    private PageSettingsPanel pagePanel;
-   private VMSettingsPanel vmPanel;
+   private OtherSettingsPanel otherPanel;
    
    public SettingsFrame()
    {
@@ -64,7 +64,7 @@ public class SettingsFrame extends JFrame
       
       this.tripPenPanel = new TriPenSettingsPanel();
       this.pagePanel = new PageSettingsPanel();
-      this.vmPanel = new VMSettingsPanel();
+      this.otherPanel = new OtherSettingsPanel();
       
       JPanel penPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
       penPanel.add(this.tripPenPanel);
@@ -87,9 +87,9 @@ public class SettingsFrame extends JFrame
                                            VERTICAL_SCROLLBAR_AS_NEEDED, 
                                         JScrollPane.
                                            HORIZONTAL_SCROLLBAR_AS_NEEDED));
-      tabbedPane.addTab("Memory", 
-                        DefinedIcon.floppy.getIcon(16), 
-                        new JScrollPane(this.vmPanel, 
+      tabbedPane.addTab("Other", 
+                        DefinedIcon.preferences.getIcon(16), 
+                        new JScrollPane(this.otherPanel, 
                                         JScrollPane.
                                            VERTICAL_SCROLLBAR_AS_NEEDED, 
                                         JScrollPane.
@@ -176,7 +176,7 @@ public class SettingsFrame extends JFrame
          {
             tripPenPanel.apply();
             pagePanel.apply();
-            vmPanel.apply();
+            otherPanel.apply();
             
             try
             {
@@ -194,7 +194,7 @@ public class SettingsFrame extends JFrame
                StringBuffer buffer = new StringBuffer();
                tripPenPanel.encode(buffer);
                pagePanel.encode(buffer);
-               vmPanel.encode(buffer);
+               otherPanel.encode(buffer);
                
                String exportStr = "export ";
                String quoteStr = "\"";
@@ -220,7 +220,7 @@ public class SettingsFrame extends JFrame
                if (saveStr != null && saveStr.trim().length() > 0)
                   writer.println(saveStr);
                
-               saveStr = vmPanel.save();
+               saveStr = otherPanel.save();
                if (saveStr != null && saveStr.trim().length() > 0)
                   writer.println(saveStr);
                
@@ -247,13 +247,13 @@ public class SettingsFrame extends JFrame
          {
             tripPenPanel.apply();
             pagePanel.apply();
-            vmPanel.apply();
+            otherPanel.apply();
          }
          else if (cmmd.equals(CANCEL_ICON.name()))
          {
             tripPenPanel.revertToSaved();
             pagePanel.revertToSaved();
-            vmPanel.revertToSaved();
+            otherPanel.revertToSaved();
             
             dispose();
          }
@@ -261,13 +261,13 @@ public class SettingsFrame extends JFrame
          {
             tripPenPanel.revertToSaved();
             pagePanel.revertToSaved();
-            vmPanel.revertToSaved();
+            otherPanel.revertToSaved();
          }
          else if (cmmd.equals(RESTORE_DEFAULTS.name()))
          {
             tripPenPanel.restoreDefaults();
             pagePanel.restoreDefaults();
-            vmPanel.restoreDefaults();
+            otherPanel.restoreDefaults();
          }
       }
    }
