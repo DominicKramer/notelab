@@ -24,67 +24,41 @@
 
 package noteLab.util.arg;
 
-import java.util.StringTokenizer;
-
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
+import noteLab.util.LookAndFeelUtilities;
+import noteLab.util.settings.SettingsKeys;
+import noteLab.util.settings.SettingsUtilities;
+
 public class LookAndFeelArg extends Argument
 {
-   private static final String[] LOOK_AND_FEELS;
    private static final ParamInfo[] PARAM_DESCS;
    static
    {
       String prefix = "Specifies that the ";
       String suffix = " look and feel should be used to decorate the " +
                       "graphical elements.";
-      LookAndFeelInfo[] infoArr = UIManager.getInstalledLookAndFeels();
       
-      LOOK_AND_FEELS = new String[infoArr.length];
-      PARAM_DESCS = new ParamInfo[infoArr.length];
+      String[] lafArr = LookAndFeelUtilities.getLookAndFeels();
+      PARAM_DESCS = new ParamInfo[lafArr.length];
       
-      String name;
-      String gluedName;
-      for (int i=0; i<infoArr.length; i++)
-      {
-         name = infoArr[i].getName();
-         gluedName = getGluedString(name);
-         
-         LOOK_AND_FEELS[i] = gluedName;
-         PARAM_DESCS[i] = new ParamInfo(gluedName, 
-                                        prefix+name+suffix);
-      }
+      for (int i=0; i<lafArr.length; i++)
+         PARAM_DESCS[i] = new ParamInfo(lafArr[i], 
+                                        prefix+lafArr[i]+suffix);
    }
    
    public LookAndFeelArg()
    {
-      super("lookAndFeel", 1, PARAM_DESCS, 
+      super(SettingsKeys.LOOK_AND_FEEL_KEY, 1, PARAM_DESCS, 
             "Used to set the look and feel of the graphical elements.", 
             false);
-   }
-   
-   private static String getGluedString(String str)
-   {
-      if (str.indexOf(' ') == -1)
-         return str;
-      
-      StringBuffer newBuffer = new StringBuffer();
-      StringTokenizer tokenizer = new StringTokenizer(str);
-      while (tokenizer.hasMoreTokens())
-         newBuffer.append(tokenizer.nextToken());
-      
-      return newBuffer.toString();
-   }
-   
-   public static String[] getLookAndFeels()
-   {
-      return LOOK_AND_FEELS;
    }
    
    public String encode(String lookAndFeel)
    {
       boolean found = false;
-      for (String allowedLook : LOOK_AND_FEELS)
+      for (String allowedLook : LookAndFeelUtilities.getLookAndFeels())
       {
          if (allowedLook.equals(lookAndFeel))
          {
@@ -114,34 +88,8 @@ public class LookAndFeelArg extends Argument
          return ArgResult.SHOW_GUI;
       }
       
-      String lookAndFeel = args[0];
-      LookAndFeelInfo[] infoArr = UIManager.getInstalledLookAndFeels();
-      
-      boolean found = false;
-      for (LookAndFeelInfo info : infoArr)
-      {
-         if (getGluedString(info.getName()).equalsIgnoreCase(lookAndFeel))
-         {
-            found = true;
-            try
-            {
-               UIManager.setLookAndFeel(info.getClassName());
-            }
-            catch (Exception e)
-            {
-               System.out.println("WARNING:  The look and feel \""+
-                                  lookAndFeel+"\" could not be loaded.  " +
-                                  "The error type is \""+
-                                  e.getCause().getClass().getName()+
-                                  "\" and the error message returned was \""+
-                                  e.getMessage()+"\"");
-            }
-            break;
-         }
-      }
-      
-      if (!found)
-         System.out.println("WARNING:  The look and feel \""+lookAndFeel+
+      if (!SettingsUtilities.setLookAndFeel(args[0]))
+         System.out.println("WARNING:  The look and feel \""+args[0]+
                             "\" was not loaded because it was not " +
                             "recognized as a look and feel.");
       
