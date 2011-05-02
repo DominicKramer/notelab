@@ -753,6 +753,13 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
       
       public void smooth()
       {
+         final int smoothFactor = SettingsUtilities.getSmoothFactor();
+         if (smoothFactor == 0)
+         {
+            isSmooth = true;
+            return;
+         }
+         
          if (getIsSmooth())
             return;
          
@@ -763,7 +770,7 @@ public class StrokeCanvas extends SubCanvas<Pen, Stroke>
                RectangleUnioner unioner = new RectangleUnioner();
                unioner.union(stroke.getBounds2D());
                
-               stroke.getPath().smooth(SettingsUtilities.getSmoothFactor());
+               stroke.getPath().smooth(smoothFactor);
                
                unioner.union(stroke.getBounds2D());
                Rectangle2D bounds = unioner.getUnion();
