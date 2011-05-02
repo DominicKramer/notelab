@@ -27,7 +27,7 @@ INSTALL_DIR=`dirname "$0"`
 cd "${INSTALL_DIR}"
 
 # Start the Java virtual machine with the given VM arguments and instruct it to load NoteLab with NoteLab's arguments
-java ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME="${INIT_FILE}" -cp .:./info:./jar/PDFRenderer.jar:./jar/iText.jar:"${CLASSPATH}" noteLab.util.StartupUtilities --lookAndFeel Nimbus ${NOTELAB_ARGS} $*
+java ${NOTELAB_VM_ARGS} -DNOTELAB_SETTINGS_FILENAME="${INIT_FILE}" -cp .:./info:./jar/PDFRenderer.jar:./jar/iText.jar:"${CLASSPATH}" noteLab.util.StartupUtilities ${NOTELAB_ARGS} $*
 
 # The variable ${NOTELAB_VM_ARGS} specifies the initial amount and maximum amount of memory that 
 # should be given to the virtual machine.  If NoteLab fails to start from the invocation of 'java' 
