@@ -29,6 +29,7 @@ import java.awt.Color;
 import noteLab.gui.settings.constants.PageSettingsConstants;
 import noteLab.gui.settings.constants.PenSettingsConstants;
 import noteLab.model.Paper.PaperType;
+import noteLab.util.LookAndFeelUtilities;
 import noteLab.util.geom.unit.MValue;
 import noteLab.util.geom.unit.Unit;
 
@@ -247,5 +248,46 @@ public class SettingsUtilities implements SettingsKeys
    public static void setShowDebugMenu(boolean display)
    {
       SettingsManager.getSharedInstance().setValue(DEBUG_MENU_KEY, display);
+   }
+   
+   public static boolean getRenderScrolling()
+   {
+      Object val = SettingsManager.getSharedInstance().
+                                      getValue(RENDER_SCROLLING_KEY);
+      if (val == null || !(val instanceof Boolean))
+         return PageSettingsConstants.DEFAULT_RENDER_SCROLLING;
+      
+      return (Boolean)val;
+   }
+   
+   public static void setRenderScrolling(boolean render)
+   {
+      SettingsManager.getSharedInstance().
+                         setValue(RENDER_SCROLLING_KEY, render);
+   }
+   
+   public static boolean setLookAndFeel(String laf)
+   {
+      if (laf == null)
+         throw new NullPointerException();
+      
+      boolean res = LookAndFeelUtilities.setLookAndFeel(laf);
+      
+      if (res)
+         SettingsManager.getSharedInstance().
+                            setValue(LOOK_AND_FEEL_KEY, laf);
+      
+      return res;
+   }
+   
+   public static String getLookAndFeel()
+   {
+      Object val = SettingsManager.getSharedInstance().
+                                      getValue(LOOK_AND_FEEL_KEY);
+      
+      if (val == null || !(val instanceof String))
+         return LookAndFeelUtilities.getDefaultLookAndFeel();
+      
+      return (String)val;
    }
 }
