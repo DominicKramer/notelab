@@ -150,15 +150,18 @@ public class InstallDirTile extends SequenceTile implements ActionListener
                }
             }
             
-            String errorText = null;
-            if (!file.canWrite())
+            if (this.file != null)
             {
-               errorText = "Warning:  It appears that the directory " +
-               		      "choosen cannot be written to.";
+               String errorText = null;
+               if (!this.file.canWrite())
+               {
+                  errorText = "Warning:  It appears that the directory " +
+                  		      "choosen cannot be written to.";
+               }
+               
+               urlField.setText(this.file.getAbsolutePath());
+               errorLabel.setText((errorText==null)?"    ":errorText);
             }
-            
-            urlField.setText(file.getAbsolutePath());
-            errorLabel.setText((errorText==null)?"    ":errorText);
             
             /* 
              * Since there appears to be a bug where directories on a 
