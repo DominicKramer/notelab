@@ -31,6 +31,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
@@ -50,6 +51,7 @@ import noteLab.gui.settings.state.SettingsStateCapable;
 import noteLab.model.Paper.PaperType;
 import noteLab.util.arg.PaperColorArg;
 import noteLab.util.arg.PaperTypeArg;
+import noteLab.util.arg.RenderScrollingArg;
 import noteLab.util.arg.UnitScaleArg;
 import noteLab.util.settings.SettingsKeys;
 import noteLab.util.settings.SettingsManager;
@@ -62,18 +64,21 @@ public class PageSettingsPanel
    private PaperTypePanel typePanel;
    private PaperColorPanel colorPanel;
    private UnitScalePanel unitPanel;
+   private RenderScrollingPanel scrollingPanel;
    
    public PageSettingsPanel()
    {
       this.typePanel = new PaperTypePanel();
       this.colorPanel = new PaperColorPanel();
       this.unitPanel = new UnitScalePanel();
+      this.scrollingPanel = new RenderScrollingPanel();
       
       JPanel innerPanel = new JPanel();
       innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
       innerPanel.add(this.typePanel);
       innerPanel.add(this.colorPanel);
       innerPanel.add(this.unitPanel);
+      innerPanel.add(this.scrollingPanel);
       
       setBorder(new TitledBorder("Paper Settings"));
       add(innerPanel);
@@ -84,6 +89,7 @@ public class PageSettingsPanel
       this.typePanel.sync();
       this.colorPanel.sync();
       this.unitPanel.sync();
+      this.scrollingPanel.sync();
    }
    
    public void restoreDefaults()
@@ -91,6 +97,7 @@ public class PageSettingsPanel
       this.typePanel.restoreDefaults();
       this.colorPanel.restoreDefaults();
       this.unitPanel.restoreDefaults();
+      this.scrollingPanel.restoreDefaults();
       
       sync();
    }
@@ -100,6 +107,7 @@ public class PageSettingsPanel
       this.typePanel.revertToSaved();
       this.colorPanel.revertToSaved();
       this.unitPanel.revertToSaved();
+      this.scrollingPanel.revertToSaved();
       
       sync();
    }
@@ -109,6 +117,7 @@ public class PageSettingsPanel
       this.typePanel.apply();
       this.colorPanel.apply();
       this.unitPanel.apply();
+      this.scrollingPanel.apply();
    }
    
    public void encode(StringBuffer buffer)
@@ -119,6 +128,7 @@ public class PageSettingsPanel
       this.colorPanel.encode(buffer);
       this.typePanel.encode(buffer);
       this.unitPanel.encode(buffer);
+      this.scrollingPanel.encode(buffer);
    }
    
    public String save()
@@ -407,5 +417,78 @@ public class PageSettingsPanel
          else
             this.wideButton.setSelected(true);
       }
+   }
+   
+   private class RenderScrollingPanel 
+                    extends ManagedSettingsPanel 
+                               implements ActionListener, 
+                                          SettingsSaveCapable
+   {
+      private JCheckBox renderScrollingBox;
+      
+      public RenderScrollingPanel()
+      {
+         super("Render Page Scrolling", 
+               "Specifies if the contents of pages should be " +
+               "rendered when the pages are scrolled.", 
+               SettingsKeys.RENDER_SCROLLING_KEY, 
+               PageSettingsConstants.DEFAULT_RENDER_SCROLLING);
+         
+         this.renderScrollingBox = new JCheckBox("", true);
+         // The sync() method below determines if the checkbox 
+         // should be selected or not.
+         sync();
+         getDisplayPanel().add(this.renderScrollingBox);
+      }
+      
+      public void sync()
+      {
+         updateDisplay(getCurrentValue());
+      }
+      
+      @Override
+      public void updateDisplay(Object curVal)
+      {
+         if (curVal == null)
+            throw new NullPointerException();
+         
+         setRender((Boolean)curVal);
+      }
+      
+      @Override
+      public void actionPerformed(ActionEvent e)
+      {
+         setCurrentValue(this.renderScrollingBox.isSelected());
+      }
+      
+      public boolean getRender()
+      {
+         return this.renderScrollingBox.isSelected();
+      }
+      
+      public void setRender(boolean render)
+      {
+         this.renderScrollingBox.setSelected(render);
+      }
+      
+      @Override
+      public void encode(StringBuffer buffer)
+      {
+         if (buffer == null)
+            throw new NullPointerException();
+         
+         int length = buffer.length();
+         if (length > 0 && buffer.charAt(length-1) != ' ')
+            buffer.append(' ');
+         
+         String encodedStr = new RenderScrollingArg().encode(getRender());
+         buffer.append(encodedStr);
+      }
+      
+      @Override
+      public String save()
+      {
+         return "";
+      }      
    }
 }
