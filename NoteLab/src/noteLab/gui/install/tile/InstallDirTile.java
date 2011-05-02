@@ -47,9 +47,15 @@ import noteLab.gui.chooser.FileProcessor;
 import noteLab.gui.chooser.NoteLabFileChooser;
 import noteLab.gui.sequence.ProceedType;
 import noteLab.gui.sequence.SequenceTile;
+import noteLab.util.InfoCenter;
+import noteLab.util.InfoCenter.OSType;
 
 public class InstallDirTile extends SequenceTile implements ActionListener
 {
+   private static final File DEFAULT_UNIX_DIR = new File("/usr/local/");
+   private static final File DEFAULT_MAC_OS_X_DIR = new File("/Applications/");
+   private static final String DEFAULT_WINDOWS_DIR_NAME = "Program Files";
+   
    private JTextField urlField;
    private JLabel errorLabel;
    
@@ -114,22 +120,58 @@ public class InstallDirTile extends SequenceTile implements ActionListener
          
          public void processFile(File file)
          {
-            if (file == null)
-               return;
-            
-            this.file = file;
+            if (file != null)
+            {
+               this.file = file;
+            }
+            else
+            {
+               OSType os = InfoCenter.getOperatingSystem();
+               if (os == OSType.Windows)
+               {
+                  File[] roots = File.listRoots();
+                  File testDir;
+                  for (File top : roots)
+                  {
+                     testDir = new File(top, DEFAULT_WINDOWS_DIR_NAME);
+                     if (testDir.exists())
+                     {
+                        this.file = testDir;
+                        break;
+                     }
+                  }
+               }
+               else // its a UNIX system
+               {
+                  if (os.isMacOSX())
+                     this.file = DEFAULT_MAC_OS_X_DIR;
+                  else
+                     this.file = DEFAULT_UNIX_DIR;
+               }
+            }
             
             String errorText = null;
             if (!file.canWrite())
-               errorText = "The directory choosen cannot be written to.";
+            {
+               errorText = "Warning:  It appears that the directory " +
+               		      "choosen cannot be written to.";
+            }
             
             urlField.setText(file.getAbsolutePath());
             errorLabel.setText((errorText==null)?"    ":errorText);
             
-            if (errorText == null)
+            /* 
+             * Since there appears to be a bug where directories on a 
+             * Windows system report not be writable where in fact they 
+             * are writable, still allow the installation to proceed 
+             * since the user has been warned.  As such, if a directory 
+             * is still writable, the user should not be blocked from 
+             * installing the application.
+             */
+            //if (errorText == null)
                notifyTileProceedChanged(ProceedType.can_proceed);
-            else
-               notifyTileProceedChanged(ProceedType.can_not_proceed);
+            //else
+            //   notifyTileProceedChanged(ProceedType.can_not_proceed);
          }
 
          public File getFormattedName(File file)
@@ -144,6 +186,13 @@ public class InstallDirTile extends SequenceTile implements ActionListener
                                                   processor);
       this.browseChooser.setMultiSelectionEnabled(false);
       this.browseChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+      
+      // invoking processFile() on the FileProcessor with 'null' 
+      // instructs the FileProcessor to initialize the GUI elements 
+      // of this control with their default values.  That is, the 
+      // platform specific default installation directory is entered 
+      // in 'urlField'.
+      processor.processFile(null);
    }
    
    public File getInstallDirectory()
