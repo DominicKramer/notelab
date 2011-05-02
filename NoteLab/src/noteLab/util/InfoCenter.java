@@ -66,7 +66,7 @@ public class InfoCenter
    private static final String NAME = "NoteLab";
    
    /** The application's version. */
-   private static final String VERSION = "0.2.1beta1";
+   private static final String VERSION = "0.2.1rc1";
    
    /** The file extension for this application's native file. */
    private static final String NATIVE_EXT = ".ntlb";
@@ -81,7 +81,7 @@ public class InfoCenter
    private static final String HOMEPAGE = "java-notelab.sourceforge.net";
    
    /** The application's copyright statement. */
-   private static final String COPYRIGHT = "Copyright (C) 2006-2009 "+AUTHOR;
+   private static final String COPYRIGHT = "Copyright (C) 2006-2011 "+AUTHOR;
    
    /** A description of this application. */
    private static final String DESCRIPTION;
