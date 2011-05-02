@@ -33,4 +33,5 @@ public interface PageSettingsConstants
    public static final PaperType PAPER_TYPE = PaperType.CollegeRuled;
    public static final Color PAPER_COLOR = Color.WHITE;
    public static final float DEFAULT_UNIT_SCALE_FACTOR = 0.75f;
+   public static final boolean DEFAULT_RENDER_SCROLLING = true;
 }
