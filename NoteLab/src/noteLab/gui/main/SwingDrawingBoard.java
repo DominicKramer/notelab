@@ -51,13 +51,19 @@ import noteLab.util.render.QueuedRenderer2D;
 import noteLab.util.render.SwingRenderer2D;
 import noteLab.util.render.SwingRenderer2D.RenderMode;
 import noteLab.util.settings.DebugSettings;
+import noteLab.util.settings.SettingsChangedEvent;
+import noteLab.util.settings.SettingsChangedListener;
+import noteLab.util.settings.SettingsKeys;
+import noteLab.util.settings.SettingsManager;
+import noteLab.util.settings.SettingsUtilities;
 
 public class SwingDrawingBoard 
                 extends JComponent 
                            implements ComponentListener, 
                                       ChangeListener, 
                                       ModListener, 
-                                      BinderListener
+                                      BinderListener, 
+                                      SettingsChangedListener
 {
    private static final int SCREEN_MAX_DIM;
    static
@@ -77,6 +83,8 @@ public class SwingDrawingBoard
    
    private boolean isImageValid;
    
+   private boolean renderScrolling;
+   
    public SwingDrawingBoard(CompositeCanvas canvas, MainPanel mainPanel)
    {
       if (canvas == null || mainPanel == null)
@@ -94,6 +102,9 @@ public class SwingDrawingBoard
                                             BufferedImage.TYPE_INT_RGB);
       
       this.isImageValid = false;
+      
+      this.renderScrolling = SettingsUtilities.getRenderScrolling();
+      SettingsManager.getSharedInstance().addSettingsListener(this);
       
       // Add listeners
       this.canvas.addModListener(this);
@@ -184,12 +195,15 @@ public class SwingDrawingBoard
       }
       else
       {
-         // Configure the renderer for the screen
-         this.screenRenderer.setSwingGraphics(g2d, mode);
-         this.screenRenderer.setScrolling(isScrolling);
-         this.canvas.renderInto(this.screenRenderer, 
-                                this.screenRenderer, 
-                                false);
+         if (this.renderScrolling)
+         {
+            // Configure the renderer for the screen
+            this.screenRenderer.setSwingGraphics(g2d, mode);
+            this.screenRenderer.setScrolling(isScrolling);
+            this.canvas.renderInto(this.screenRenderer, 
+                                   this.screenRenderer, 
+                                   false);
+         }
       }
       
       if (DebugSettings.getSharedInstance().displayUpdateBox())
@@ -384,5 +398,24 @@ public class SwingDrawingBoard
    public void pageRemoved(Binder source, Page page)
    {
       updateBoardSize();
+   }
+
+   @Override
+   public void settingsChanged(SettingsChangedEvent event)
+   {
+      if (event.getKey().equalsIgnoreCase(SettingsKeys.RENDER_SCROLLING_KEY))
+      {
+         Object val = event.getNewValue();
+         if (val instanceof Boolean)
+            this.renderScrolling = (Boolean)val;
+         else
+         {
+            System.err.println("Warning:  An inconsistency has occured " +
+            		             "since the settings manager was asked if " +
+            		             "page scrolling should be rendered but a " +
+            		             "non-boolean result was returned.  The " +
+            		             "result returned was '"+val+"'.");
+         }
+      }
    }
 }
