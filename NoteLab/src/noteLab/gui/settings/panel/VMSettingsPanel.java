@@ -104,7 +104,7 @@ public class VMSettingsPanel
    private void syncInitPanel()
    {
       int maxMem = this.maxMemoryPanel.getSelectedMemoryMb();
-      this.initMemoryPanel.setMaxMemoryMb(maxMem);
+      this.initMemoryPanel.setSelectedMemoryMb(maxMem);
    }
    
    private int getMemoryAt(int index)
@@ -189,7 +189,7 @@ public class VMSettingsPanel
 
    public void restoreDefaults()
    {
-      this.maxMemoryPanel.setMaxMemoryMb(this.maxAllowedMemMb);
+      this.maxMemoryPanel.setSelectedMemoryMb(this.maxAllowedMemMb);
       syncInitPanel();
       
       this.maxMemoryPanel.setSelectedMemoryMb(this.maxAllowedMemMb);
@@ -209,7 +209,7 @@ public class VMSettingsPanel
          this.initMemoryPanel.setSelectedMemoryMb(SAVED_INIT_MEM_MB);
       else
       {
-         int initMem = (int)InfoCenter.getMaxMemoryMb();
+         int initMem = (int)InfoCenter.getInitialMemoryMb();
          initMem = roundToNear128(initMem, false);
          
          this.initMemoryPanel.setSelectedMemoryMb(initMem);
@@ -257,43 +257,28 @@ public class VMSettingsPanel
          if (title == null || info == null)
             throw new NullPointerException();
          
-         int min = 128;
-         int max = 4*1024;
-         int num = (max-min)/128+1;
-         this.memArr = new MemoryValue[num];
-         for (int i=0; i<num; i++)
-            this.memArr[i] = new MemoryValue(min+i*128);
-         
          this.memBox = new JComboBox(new DefaultComboBoxModel());
-         setMaxMemoryMb(maxMemory);
+         initializeMemBox(128, maxMemory);
+         setSelectedMemoryMb(maxMemory);
          
          JPanel displayPanel = getDisplayPanel();
          displayPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
          displayPanel.add(this.memBox);
       }
       
-      public void setMaxMemoryMb(int maxMemory)
+      private void initializeMemBox(int minMB, int maxMB)
       {
-         DefaultComboBoxModel model = 
-                                 (DefaultComboBoxModel)this.memBox.getModel();
+         int num = (maxMB-minMB)/128+1;
+         this.memArr = new MemoryValue[num];
+         for (int i=0; i<num; i++)
+            this.memArr[i] = new MemoryValue(minMB+i*128);
          
-         int selIndex = this.memBox.getSelectedIndex();
+         DefaultComboBoxModel model = 
+                              (DefaultComboBoxModel)this.memBox.getModel();
          model.removeAllElements();
          
          for (MemoryValue memVal : this.memArr)
-         {
-            if (memVal.getMemoryMb() > maxMemory)
-               break;
-            
             model.addElement(memVal);
-         }
-         
-         int maxIndex = model.getSize()-1;
-         if (selIndex > maxIndex)
-            selIndex = maxIndex;
-         
-         if ( (selIndex >= 0) && (selIndex <= maxIndex) )
-            this.memBox.setSelectedIndex(selIndex);
       }
       
       public void addActionListener(ActionListener listener)
@@ -318,8 +303,17 @@ public class VMSettingsPanel
          return ((MemoryValue)selOb).getMemoryMb();
       }
       
+      public int getMaxListedMemoryMB()
+      {
+         MemoryValue maxValue = this.memArr[this.memArr.length-1];
+         return maxValue.getMemoryMb();
+      }
+      
       public void setSelectedMemoryMb(int memMb)
       {
+         if (memMb > getMaxListedMemoryMB())
+            initializeMemBox(128, memMb);
+         
          int index = (memMb-128)/128;
          
          if (index < 0)
@@ -330,16 +324,16 @@ public class VMSettingsPanel
          
          this.memBox.setSelectedIndex(index);
       }
-
+      
       public void apply()
       {
       }
-
+      
       public void restoreDefaults()
       {
          VMSettingsPanel.this.restoreDefaults();
       }
-
+      
       public void revertToSaved()
       {
          VMSettingsPanel.this.revertToSaved();
@@ -359,12 +353,14 @@ public class VMSettingsPanel
          constructString();
       } 
       
+      /*
       public MemoryValue(float memGb)
       {
          this.memGb = memGb;
          this.memMb = (int)(memGb*1024);
          constructString();
       }
+      */
       
       private void constructString()
       {
@@ -376,10 +372,12 @@ public class VMSettingsPanel
          return this.memMb;
       }
       
+      /*
       public float getMemoryGb()
       {
          return this.memGb;
       }
+      */
       
       @Override
       public String toString()
