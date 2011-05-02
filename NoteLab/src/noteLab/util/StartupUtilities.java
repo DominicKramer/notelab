@@ -49,6 +49,7 @@ import noteLab.util.arg.PaperTypeArg;
 import noteLab.util.arg.PenColorArg;
 import noteLab.util.arg.PenSizeArg;
 import noteLab.util.arg.PrintArg;
+import noteLab.util.arg.RenderScrollingArg;
 import noteLab.util.arg.SmoothFactorArg;
 import noteLab.util.arg.UnitScaleArg;
 import noteLab.util.arg.VersionArg;
@@ -119,12 +120,18 @@ public class StartupUtilities implements SettingsKeys
       
       interpretor.registerArgument(new PrintArg());
       
+      interpretor.registerArgument(new RenderScrollingArg());
+      
       Argument[] debugArgs = DebugArgGenerator.generateDebugArgs();
       for (Argument arg : debugArgs)
          interpretor.registerArgument(arg);
       
       // Set default values 
       SettingsUtilities.setCurrentDirectory(InfoCenter.getUserHome());
+      
+      // Set the default look-and-feel
+      SettingsUtilities.setLookAndFeel(
+                           LookAndFeelUtilities.getDefaultLookAndFeel());
       
       //interpret the command line arguments
       boolean success = interpretor.processCommands(args);
