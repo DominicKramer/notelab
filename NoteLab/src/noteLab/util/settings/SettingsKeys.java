@@ -38,6 +38,8 @@ public interface SettingsKeys
    public static final String PAPER_COLOR_KEY = "paperColor";
    public static final String PAPER_SIZE_KEY = "paperSize";
    
+   public static final String RENDER_SCROLLING_KEY = "renderScrolling";
+   
    public static final String HISTORY_SIZE_KEY = "historySize";
    
    public static final String COMB_FACTOR = "combFactor";
@@ -46,6 +48,8 @@ public interface SettingsKeys
    public static final String SMOOTH_FACTOR = "smoothFactor";
    
    public static final String DEBUG_MENU_KEY = "debugMenu";
+   
+   public static final String LOOK_AND_FEEL_KEY = "lookAndFeel";
    
    //The keys below are not implemented yet
    public static final String WINDOW_SIZE = "windowSize";
